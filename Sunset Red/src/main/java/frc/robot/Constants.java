@@ -16,4 +16,21 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+  public static final class SwerveModuleConstants{
+    public static final double kWheelDiameterMeters = 0.13;
+    public static final double kDriveMotorGearRatio = 106.0 / 11.0;
+    public static final double kSteerMotorGearRatio = 6.0;
+    public static final double kDriveEncoderRot2Meter = kWheelDiameterMeters * Math.PI / kDriveMotorGearRatio;
+    public static final double kSteerEncoderRot2Rad = 2 * Math.PI / kSteerMotorGearRatio;
+    public static final double kDriveEncoderRPM2MeterPerSecond = (kWheelDiameterMeters * Math.PI / kDriveMotorGearRatio) * (1 / 60.0); // Adjusted to convert RPM to meters per second correctly
+    public static final double kSteerEncoderRPM2RadPerSecond = 2 * Math.PI / 60.0 / kSteerMotorGearRatio; // Correct as it converts RPM to rad/s
+    public static final double kPsteer = 12.0;
+  }
+
+  public static final class DriveConstants {
+    public static final double kPhysicalMaxSpeedMetersPerSecond = 5;
+  }
+  
+
 }
