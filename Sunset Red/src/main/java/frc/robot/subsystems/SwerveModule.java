@@ -1,9 +1,6 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
-import com.ctre.phoenix.motorcontrol.*;
-import com.ctre.phoenix.sensors.*;
+import com.ctre.phoenix6.hardware.*;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -15,13 +12,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 
-public class SwerveModule extends SubsystemBase {
+public class SwerveModule {
 
     private final TalonFX driveMotor;
     private final TalonFX steerMotor;
 
-    private final CANCoder driveEncoder;
-    private final CANCoder steerEncoder;
+    private final CANcoder driveEncoder;
+    private final CANcoder steerEncoder;
 
     private final PIDController steerPidController;
 
@@ -30,13 +27,13 @@ public class SwerveModule extends SubsystemBase {
     private final double absoluteEncoderOffsetRad;
 
     public SwerveModule(int driveMotorId, int steerMotorId, boolean driveMotorReversed, boolean steerMotorInversed,
-            int driveEncoderId, int steerEncoderId, int absoluteEncoderId, boolean absoluteEncoderReversed,
+            int absoluteEncoderId, boolean absoluteEncoderReversed,
             double absoluteEncoderOffsetRad) {
         driveMotor = new TalonFX(driveMotorId);
         steerMotor = new TalonFX(steerMotorId);
 
-        driveEncoder = new CANCoder(driveEncoderId);
-        steerEncoder = new CANCoder(steerEncoderId);
+        driveEncoder = driveMotor.getEncoder();
+        steerEncoder = steerEncoder.getEncoder();
 
         steerPidController = new PIDController(SwerveModuleConstants.kPsteer, 0, 0);
 
