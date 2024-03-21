@@ -22,6 +22,13 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
+
+    public static final int kDriverYAxis = 1;
+    public static final int kDriverXAxis = 0;
+    public static final int kDriverRotAxis = 4;
+
+    public static final int kDriverFieldOrientButton = 1;
+    public static final int kDriverResetHeadingButton = 2;
   }
 
   public static final class SwerveModuleConstants {
@@ -40,6 +47,9 @@ public final class Constants {
   }
 
   public static final class DriveConstants {
+    // driver constants
+    public static final double kDeadband = 0.1;
+
     // chassis dimensions
     public static final double kTrackWidth = 0.56;
     public static final double kWheelBase = 0.56;
