@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.config.DrivetrainConfig;
 import frc.robot.subsystems.GyroIO.GyroIOInputs;
 
@@ -61,10 +62,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         this.mGyroIO = gyroIO;
 
         mSwerveModules = new SwerveModule[] {
-                new SwerveModule(frontLeftModuleIO, "FrontLeft"),
-                new SwerveModule(frontRightModuleIO, "FrontRight"),
-                new SwerveModule(backLeftModuleIO, "BackLeft"),
-                new SwerveModule(backRightModuleIO, "BackRight")
+                new SwerveModule(SwerveModuleConstants.FL),
+                new SwerveModule(SwerveModuleConstants.FR),
+                new SwerveModule(SwerveModuleConstants.BL),
+                new SwerveModule(SwerveModuleConstants.BR)
         };
 
         swerveModulePositions = new SwerveModulePosition[] {
