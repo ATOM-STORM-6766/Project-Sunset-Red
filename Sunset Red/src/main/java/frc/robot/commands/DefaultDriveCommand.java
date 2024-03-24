@@ -4,7 +4,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -12,7 +11,6 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 public class DefaultDriveCommand extends Command{
     private final DrivetrainSubsystem mDrivetrainSubsystem;
     
-    private final double ROTATION_COEFFICIENT = 0.6; // slow down the rotation if not holding the button
     /*
      * Geting the x velocity from the product of the joysticks (Left Y) and the max velocity
      */

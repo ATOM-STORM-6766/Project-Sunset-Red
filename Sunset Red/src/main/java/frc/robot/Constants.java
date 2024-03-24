@@ -176,12 +176,13 @@ public final class Constants {
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond = kPhysicalMaxAngularSpeedRadiansPerSecond / 4;
     public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
-
-    /* Drive Motor Characterization Values From SYSID */
-    public static final double kDriveKS = 0.32; //TODO: This must be tuned to specific robot
-    public static final double kDriveKV = 1.51;
-    public static final double kDriveKA = 0.27;
-
   }
 
+
+  public static final class DebugConstants{
+    public static final double kLongCANTimeoutSec = 0.1;
+    // Update Freq (Hz): minimum 4Hz, maximum 1000Hz
+    public static final int kOdomUpdateFreq = 100; // signal for odometry
+    public static final int kDefaultUpdateFreq = 20;
+  }
 }
