@@ -27,9 +27,9 @@ jobs:
       run: |
         find . -name "*.java" -print0 | xargs -0 java -jar google-java-format-1.9-all-deps.jar --replace "\(.*\)"
 
-    - name: Commit and push if needed
+   - name: Commit and push if needed
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
         git add -A
-        git diff --staged --exit-code || (git commit -m "Format Java code" && git push)
+        git diff --staged --exit-code || (git commit -m "Format Java code" && git push https://Ry3nG:$Sunset_Red_PAT@github.com/Ry3nG/Project-Sunset-Red.git)
