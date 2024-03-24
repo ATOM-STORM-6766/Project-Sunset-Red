@@ -2,7 +2,11 @@ name: Format Java Code
 
 on:
   push:
-  pull_request:
+    branches: 
+      - main
+      - 'feature/*'
+  pull_request:  # Keep your pull_request trigger if desired
+
 
 jobs:
   format:
