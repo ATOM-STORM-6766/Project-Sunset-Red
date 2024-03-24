@@ -4,14 +4,15 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-
+import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.ExampleSubsystem;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -27,20 +28,35 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-
-  
-
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController = new CommandXboxController(
-      OperatorConstants.kDriverControllerPort);
+  // * Controllers */
+  private final Joystick driverController = new Joystick(0);
+
+  /* Drive Controls */
+  private final int xAxis = XboxController.Axis.kLeftY.value;
+  private final int yAxis = XboxController.Axis.kLeftX.value;
+  private final int rotAxis = XboxController.Axis.kRightX.value;
+
+  /* Driver Buttons */
+  private final JoystickButton zeroGyro = new JoystickButton(driverController, XboxController.Button.kY.value);
+  private final JoystickButton robotCentric = new JoystickButton(driverController,
+      XboxController.Button.kLeftBumper.value);
+
+  /* Subsystems */
+  private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    // Configure the trigger bindings
+    sDrivetrainSubsystem.setDefaultCommand(
+        new DefaultDriveCommand(
+            sDrivetrainSubsystem,
+            () -> -driverController.getRawAxis(xAxis),
+            () -> driverController.getRawAxis(yAxis),
+            () -> driverController.getRawAxis(rotAxis),
+            () -> robotCentric.getAsBoolean()));
 
     configureBindings();
   }
@@ -61,16 +77,17 @@ public class RobotContainer {
    */
   private void configureBindings() {
 
-    /* 
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
-
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is
-    // pressed,
-    // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
-    */
+    /*
+     * // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+     * new Trigger(m_exampleSubsystem::exampleCondition)
+     * .onTrue(new ExampleCommand(m_exampleSubsystem));
+     * 
+     * // Schedule `exampleMethodCommand` when the Xbox controller's B button is
+     * // pressed,
+     * // cancelling on release.
+     * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+     */
+    zeroGyro.onTrue(new InstantCommand(() -> sDrivetrainSubsystem.zeroHeading()));
   }
 
   /**

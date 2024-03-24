@@ -2,8 +2,11 @@ package frc.robot.commands;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
 public class DefaultDriveCommand extends Command{
@@ -25,7 +28,7 @@ public class DefaultDriveCommand extends Command{
      */
     private final DoubleSupplier angularVelocitySupplier;
 
-    private final BooleanSupplier joystickButton;
+    private final BooleanSupplier robotCentricSupplier;
     
 
     /**
@@ -36,12 +39,12 @@ public class DefaultDriveCommand extends Command{
      * @param yVelocitySupplier Gets the joystick value for the y velocity and multiplies it by the max velocity
      * @param angularVelocitySupplier Gets the joystick value for the angular velocity and multiplies it by the max angular velocity
      */
-    public DefaultDriveCommand(DrivetrainSubsystem drivetrainSubsystem, DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, DoubleSupplier angularVelocitySupplier, BooleanSupplier joystickButton){
+    public DefaultDriveCommand(DrivetrainSubsystem drivetrainSubsystem, DoubleSupplier xVelocitySupplier, DoubleSupplier yVelocitySupplier, DoubleSupplier angularVelocitySupplier, BooleanSupplier robotCentricSupplier){
         mDrivetrainSubsystem = drivetrainSubsystem;
         this.xVelocitySupplier = xVelocitySupplier;
         this.yVelocitySupplier = yVelocitySupplier;
         this.angularVelocitySupplier = angularVelocitySupplier;
-        this.joystickButton = joystickButton;
+        this.robotCentricSupplier = robotCentricSupplier;
         addRequirements(drivetrainSubsystem); // required for default command
     }
 
@@ -55,30 +58,17 @@ public class DefaultDriveCommand extends Command{
         xVelocity = xVelocitySupplier.getAsDouble();
         yVelocity = yVelocitySupplier.getAsDouble();
         angularVelocity =
-                angularVelocitySupplier.getAsDouble() * (joystickButton.getAsBoolean() ? 1.0 : ROTATION_COEFFICIENT);
-        
-        // Log here 
-        // place holder for logging
-        
-        // Create a new Chassis speed object with the velocity values
-        ChassisSpeeds targetVelocity = ChassisSpeeds.fromFieldRelativeSpeeds(
-                xVelocity,
-                yVelocity,
-                angularVelocity,
-                mDrivetrainSubsystem
-                        .getPose()
-                        .getRotation());
-        // blue oriented problem, ... 
-        // SwerveController from 6907 2024 code ... !todo, 扔到robotcontainer里
-
-        // Setting the robot velocity to chassis velocity
-        mDrivetrainSubsystem.setTargetVelocity(targetVelocity);
+                angularVelocitySupplier.getAsDouble();
+        mDrivetrainSubsystem.drive(
+            new Translation2d(xVelocity, yVelocity).times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            angularVelocity*DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
+            !robotCentricSupplier.getAsBoolean());
 
     }
 
     @Override
     public void end(boolean interrupted){
-        mDrivetrainSubsystem.setTargetVelocity(new ChassisSpeeds()); // Stop motors
+        mDrivetrainSubsystem.drive(new Translation2d(0,0), 0, true);
     }
 
     @Override

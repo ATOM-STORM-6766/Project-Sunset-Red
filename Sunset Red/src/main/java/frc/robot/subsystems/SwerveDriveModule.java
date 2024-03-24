@@ -2,23 +2,30 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DutyCycle;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.config.SwerveModuleConfig;
 
-public class SwerveDriveModule {
+public class SwerveDriveModule extends SubsystemBase {
     private static final double AZIMUTH_GEAR_RATIO = 6.0;
     private static final double DRIVE_GEAR_RATIO = 106.0 / 11.0;
-    
+
     public static final double DRIVE_MAXV = 100.0; // rotor rps
     public static final double AZIMUTH_MAXV = 100.0; // rotor rps
 
@@ -27,15 +34,18 @@ public class SwerveDriveModule {
     private final TalonFX mDriveMotor;
     private final TalonFX mAzimuthMotor;
     private final DigitalInput mLightGate;
-    
+
     private SwerveModuleConfig mConfig;
 
-    private SwerveModulePosition mModulePosition;
+    private final SimpleMotorFeedforward driveFeadforward = new SimpleMotorFeedforward(DriveConstants.kDriveKS,
+            DriveConstants.kDriveKV, DriveConstants.kDriveKA);
 
-    // Target variables, just for logging purposes
-    private double targetDriveVelocityMetersPerSec = 0;
-    private double targetSteerPositionRadians = 0;
+    /* Drive motor control requests */
+    private final DutyCycleOut driveDutyCycle = new DutyCycleOut(0);
+    private final VelocityVoltage driveVelocity = new VelocityVoltage(0);
 
+    /* Azimuth motor control requests */
+    private final PositionVoltage azimuthPosition = new PositionVoltage(0);
 
     public SwerveDriveModule(SwerveModuleConfig config) {
         mDriveMotor = new TalonFX(config.driveID);
@@ -88,62 +98,48 @@ public class SwerveDriveModule {
 
         mDriveMotor.setPosition(0);
 
-        mModulePosition = new SwerveModulePosition();
     }
 
-    public double getDriveVelocity() {
-        double velocityRPS = mDriveMotor.getVelocity().getValueAsDouble();
-        double velocityMPS = velocityRPS/DRIVE_GEAR_RATIO*(DriveConstants.kChassisWheelDiameterMeters*Math.PI);
-        return velocityMPS; // meters per second
+    public void setDesiredState(SwerveModuleState desiredState) {
+        desiredState = SwerveModuleState.optimize(desiredState, getState().angle);
+        mAzimuthMotor.setControl(azimuthPosition.withPosition(desiredState.angle.getRotations()));
+        setSpeed(desiredState);
     }
 
-    public double getSteerAngle() {
-        double position = mAzimuthMotor.getPosition().getValueAsDouble();
-        double angle = position / AZIMUTH_GEAR_RATIO * 2 * Math.PI;
-        return angle; // radians
+    private void setSpeed(SwerveModuleState desiredState) {
+
+        /*
+         * COnvert MPS to RPS, adjusting for the drive gear ratio
+         */
+        double velocityRPS = desiredState.speedMetersPerSecond / DriveConstants.kChassisWheelDiameterMeters * Math.PI
+                * DRIVE_GEAR_RATIO;
+
+        driveVelocity.Velocity = velocityRPS;
+        driveVelocity.FeedForward = driveFeadforward.calculate(desiredState.speedMetersPerSecond);
+        mDriveMotor.setControl(driveVelocity);
     }
 
-    public double getDrivePosition(){
-        return mDriveMotor.getPosition().getValueAsDouble();
+    public SwerveModuleState getState() {
+
+        // Convert RPS to MPS, adjusting for the drive gear ratio.
+        double velocityMPS = mDriveMotor.getVelocity().getValue() * DriveConstants.kChassisWheelDiameterMeters * Math.PI
+                / DRIVE_GEAR_RATIO;
+
+        return new SwerveModuleState(
+                velocityMPS,
+                Rotation2d.fromRotations(mAzimuthMotor.getPosition().getValue()));
     }
 
-    public SwerveModulePosition getPosition() {
+    public SwerveModulePosition getPosition(){
+    
+        // Convert motor rotations to meters, adjusting for the drive gear ratio.
+        // This assumes DRIVE_GEAR_RATIO defines motor rotations per wheel rotation.
+        double distanceMeters = mDriveMotor.getPosition().getValue() * DriveConstants.kChassisWheelDiameterMeters * Math.PI / DRIVE_GEAR_RATIO;
+    
         return new SwerveModulePosition(
-            getDrivePosition(),new Rotation2d(getSteerAngle())
-        
+            distanceMeters, 
+            Rotation2d.fromRotations(mAzimuthMotor.getPosition().getValue())
         );
     }
-
-    public void setTargetState(SwerveModuleState targetState) {
-        double currentAngle = getSteerAngle();
-        double targetAngle = MathUtil.inputModulus(targetState.angle.getRadians(), 0, 2*Math.PI); // Target angle of the swerve module, limited to a domain between 0 and 2pi
-
-        double absoluteAngle = MathUtil.inputModulus(currentAngle, 0, 2*Math.PI); // Current angle of the swerve module, limited to a domain between 0 and 2pi
-
-        double angleError = MathUtil.inputModulus(targetAngle - absoluteAngle, -Math.PI, Math.PI); // Error between the target angle and the current angle, limited to a domain between -pi and pi
-
-        double resultAngle = currentAngle+angleError; // The result angle of the swerve module
-
-        // setting the target swerve module state values
-        // 1. set the velocity of the drive motor
-        // 2. set the position of the azimuth motor
-        /*
-         * setTargetDriveVelocity(targetState.speedMetersPerSecond);
-         * setTargetSteerPosition(resultAngle);
-         */
-        
-    }
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
