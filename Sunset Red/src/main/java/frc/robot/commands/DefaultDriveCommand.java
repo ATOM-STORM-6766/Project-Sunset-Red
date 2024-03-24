@@ -58,8 +58,8 @@ public class DefaultDriveCommand extends Command{
         angularVelocity =
                 angularVelocitySupplier.getAsDouble();
         mDrivetrainSubsystem.drive(
-            new Translation2d(xVelocity, yVelocity).times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            angularVelocity*DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
+            new Translation2d(xVelocity, yVelocity),
+            angularVelocity,
             !robotCentricSupplier.getAsBoolean());
 
     }

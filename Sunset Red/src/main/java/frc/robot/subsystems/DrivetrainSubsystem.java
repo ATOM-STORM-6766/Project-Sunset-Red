@@ -182,10 +182,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-
         mEstimator.update(getGyroYaw(), getModulePositions());
         // add logging infomation here
-
     }
 
 }

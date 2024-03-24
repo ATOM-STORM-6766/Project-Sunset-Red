@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import frc.robot.Constants.DriveConstants;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
@@ -37,9 +38,9 @@ public class RobotContainer {
     sDrivetrainSubsystem.setDefaultCommand(
         new DefaultDriveCommand(
             sDrivetrainSubsystem,
-            () -> -driverController.getLeftY(),
-            () -> -driverController.getLeftX(),
-            () -> driverController.getLeftTriggerAxis() - driverController.getRightTriggerAxis(),
+            () -> -driverController.getLeftY()* DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
+            () -> -driverController.getLeftX()*DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
+            () -> (driverController.getLeftTriggerAxis() - driverController.getRightTriggerAxis())*DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
             () -> driverController.rightBumper().getAsBoolean()));
 
     configureBindings();
