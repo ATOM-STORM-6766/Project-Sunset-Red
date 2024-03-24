@@ -25,7 +25,9 @@ jobs:
 
       - name: Format all Java files
         run: |
+          find . -name "*.java" -print
           java -jar google-java-format-1.9-all-deps.jar --replace $(find . -name "*.java")
+
       
       - name: Commit and push if needed
         run: |
