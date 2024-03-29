@@ -74,4 +74,8 @@ public class RobotContainer {
     // An example command will be run in autonomous
     return new InstantCommand();
   }
+
+  public void checkDrivetrainZeroing() {
+    sDrivetrainSubsystem.runZeroingCommand().schedule();
+  }
 }

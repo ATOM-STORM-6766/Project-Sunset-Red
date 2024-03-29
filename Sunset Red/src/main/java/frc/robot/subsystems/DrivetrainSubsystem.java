@@ -11,7 +11,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 
@@ -83,12 +89,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     translation.getX(), translation.getY(), rotation, getHeading())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
-    SwerveDriveKinematics.desaturateWheelSpeeds(
-        swerveModuleStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
-
-    for (int i = 0; i < mSwerveModules.length; i++) {
-      mSwerveModules[i].setDesiredState(swerveModuleStates[i]);
-    }
+    setModuleStates(swerveModuleStates);
   }
 
   /**
@@ -196,5 +197,33 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void periodic() {
     mEstimator.update(getGyroYaw(), getModulePositions());
     // add logging infomation here
+  }
+
+  private Command runSingleModuleZeroing(SwerveDriveModule module) {
+    return new SequentialCommandGroup(
+      Commands.runOnce(module::startZeroing),
+      new WaitUntilCommand(module::checkLightGate),
+      Commands.runOnce(module::stopAndCalibrate)
+    ).unless(module::getIsZeroed);
+  }
+
+  public Command runZeroingCommand() {
+    Command ret = new ParallelCommandGroup(
+      runSingleModuleZeroing(mSwerveModules[0]),
+      runSingleModuleZeroing(mSwerveModules[1]),
+      runSingleModuleZeroing(mSwerveModules[2]),
+      runSingleModuleZeroing(mSwerveModules[3])
+    ).unless(this::allModuleZeroed)
+    .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    
+    ret.addRequirements(this);
+    return ret;
+  }
+
+  private boolean allModuleZeroed() {
+    return mSwerveModules[0].getIsZeroed()
+      && mSwerveModules[1].getIsZeroed()
+      && mSwerveModules[2].getIsZeroed()
+      && mSwerveModules[3].getIsZeroed();
   }
 }

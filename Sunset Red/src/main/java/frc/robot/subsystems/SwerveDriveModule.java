@@ -1,15 +1,16 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DebugConstants;
 import frc.robot.Constants.DriveConstants;
@@ -26,15 +27,15 @@ public class SwerveDriveModule {
 
   private SwerveModuleConfig mConfig;
 
+  // whether zeroing has complete
+  private boolean isZeroed = false;
+
   /* Drive motor control requests */
   private final VelocityVoltage driveVelocity = new VelocityVoltage(0);
 
   /* Azimuth motor control requests */
   private final MotionMagicVoltage azimuthPosition = new MotionMagicVoltage(0).withSlot(0);
-
-  public ControlRequest azimuthSelectedControl =
-      azimuthPosition; // default to position control, can be changed to
-  // velocity or duty cycle
+  private final VoltageOut azimuthVolt = new VoltageOut(0);
 
   public SwerveDriveModule(SwerveModuleConfig config) {
     mDriveMotor = new TalonFX(config.driveID);
@@ -203,5 +204,43 @@ public class SwerveDriveModule {
         distanceMeters,
         Rotation2d.fromRotations(
             mAzimuthMotor.getPosition().getValueAsDouble() - mConfig.azimuthEncoderOffsetRotation));
+  }
+
+  /**
+   * Sets the voltage for the azimuth motor of the swerve drive module.
+   * 
+   * @param volt the voltage to be set for the azimuth motor
+   */
+  public void setAzimuthVoltage(double volt) {
+    mAzimuthMotor.setControl(azimuthVolt.withOutput(volt));
+  }
+
+  public void startZeroing(){
+    setAzimuthVoltage(1.5);
+  }
+
+  public boolean checkLightGate() {
+    return mLightGate.get(); // depend on the connection + -
+  }
+
+  /**
+   * Stops the motor and calibrates the module based on current pos
+   * sets the motor to neutral and adjusts the azimuth encoder offset rotation
+   * to align with the desired block center degree
+   */
+  public void stopAndCalibrate() {
+    // stop the motor and calibrate based on current position
+    mAzimuthMotor.setControl(new NeutralOut());
+    double azimuthPosition = mAzimuthMotor.getPosition().getValueAsDouble();
+    double remainer = mConfig.azimuthEncoderOffsetRotation + 
+        Units.degreesToRotations(mConfig.azimuthBlockCenterDegree) - (0.5 / AZIMUTH_GEAR_RATIO);
+    mConfig.azimuthEncoderOffsetRotation += 
+        Math.floor((azimuthPosition - remainer) * AZIMUTH_GEAR_RATIO)
+            / AZIMUTH_GEAR_RATIO;
+    isZeroed = true;
+  }
+
+  public boolean getIsZeroed() {
+    return isZeroed;
   }
 }
