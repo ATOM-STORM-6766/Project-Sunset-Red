@@ -208,14 +208,14 @@ public class SwerveDriveModule {
 
   /**
    * Sets the voltage for the azimuth motor of the swerve drive module.
-   * 
+   *
    * @param volt the voltage to be set for the azimuth motor
    */
   public void setAzimuthVoltage(double volt) {
     mAzimuthMotor.setControl(azimuthVolt.withOutput(volt));
   }
 
-  public void startZeroing(){
+  public void startZeroing() {
     setAzimuthVoltage(1.5);
   }
 
@@ -224,19 +224,19 @@ public class SwerveDriveModule {
   }
 
   /**
-   * Stops the motor and calibrates the module based on current pos
-   * sets the motor to neutral and adjusts the azimuth encoder offset rotation
-   * to align with the desired block center degree
+   * Stops the motor and calibrates the module based on current pos sets the motor to neutral and
+   * adjusts the azimuth encoder offset rotation to align with the desired block center degree
    */
   public void stopAndCalibrate() {
     // stop the motor and calibrate based on current position
     mAzimuthMotor.setControl(new NeutralOut());
     double azimuthPosition = mAzimuthMotor.getPosition().getValueAsDouble();
-    double remainer = mConfig.azimuthEncoderOffsetRotation + 
-        Units.degreesToRotations(mConfig.azimuthBlockCenterDegree) - (0.5 / AZIMUTH_GEAR_RATIO);
-    mConfig.azimuthEncoderOffsetRotation += 
-        Math.floor((azimuthPosition - remainer) * AZIMUTH_GEAR_RATIO)
-            / AZIMUTH_GEAR_RATIO;
+    double remainer =
+        mConfig.azimuthEncoderOffsetRotation
+            + Units.degreesToRotations(mConfig.azimuthBlockCenterDegree)
+            - (0.5 / AZIMUTH_GEAR_RATIO);
+    mConfig.azimuthEncoderOffsetRotation +=
+        Math.floor((azimuthPosition - remainer) * AZIMUTH_GEAR_RATIO) / AZIMUTH_GEAR_RATIO;
     isZeroed = true;
   }
 
