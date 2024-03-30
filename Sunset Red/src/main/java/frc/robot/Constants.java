@@ -5,6 +5,8 @@
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+
+import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
 
@@ -17,6 +19,8 @@ import frc.robot.config.SwerveModuleConfig.ModuleCorner;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final double kPeriodicDt = TimedRobot.kDefaultPeriod; // seconds
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }

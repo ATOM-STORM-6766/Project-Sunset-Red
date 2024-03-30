@@ -22,8 +22,10 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
@@ -32,10 +34,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveDrivePoseEstimator mEstimator;
 
   private final SwerveDriveKinematics mKinematics;
+  private final ChassisSpeedKalmanFilterSimplified mSpeedFilter;
+
+  private ChassisSpeeds mKinematicSpeed;
+  private ChassisSpeeds mFilteredSpeed;
 
   // LogEntries
   private StructLogEntry<Pose2d> mPoseLog;
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
+  private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
 
   /*
    * Constructor for DrivetrainSubsystem
@@ -60,6 +67,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
             mSwerveModules[1].getTranslationToRobotCenter(),
             mSwerveModules[2].getTranslationToRobotCenter(),
             mSwerveModules[3].getTranslationToRobotCenter());
+    
+    mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(
+      0.5, 0.5, Constants.kPeriodicDt);
 
     mEstimator =
         new SwerveDrivePoseEstimator(
@@ -93,6 +103,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     DataLog log = DataLogManager.getLog();
     mPoseLog = StructLogEntry.create(log, name + "/Pose", Pose2d.struct);
     mChassisSpeedLog = StructLogEntry.create(log, name + "/ChassisSpeed", ChassisSpeeds.struct);
+    mFilteredSpeedLog = StructLogEntry.create(log, name + "/FilteredSpeed", ChassisSpeeds.struct);
 
     mSwerveModules[0].initLogEntry(name);
     mSwerveModules[1].initLogEntry(name);
@@ -102,7 +113,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public void updateLogEntry() {
     mPoseLog.append(getPose());
-    mChassisSpeedLog.append(getChassisSpeeds());
+    mChassisSpeedLog.append(mKinematicSpeed);
+    mFilteredSpeedLog.append(mFilteredSpeed);
     // desired speeds ?
 
     mSwerveModules[0].updateLogEntry();
@@ -183,14 +195,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return mEstimator.getEstimatedPosition();
   }
 
-  public ChassisSpeeds getChassisSpeeds() {
-    return mKinematics.toChassisSpeeds(
-        mSwerveModules[0].getState(),
-        mSwerveModules[1].getState(),
-        mSwerveModules[2].getState(),
-        mSwerveModules[3].getState());
-  }
-
   /**
    * Sets the pose of the drivetrain subsystem.
    *
@@ -242,6 +246,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     mEstimator.update(getGyroYaw(), getModulePositions());
+    mKinematicSpeed = mKinematics.toChassisSpeeds(
+      mSwerveModules[0].getState(),
+      mSwerveModules[1].getState(),
+      mSwerveModules[2].getState(),
+      mSwerveModules[3].getState());
+    mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
+
     // add logging infomation here
     updateLogEntry();
   }
