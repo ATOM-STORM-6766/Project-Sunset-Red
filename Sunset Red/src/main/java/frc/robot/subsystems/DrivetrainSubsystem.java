@@ -11,6 +11,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.StructLogEntry;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -27,7 +31,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
 
-  private final SwerveDriveKinematics kinematics;
+  private final SwerveDriveKinematics mKinematics;
+
+  // LogEntries
+  private StructLogEntry<Pose2d> mPoseLog;
+  private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
 
   /*
    * Constructor for DrivetrainSubsystem
@@ -46,7 +54,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
           new SwerveDriveModule(SwerveModuleConstants.BL)
         };
 
-    kinematics =
+    mKinematics =
         new SwerveDriveKinematics(
             mSwerveModules[0].getTranslationToRobotCenter(), 
             mSwerveModules[1].getTranslationToRobotCenter(),
@@ -56,12 +64,52 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     mEstimator =
         new SwerveDrivePoseEstimator(
-            kinematics,
+            mKinematics,
             new Rotation2d(),
             getModulePositions(),
             new Pose2d(),
             VecBuilder.fill(0.1, 0.1, 0.1),
             VecBuilder.fill(0.5, 0.5, 0.5)); // adjust for need (vision-related)
+    
+    initLogEntry();
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+
+    builder.addDoubleProperty(".PoseXMeter", () -> getPose().getX(), null);
+    builder.addDoubleProperty(".PoseYMeter", () -> getPose().getY(), null);
+    builder.addDoubleProperty(".PoseAngleDegree", () -> getPose().getRotation().getDegrees(), null);
+
+    mSwerveModules[0].initSendable(builder, getName());
+    mSwerveModules[1].initSendable(builder, getName());
+    mSwerveModules[2].initSendable(builder, getName());
+    mSwerveModules[3].initSendable(builder, getName());
+  }
+
+  public void initLogEntry() {
+    String name = getName();
+
+    DataLog log = DataLogManager.getLog();
+    mPoseLog = StructLogEntry.create(log, name + "/Pose", Pose2d.struct);
+    mChassisSpeedLog = StructLogEntry.create(log, name + "/ChassisSpeed", ChassisSpeeds.struct);
+
+    mSwerveModules[0].initLogEntry(name);
+    mSwerveModules[1].initLogEntry(name);
+    mSwerveModules[2].initLogEntry(name);
+    mSwerveModules[3].initLogEntry(name);
+  }
+
+  public void updateLogEntry() {
+    mPoseLog.append(getPose());
+    mChassisSpeedLog.append(getChassisSpeeds());
+    // desired speeds ?
+
+    mSwerveModules[0].updateLogEntry();
+    mSwerveModules[1].updateLogEntry();
+    mSwerveModules[2].updateLogEntry();
+    mSwerveModules[3].updateLogEntry();
   }
 
   /**
@@ -75,7 +123,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    */
   public void drive(Translation2d translation, double rotation, boolean fieldCentric) {
     SwerveModuleState[] swerveModuleStates =
-        kinematics.toSwerveModuleStates(
+        mKinematics.toSwerveModuleStates(
             fieldCentric
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     translation.getX(), translation.getY(), rotation, getHeading())
@@ -136,6 +184,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return mEstimator.getEstimatedPosition();
   }
 
+  public ChassisSpeeds getChassisSpeeds() {
+    return mKinematics.toChassisSpeeds(
+      mSwerveModules[0].getState(),
+      mSwerveModules[1].getState(),
+      mSwerveModules[2].getState(),
+      mSwerveModules[3].getState()
+    );
+  }
+
   /**
    * Sets the pose of the drivetrain subsystem.
    *
@@ -188,6 +245,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void periodic() {
     mEstimator.update(getGyroYaw(), getModulePositions());
     // add logging infomation here
+    updateLogEntry();
   }
 
   private Command runSingleModuleZeroing(SwerveDriveModule module) {

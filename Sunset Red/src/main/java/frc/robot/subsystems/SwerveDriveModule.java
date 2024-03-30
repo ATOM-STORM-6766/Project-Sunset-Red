@@ -12,6 +12,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.datalog.BooleanLogEntry;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DebugConstants;
 import frc.robot.Constants.DriveConstants;
@@ -37,6 +42,20 @@ public class SwerveDriveModule {
   /* Azimuth motor control requests */
   private final MotionMagicVoltage azimuthPosition = new MotionMagicVoltage(0).withSlot(0);
   private final VoltageOut azimuthVolt = new VoltageOut(0);
+
+  // logEntries
+  private BooleanLogEntry zeroedLog;
+  private DoubleLogEntry driveVelocityMsLog;
+  private DoubleLogEntry driveVelocityTargetMsLog;
+  private DoubleLogEntry driveVelocityErrorMsLog;
+  private DoubleLogEntry driveCurrentAmpLog;
+  private DoubleLogEntry driveAppliedVoltLog;
+  private DoubleLogEntry azimuthAngleDegLog;
+  private DoubleLogEntry azimuthAngleTargetDegLog;
+  private DoubleLogEntry azimuthAngleErrorDegLog;
+  private DoubleLogEntry azimuthVelocityRpsLog;
+  private DoubleLogEntry azimuthCurrentAmpLog;
+  private DoubleLogEntry azimuthAppliedVoltLog;
 
   public SwerveDriveModule(SwerveModuleConfig config) {
     mDriveMotor = new TalonFX(config.driveID);
@@ -84,6 +103,16 @@ public class SwerveDriveModule {
             .getVelocity()
             .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
+        "swerve azimuth current",
+        mAzimuthMotor
+            .getTorqueCurrent()
+            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+    Util.checkReturn(
+        "swerve azimuth voltage",
+        mAzimuthMotor
+            .getMotorVoltage()
+            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+    Util.checkReturn(
         "swerve azimuth canbus",
         mAzimuthMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
 
@@ -123,10 +152,62 @@ public class SwerveDriveModule {
             .getVelocity()
             .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
+        "swerve drive current",
+        mDriveMotor
+            .getTorqueCurrent()
+            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+    Util.checkReturn(
+        "swerve drive current",
+        mDriveMotor
+            .getMotorVoltage()
+            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+    Util.checkReturn(
         "swerve drive canbus",
         mDriveMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
 
     mDriveMotor.setPosition(0);
+  }
+  
+  public void initSendable(SendableBuilder builder, String namePrefix) {
+    final String name = "." + mConfig.corner.name;
+    builder.addBooleanProperty(name + ".isZeroed", () -> isZeroed, null);
+    builder.addDoubleProperty(name + ".VelocityMs", () -> getDriveVelocityMs(), null);
+    builder.addDoubleProperty(name + ".VelocityErrorMs", () -> DriveConstants.kChassisWheelCircumferenceMeters * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()), null);
+    builder.addDoubleProperty(name + ".AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
+    builder.addDoubleProperty(name + ".AzimuthErrorDeg", () -> 360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()), null);
+  }
+
+  public void initLogEntry(String namePrefix) {
+    final String name = namePrefix + "/" + mConfig.corner.name;
+    
+    DataLog log = DataLogManager.getLog();
+    zeroedLog = new BooleanLogEntry(log, name + "/zeroed");
+    driveVelocityMsLog = new DoubleLogEntry(log, name + "/driveVelocityMs");
+    driveVelocityTargetMsLog = new DoubleLogEntry(log, name + "/driveVelocityTargetMs");
+    driveVelocityErrorMsLog = new DoubleLogEntry(log, name + "/driveVelocityErrorMs");
+    driveCurrentAmpLog = new DoubleLogEntry(log, name + "/driveCurrentAmp");
+    driveAppliedVoltLog = new DoubleLogEntry(log, name + "/driveAppliedVolt");
+    azimuthAngleDegLog = new DoubleLogEntry(log, name + "/azimuthAngleDeg");
+    azimuthAngleTargetDegLog = new DoubleLogEntry(log, name + "/azimuthAngleTargetDeg");
+    azimuthAngleErrorDegLog = new DoubleLogEntry(log, name + "/azimuthAngleErrorDeg");
+    azimuthVelocityRpsLog = new DoubleLogEntry(log, name + "/azimuthVelocityRps");
+    azimuthCurrentAmpLog = new DoubleLogEntry(log, name + "/azimuthCurrentAmp");
+    azimuthAppliedVoltLog = new DoubleLogEntry(log, name + "/azimuthAppliedVolt");
+  }
+
+  public void updateLogEntry() {
+    zeroedLog.append(isZeroed);
+    driveVelocityMsLog.append(getDriveVelocityMs());
+    driveVelocityTargetMsLog.append(driveVelocity.Velocity * DriveConstants.kChassisWheelCircumferenceMeters);
+    driveVelocityErrorMsLog.append(DriveConstants.kChassisWheelCircumferenceMeters * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()));
+    driveCurrentAmpLog.append(mDriveMotor.getTorqueCurrent().getValueAsDouble());
+    driveAppliedVoltLog.append(mDriveMotor.getMotorVoltage().getValueAsDouble());
+    azimuthAngleDegLog.append(getAzimuthAngleRotations() * 360.0);
+    azimuthAngleTargetDegLog.append((azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360.0);
+    azimuthAngleErrorDegLog.append(360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()));
+    azimuthVelocityRpsLog.append(mAzimuthMotor.getVelocity().getValueAsDouble());
+    azimuthCurrentAmpLog.append(mAzimuthMotor.getTorqueCurrent().getValueAsDouble());
+    azimuthAppliedVoltLog.append(mAzimuthMotor.getMotorVoltage().getValueAsDouble());
   }
 
   /**
@@ -148,8 +229,8 @@ public class SwerveDriveModule {
    * @param goal The desired rotation angle in degrees.
    */
   public void setAzimuthDegree(Rotation2d goal) {
-    double adjustedGoalRotations = goal.getRotations() + mConfig.azimuthEncoderOffsetRotation;
-    mAzimuthMotor.setControl(azimuthPosition.withPosition(adjustedGoalRotations));
+    double setpointRotations = goal.getRotations() + mConfig.azimuthEncoderOffsetRotation;
+    mAzimuthMotor.setControl(azimuthPosition.withPosition(setpointRotations));
   }
 
   /**
@@ -158,12 +239,30 @@ public class SwerveDriveModule {
    * @param velocityMetersPerSecond the desired velocity in meters per second
    */
   public void setDriveVelocity(double velocityMetersPerSecond) {
-    double wheelCircumferenceMeters = DriveConstants.kChassisWheelDiameterMeters * Math.PI;
     double targetRPS =
-        velocityMetersPerSecond / wheelCircumferenceMeters; // no need to adjust for gear ratio
+        velocityMetersPerSecond / DriveConstants.kChassisWheelCircumferenceMeters; // no need to adjust for gear ratio
     // because it's already done in the
     // TalonFX configuration
     mDriveMotor.setControl(driveVelocity.withVelocity(targetRPS));
+  }
+
+  public double getDriveVelocityMs() {
+    // Convert RPS to MPS, no need to adjust for gear ratio because it's already
+    // done in the TalonFX configuration
+    return mDriveMotor.getVelocity().getValueAsDouble()
+      * DriveConstants.kChassisWheelCircumferenceMeters;
+  }
+
+  public double getDriveDistanceMeters() {
+    // Convert motor rotations to meters, no need to adjust for gear ratio because
+    // it's already done in the TalonFX configuration
+    // This assumes DRIVE_GEAR_RATIO defines motor rotations per wheel rotation.
+    return mDriveMotor.getPosition().getValueAsDouble()
+      * DriveConstants.kChassisWheelCircumferenceMeters;
+  }
+
+  public double getAzimuthAngleRotations() {
+    return mAzimuthMotor.getPosition().getValueAsDouble() - mConfig.azimuthEncoderOffsetRotation;
   }
 
   /**
@@ -173,18 +272,10 @@ public class SwerveDriveModule {
    * @return the state of the swerve drive module
    */
   public SwerveModuleState getState() {
-
-    // Convert RPS to MPS, no need to adjust for gear ratio because it's already
-    // done in the TalonFX configuration
-    double velocityMPS =
-        mDriveMotor.getVelocity().getValueAsDouble()
-            * DriveConstants.kChassisWheelDiameterMeters
-            * Math.PI;
-
     return new SwerveModuleState(
-        velocityMPS,
-        Rotation2d.fromRotations(
-            mAzimuthMotor.getPosition().getValueAsDouble() - mConfig.azimuthEncoderOffsetRotation));
+        getDriveVelocityMs(),
+        Rotation2d.fromRotations(getAzimuthAngleRotations())
+    );
   }
 
   /**
@@ -193,18 +284,10 @@ public class SwerveDriveModule {
    */
   public SwerveModulePosition getPosition() {
 
-    // Convert motor rotations to meters, no need to adjust for gear ratio because
-    // it's already done in the TalonFX configuration
-    // This assumes DRIVE_GEAR_RATIO defines motor rotations per wheel rotation.
-    double distanceMeters =
-        mDriveMotor.getPosition().getValueAsDouble()
-            * DriveConstants.kChassisWheelDiameterMeters
-            * Math.PI;
-
     return new SwerveModulePosition(
-        distanceMeters,
-        Rotation2d.fromRotations(
-            mAzimuthMotor.getPosition().getValueAsDouble() - mConfig.azimuthEncoderOffsetRotation));
+        getDriveDistanceMeters(),
+        Rotation2d.fromRotations(getAzimuthAngleRotations())
+    );
   }
 
   /**

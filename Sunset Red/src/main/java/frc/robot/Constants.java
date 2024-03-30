@@ -5,8 +5,6 @@
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
 
@@ -110,6 +108,7 @@ public final class Constants {
     public static final double kTrackWidth = 0.56;
     public static final double kWheelBase = 0.56;
     public static final double kChassisWheelDiameterMeters = 0.13; // meters
+    public static final double kChassisWheelCircumferenceMeters = kChassisWheelDiameterMeters * Math.PI; // meters
 
     // Pigeon constants
     public static final int kPigeonPort = 0;
@@ -130,6 +129,6 @@ public final class Constants {
     public static final double kLongCANTimeoutSec = 0.1;
     // Update Freq (Hz): minimum 4Hz, maximum 1000Hz
     public static final int kOdomUpdateFreq = 100; // signal for odometry
-    public static final int kDefaultUpdateFreq = 20;
+    public static final int kDefaultUpdateFreq = 50;
   }
 }
