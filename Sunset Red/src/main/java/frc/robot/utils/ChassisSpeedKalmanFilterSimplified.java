@@ -10,9 +10,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 
-/* 
+/*
  * Filter Drivetrain Speed through a Kalman Filter
- * Simplified from original Kalman Filter because 
+ * Simplified from original Kalman Filter because
  * we only do A = 0, C = I which a lot of math can be very easy
  */
 public class ChassisSpeedKalmanFilterSimplified {
@@ -47,11 +47,11 @@ public class ChassisSpeedKalmanFilterSimplified {
   }
 
   public ChassisSpeeds correctAndPredict(ChassisSpeeds kinematic_speed) {
-    Vector<N3> vy = VecBuilder.fill(
-      kinematic_speed.vxMetersPerSecond,
-      kinematic_speed.vyMetersPerSecond,
-      kinematic_speed.omegaRadiansPerSecond
-    );
+    Vector<N3> vy =
+        VecBuilder.fill(
+            kinematic_speed.vxMetersPerSecond,
+            kinematic_speed.vyMetersPerSecond,
+            kinematic_speed.omegaRadiansPerSecond);
     // predict
     // 1. m_xHat = mDiscA @ m_xHat + mDiscB @ u (skip)
     // 2. Pₖ₊₁⁻ = APₖ⁻Aᵀ + Q
@@ -78,11 +78,6 @@ public class ChassisSpeedKalmanFilterSimplified {
       p = Math.pow(1 - k, 2.0) * p + Math.pow(k, 2.0) * r;
       mP.set(i, i, p);
     }
-    return new ChassisSpeeds(
-      mXHat.get(0, 0),
-      mXHat.get(1, 0),
-      mXHat.get(2, 0)
-    );
+    return new ChassisSpeeds(mXHat.get(0, 0), mXHat.get(1, 0), mXHat.get(2, 0));
   }
-
 }

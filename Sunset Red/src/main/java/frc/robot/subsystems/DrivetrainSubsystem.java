@@ -67,9 +67,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
             mSwerveModules[1].getTranslationToRobotCenter(),
             mSwerveModules[2].getTranslationToRobotCenter(),
             mSwerveModules[3].getTranslationToRobotCenter());
-    
-    mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(
-      0.5, 0.5, Constants.kPeriodicDt);
+
+    mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(0.5, 0.5, Constants.kPeriodicDt);
 
     mEstimator =
         new SwerveDrivePoseEstimator(
@@ -246,11 +245,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     mEstimator.update(getGyroYaw(), getModulePositions());
-    mKinematicSpeed = mKinematics.toChassisSpeeds(
-      mSwerveModules[0].getState(),
-      mSwerveModules[1].getState(),
-      mSwerveModules[2].getState(),
-      mSwerveModules[3].getState());
+    mKinematicSpeed =
+        mKinematics.toChassisSpeeds(
+            mSwerveModules[0].getState(),
+            mSwerveModules[1].getState(),
+            mSwerveModules[2].getState(),
+            mSwerveModules[3].getState());
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
 
     // add logging infomation here
