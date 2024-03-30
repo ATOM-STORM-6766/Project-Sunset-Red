@@ -8,6 +8,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
@@ -242,5 +243,9 @@ public class SwerveDriveModule {
 
   public boolean getIsZeroed() {
     return isZeroed;
+  }
+
+  public Translation2d getTranslationToRobotCenter() {
+    return mConfig.corner.modulePosition;
   }
 }

@@ -59,8 +59,8 @@ public class SwerveModuleConfig {
     Back_Right(
         "BR", new Translation2d(-DriveConstants.kTrackWidth / 2, -DriveConstants.kWheelBase / 2));
 
-    String name;
-    Translation2d modulePosition;
+    public String name;
+    public Translation2d modulePosition;
 
     ModuleCorner(String name, Translation2d modulePosition) {
       this.name = name;

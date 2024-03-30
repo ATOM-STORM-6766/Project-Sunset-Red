@@ -23,9 +23,6 @@ import frc.robot.Constants.SwerveModuleConstants;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-  private static final double WHEELBASE_WIDTH_METERS = DriveConstants.kTrackWidth;
-  private static final double WHEELBASE_LENGTH_METERS = DriveConstants.kWheelBase;
-
   private final Pigeon2 mPigeon;
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
@@ -49,19 +46,13 @@ public class DrivetrainSubsystem extends SubsystemBase {
           new SwerveDriveModule(SwerveModuleConstants.BL)
         };
 
-    var frontLeftLocation =
-        new Translation2d(WHEELBASE_LENGTH_METERS / 2, WHEELBASE_WIDTH_METERS / 2);
-    var frontRightLocation =
-        new Translation2d(WHEELBASE_LENGTH_METERS / 2, -WHEELBASE_WIDTH_METERS / 2);
-    var backLeftLocation =
-        new Translation2d(-WHEELBASE_LENGTH_METERS / 2, WHEELBASE_WIDTH_METERS / 2);
-    var backRightLocation =
-        new Translation2d(-WHEELBASE_LENGTH_METERS / 2, -WHEELBASE_WIDTH_METERS / 2);
-
     kinematics =
         new SwerveDriveKinematics(
-            frontLeftLocation, frontRightLocation,
-            backRightLocation, backLeftLocation);
+            mSwerveModules[0].getTranslationToRobotCenter(), 
+            mSwerveModules[1].getTranslationToRobotCenter(),
+            mSwerveModules[2].getTranslationToRobotCenter(), 
+            mSwerveModules[3].getTranslationToRobotCenter()
+        );
 
     mEstimator =
         new SwerveDrivePoseEstimator(

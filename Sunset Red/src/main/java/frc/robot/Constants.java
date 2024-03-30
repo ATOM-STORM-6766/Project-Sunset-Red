@@ -22,12 +22,6 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
 
-    public static final int kDriverYAxis = 1;
-    public static final int kDriverXAxis = 0;
-    public static final int kDriverRotAxis = 4;
-
-    public static final int kDriverFieldOrientButton = 1;
-    public static final int kDriverResetHeadingButton = 2;
   }
 
   public static final class SwerveModuleConstants {
@@ -116,50 +110,9 @@ public final class Constants {
     public static final double kTrackWidth = 0.56;
     public static final double kWheelBase = 0.56;
     public static final double kChassisWheelDiameterMeters = 0.13; // meters
-    public static final SwerveDriveKinematics kDriveKinematics =
-        new SwerveDriveKinematics(
-            new Translation2d(kWheelBase / 2, -kTrackWidth / 2),
-            new Translation2d(kWheelBase / 2, kTrackWidth / 2),
-            new Translation2d(-kWheelBase / 2, -kTrackWidth / 2),
-            new Translation2d(-kWheelBase / 2, kTrackWidth / 2));
 
     // Pigeon constants
     public static final int kPigeonPort = 0;
-
-    // front left module
-    public static final int kFrontLeftDriveMotorPort = 4;
-    public static final int kFrontLeftTurningMotorPort = 5;
-    public static final boolean kFrontLeftSteerMotorReversed = false;
-    public static final boolean kFrontLeftDriveMotorReversed = false;
-    public static final double kFrontLeftSteerEncoderOffset = -0.254; // radians
-    public static final int kFrontLeftAbsoluteEncoderPort = 0;
-    public static final boolean kFrontLeftAbsoluteEncoderReversed = false;
-    // front right module
-    public static final int kFrontRightDriveMotorPort = 6;
-    public static final int kFrontRightTurningMotorPort = 7;
-    public static final boolean kFrontRightSteerMotorReversed = false;
-    public static final boolean kFrontRightDriveMotorReversed = false;
-    public static final double kFrontRightSteerEncoderOffset = -0.254; // radians
-    public static final int kFrontRightAbsoluteEncoderPort = 1;
-    public static final boolean kFrontRightAbsoluteEncoderReversed = false;
-
-    // back right module
-    public static final int kBackRightDriveMotorPort = 0;
-    public static final int kBackRightTurningMotorPort = 1;
-    public static final boolean kBackRightSteerMotorReversed = false;
-    public static final boolean kBackRightDriveMotorReversed = false;
-    public static final double kBackRightSteerEncoderOffset = -0.254; // radians
-    public static final int kBackRightAbsoluteEncoderPort = 3;
-    public static final boolean kBackRightAbsoluteEncoderReversed = false;
-
-    // back left module
-    public static final int kBackLeftDriveMotorPort = 2;
-    public static final int kBackLeftTurningMotorPort = 3;
-    public static final boolean kBackLeftSteerMotorReversed = false;
-    public static final boolean kBackLeftDriveMotorReversed = false;
-    public static final double kBackLeftSteerEncoderOffset = -0.254; // radians
-    public static final int kBackLeftAbsoluteEncoderPort = 2;
-    public static final boolean kBackLeftAbsoluteEncoderReversed = false;
 
     // physical robot constants
     public static final double kPhysicalMaxSpeedMetersPerSecond = 4.5;
