@@ -19,7 +19,6 @@ import frc.robot.config.SwerveModuleConfig.ModuleCorner;
 public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
-
   }
 
   public static final class SwerveModuleConstants {
@@ -108,7 +107,8 @@ public final class Constants {
     public static final double kTrackWidth = 0.56;
     public static final double kWheelBase = 0.56;
     public static final double kChassisWheelDiameterMeters = 0.13; // meters
-    public static final double kChassisWheelCircumferenceMeters = kChassisWheelDiameterMeters * Math.PI; // meters
+    public static final double kChassisWheelCircumferenceMeters =
+        kChassisWheelDiameterMeters * Math.PI; // meters
 
     // Pigeon constants
     public static final int kPigeonPort = 0;

@@ -106,12 +106,14 @@ public class SwerveDriveModule {
         "swerve azimuth current",
         mAzimuthMotor
             .getTorqueCurrent()
-            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(
+                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve azimuth voltage",
         mAzimuthMotor
             .getMotorVoltage()
-            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(
+                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve azimuth canbus",
         mAzimuthMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
@@ -155,31 +157,42 @@ public class SwerveDriveModule {
         "swerve drive current",
         mDriveMotor
             .getTorqueCurrent()
-            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(
+                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve drive current",
         mDriveMotor
             .getMotorVoltage()
-            .setUpdateFrequency(DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(
+                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve drive canbus",
         mDriveMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
 
     mDriveMotor.setPosition(0);
   }
-  
+
   public void initSendable(SendableBuilder builder, String namePrefix) {
     final String name = "." + mConfig.corner.name;
     builder.addBooleanProperty(name + ".isZeroed", () -> isZeroed, null);
     builder.addDoubleProperty(name + ".VelocityMs", () -> getDriveVelocityMs(), null);
-    builder.addDoubleProperty(name + ".VelocityErrorMs", () -> DriveConstants.kChassisWheelCircumferenceMeters * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()), null);
-    builder.addDoubleProperty(name + ".AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
-    builder.addDoubleProperty(name + ".AzimuthErrorDeg", () -> 360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()), null);
+    builder.addDoubleProperty(
+        name + ".VelocityErrorMs",
+        () ->
+            DriveConstants.kChassisWheelCircumferenceMeters
+                * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()),
+        null);
+    builder.addDoubleProperty(
+        name + ".AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
+    builder.addDoubleProperty(
+        name + ".AzimuthErrorDeg",
+        () -> 360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()),
+        null);
   }
 
   public void initLogEntry(String namePrefix) {
     final String name = namePrefix + "/" + mConfig.corner.name;
-    
+
     DataLog log = DataLogManager.getLog();
     zeroedLog = new BooleanLogEntry(log, name + "/zeroed");
     driveVelocityMsLog = new DoubleLogEntry(log, name + "/driveVelocityMs");
@@ -198,13 +211,18 @@ public class SwerveDriveModule {
   public void updateLogEntry() {
     zeroedLog.append(isZeroed);
     driveVelocityMsLog.append(getDriveVelocityMs());
-    driveVelocityTargetMsLog.append(driveVelocity.Velocity * DriveConstants.kChassisWheelCircumferenceMeters);
-    driveVelocityErrorMsLog.append(DriveConstants.kChassisWheelCircumferenceMeters * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()));
+    driveVelocityTargetMsLog.append(
+        driveVelocity.Velocity * DriveConstants.kChassisWheelCircumferenceMeters);
+    driveVelocityErrorMsLog.append(
+        DriveConstants.kChassisWheelCircumferenceMeters
+            * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()));
     driveCurrentAmpLog.append(mDriveMotor.getTorqueCurrent().getValueAsDouble());
     driveAppliedVoltLog.append(mDriveMotor.getMotorVoltage().getValueAsDouble());
     azimuthAngleDegLog.append(getAzimuthAngleRotations() * 360.0);
-    azimuthAngleTargetDegLog.append((azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360.0);
-    azimuthAngleErrorDegLog.append(360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()));
+    azimuthAngleTargetDegLog.append(
+        (azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360.0);
+    azimuthAngleErrorDegLog.append(
+        360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()));
     azimuthVelocityRpsLog.append(mAzimuthMotor.getVelocity().getValueAsDouble());
     azimuthCurrentAmpLog.append(mAzimuthMotor.getTorqueCurrent().getValueAsDouble());
     azimuthAppliedVoltLog.append(mAzimuthMotor.getMotorVoltage().getValueAsDouble());
@@ -240,7 +258,8 @@ public class SwerveDriveModule {
    */
   public void setDriveVelocity(double velocityMetersPerSecond) {
     double targetRPS =
-        velocityMetersPerSecond / DriveConstants.kChassisWheelCircumferenceMeters; // no need to adjust for gear ratio
+        velocityMetersPerSecond
+            / DriveConstants.kChassisWheelCircumferenceMeters; // no need to adjust for gear ratio
     // because it's already done in the
     // TalonFX configuration
     mDriveMotor.setControl(driveVelocity.withVelocity(targetRPS));
@@ -250,7 +269,7 @@ public class SwerveDriveModule {
     // Convert RPS to MPS, no need to adjust for gear ratio because it's already
     // done in the TalonFX configuration
     return mDriveMotor.getVelocity().getValueAsDouble()
-      * DriveConstants.kChassisWheelCircumferenceMeters;
+        * DriveConstants.kChassisWheelCircumferenceMeters;
   }
 
   public double getDriveDistanceMeters() {
@@ -258,7 +277,7 @@ public class SwerveDriveModule {
     // it's already done in the TalonFX configuration
     // This assumes DRIVE_GEAR_RATIO defines motor rotations per wheel rotation.
     return mDriveMotor.getPosition().getValueAsDouble()
-      * DriveConstants.kChassisWheelCircumferenceMeters;
+        * DriveConstants.kChassisWheelCircumferenceMeters;
   }
 
   public double getAzimuthAngleRotations() {
@@ -273,9 +292,7 @@ public class SwerveDriveModule {
    */
   public SwerveModuleState getState() {
     return new SwerveModuleState(
-        getDriveVelocityMs(),
-        Rotation2d.fromRotations(getAzimuthAngleRotations())
-    );
+        getDriveVelocityMs(), Rotation2d.fromRotations(getAzimuthAngleRotations()));
   }
 
   /**
@@ -285,9 +302,7 @@ public class SwerveDriveModule {
   public SwerveModulePosition getPosition() {
 
     return new SwerveModulePosition(
-        getDriveDistanceMeters(),
-        Rotation2d.fromRotations(getAzimuthAngleRotations())
-    );
+        getDriveDistanceMeters(), Rotation2d.fromRotations(getAzimuthAngleRotations()));
   }
 
   /**

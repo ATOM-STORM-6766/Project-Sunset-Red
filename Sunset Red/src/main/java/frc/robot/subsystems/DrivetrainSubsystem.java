@@ -56,11 +56,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     mKinematics =
         new SwerveDriveKinematics(
-            mSwerveModules[0].getTranslationToRobotCenter(), 
+            mSwerveModules[0].getTranslationToRobotCenter(),
             mSwerveModules[1].getTranslationToRobotCenter(),
-            mSwerveModules[2].getTranslationToRobotCenter(), 
-            mSwerveModules[3].getTranslationToRobotCenter()
-        );
+            mSwerveModules[2].getTranslationToRobotCenter(),
+            mSwerveModules[3].getTranslationToRobotCenter());
 
     mEstimator =
         new SwerveDrivePoseEstimator(
@@ -70,7 +69,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new Pose2d(),
             VecBuilder.fill(0.1, 0.1, 0.1),
             VecBuilder.fill(0.5, 0.5, 0.5)); // adjust for need (vision-related)
-    
+
     initLogEntry();
   }
 
@@ -186,11 +185,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public ChassisSpeeds getChassisSpeeds() {
     return mKinematics.toChassisSpeeds(
-      mSwerveModules[0].getState(),
-      mSwerveModules[1].getState(),
-      mSwerveModules[2].getState(),
-      mSwerveModules[3].getState()
-    );
+        mSwerveModules[0].getState(),
+        mSwerveModules[1].getState(),
+        mSwerveModules[2].getState(),
+        mSwerveModules[3].getState());
   }
 
   /**
