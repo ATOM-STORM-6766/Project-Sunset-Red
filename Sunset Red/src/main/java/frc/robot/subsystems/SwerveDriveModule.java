@@ -44,18 +44,6 @@ public class SwerveDriveModule {
   private final VoltageOut azimuthVolt = new VoltageOut(0);
 
   // logEntries
-  private BooleanLogEntry zeroedLog;
-  private DoubleLogEntry driveVelocityMsLog;
-  private DoubleLogEntry driveVelocityTargetMsLog;
-  private DoubleLogEntry driveVelocityErrorMsLog;
-  private DoubleLogEntry driveCurrentAmpLog;
-  private DoubleLogEntry driveAppliedVoltLog;
-  private DoubleLogEntry azimuthAngleDegLog;
-  private DoubleLogEntry azimuthAngleTargetDegLog;
-  private DoubleLogEntry azimuthAngleErrorDegLog;
-  private DoubleLogEntry azimuthVelocityRpsLog;
-  private DoubleLogEntry azimuthCurrentAmpLog;
-  private DoubleLogEntry azimuthAppliedVoltLog;
 
   public SwerveDriveModule(SwerveModuleConfig config) {
     mDriveMotor = new TalonFX(config.driveID);
@@ -103,18 +91,6 @@ public class SwerveDriveModule {
             .getVelocity()
             .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
-        "swerve azimuth current",
-        mAzimuthMotor
-            .getTorqueCurrent()
-            .setUpdateFrequency(
-                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
-    Util.checkReturn(
-        "swerve azimuth voltage",
-        mAzimuthMotor
-            .getMotorVoltage()
-            .setUpdateFrequency(
-                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
-    Util.checkReturn(
         "swerve azimuth canbus",
         mAzimuthMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
 
@@ -154,22 +130,21 @@ public class SwerveDriveModule {
             .getVelocity()
             .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
     Util.checkReturn(
-        "swerve drive current",
-        mDriveMotor
-            .getTorqueCurrent()
-            .setUpdateFrequency(
-                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
-    Util.checkReturn(
-        "swerve drive current",
-        mDriveMotor
-            .getMotorVoltage()
-            .setUpdateFrequency(
-                DebugConstants.kDefaultUpdateFreq, DebugConstants.kLongCANTimeoutSec));
-    Util.checkReturn(
         "swerve drive canbus",
         mDriveMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
 
     mDriveMotor.setPosition(0);
+  }
+
+  private double azimuthErr() {
+    double errrot = azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble();
+    // round to [-180, 180]
+    double errdeg = 360.0 * (errrot - Math.floor(errrot));
+    if (errdeg > 180.0) {
+      errdeg -= 360.0;
+    }
+
+    return errdeg;
   }
 
   public void initSendable(SendableBuilder builder, String namePrefix) {
@@ -186,7 +161,7 @@ public class SwerveDriveModule {
         name + "/AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
     builder.addDoubleProperty(
         name + "/AzimuthErrorDeg",
-        () -> 360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()),
+        () -> azimuthErr(),
         null);
   }
 
@@ -194,38 +169,11 @@ public class SwerveDriveModule {
     final String name = namePrefix + "/" + mConfig.corner.name;
 
     DataLog log = DataLogManager.getLog();
-    zeroedLog = new BooleanLogEntry(log, name + "/zeroed");
-    driveVelocityMsLog = new DoubleLogEntry(log, name + "/driveVelocityMs");
-    driveVelocityTargetMsLog = new DoubleLogEntry(log, name + "/driveVelocityTargetMs");
-    driveVelocityErrorMsLog = new DoubleLogEntry(log, name + "/driveVelocityErrorMs");
-    driveCurrentAmpLog = new DoubleLogEntry(log, name + "/driveCurrentAmp");
-    driveAppliedVoltLog = new DoubleLogEntry(log, name + "/driveAppliedVolt");
-    azimuthAngleDegLog = new DoubleLogEntry(log, name + "/azimuthAngleDeg");
-    azimuthAngleTargetDegLog = new DoubleLogEntry(log, name + "/azimuthAngleTargetDeg");
-    azimuthAngleErrorDegLog = new DoubleLogEntry(log, name + "/azimuthAngleErrorDeg");
-    azimuthVelocityRpsLog = new DoubleLogEntry(log, name + "/azimuthVelocityRps");
-    azimuthCurrentAmpLog = new DoubleLogEntry(log, name + "/azimuthCurrentAmp");
-    azimuthAppliedVoltLog = new DoubleLogEntry(log, name + "/azimuthAppliedVolt");
+    // logEntries construct here
   }
 
   public void updateLogEntry() {
-    zeroedLog.append(isZeroed);
-    driveVelocityMsLog.append(getDriveVelocityMs());
-    driveVelocityTargetMsLog.append(
-        driveVelocity.Velocity * DriveConstants.kChassisWheelCircumferenceMeters);
-    driveVelocityErrorMsLog.append(
-        DriveConstants.kChassisWheelCircumferenceMeters
-            * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()));
-    driveCurrentAmpLog.append(mDriveMotor.getTorqueCurrent().getValueAsDouble());
-    driveAppliedVoltLog.append(mDriveMotor.getMotorVoltage().getValueAsDouble());
-    azimuthAngleDegLog.append(getAzimuthAngleRotations() * 360.0);
-    azimuthAngleTargetDegLog.append(
-        (azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360.0);
-    azimuthAngleErrorDegLog.append(
-        360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()));
-    azimuthVelocityRpsLog.append(mAzimuthMotor.getVelocity().getValueAsDouble());
-    azimuthCurrentAmpLog.append(mAzimuthMotor.getTorqueCurrent().getValueAsDouble());
-    azimuthAppliedVoltLog.append(mAzimuthMotor.getMotorVoltage().getValueAsDouble());
+    // logEntries append here
   }
 
   /**
