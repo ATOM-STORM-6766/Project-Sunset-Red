@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.Pigeon2Configuration;
-import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,7 +28,7 @@ import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-  private final Pigeon2 mPigeon;
+  private final PigeonIMU mPigeon;
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
 
@@ -49,9 +48,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
    */
   public DrivetrainSubsystem() {
 
-    mPigeon = new Pigeon2(DriveConstants.kPigeonPort);
-    mPigeon.getConfigurator().apply(new Pigeon2Configuration());
-    mPigeon.setYaw(0);
+    mPigeon = new PigeonIMU(DriveConstants.kPigeonPort);
+    mPigeon.configFactoryDefault();
+    // mPigeon.setYaw(0);
 
     mSwerveModules =
         new SwerveDriveModule[] {
@@ -73,7 +72,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mEstimator =
         new SwerveDrivePoseEstimator(
             mKinematics,
-            new Rotation2d(),
+            getGyroYaw(),
             getModulePositions(),
             new Pose2d(),
             VecBuilder.fill(0.1, 0.1, 0.1),
@@ -86,9 +85,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
 
-    builder.addDoubleProperty(".PoseXMeter", () -> getPose().getX(), null);
-    builder.addDoubleProperty(".PoseYMeter", () -> getPose().getY(), null);
-    builder.addDoubleProperty(".PoseAngleDegree", () -> getPose().getRotation().getDegrees(), null);
+    builder.addDoubleProperty("PoseXMeter", () -> getPose().getX(), null);
+    builder.addDoubleProperty("PoseYMeter", () -> getPose().getY(), null);
+    builder.addDoubleProperty("PoseAngleDegree", () -> getPose().getRotation().getDegrees(), null);
 
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
@@ -239,7 +238,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @return the yaw angle of the gyro
    */
   public Rotation2d getGyroYaw() {
-    return Rotation2d.fromDegrees(mPigeon.getYaw().getValue());
+    return Rotation2d.fromDegrees(mPigeon.getFusedHeading());
   }
 
   @Override
@@ -268,15 +267,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public Command runZeroingCommand() {
     Command ret =
         new ParallelCommandGroup(
-                runSingleModuleZeroing(mSwerveModules[0]),
-                runSingleModuleZeroing(mSwerveModules[1]),
-                runSingleModuleZeroing(mSwerveModules[2]),
-                runSingleModuleZeroing(mSwerveModules[3]))
-            .unless(this::allModuleZeroed)
-            .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
-
+            runSingleModuleZeroing(mSwerveModules[0]),
+            runSingleModuleZeroing(mSwerveModules[1]),
+            runSingleModuleZeroing(mSwerveModules[2]),
+            runSingleModuleZeroing(mSwerveModules[3])
+        );
     ret.addRequirements(this);
-    return ret;
+    ret.setName("ZeroingCommand");
+
+    return ret.unless(this::allModuleZeroed)
+        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
   }
 
   private boolean allModuleZeroed() {

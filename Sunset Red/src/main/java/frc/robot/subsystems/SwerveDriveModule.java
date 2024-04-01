@@ -173,19 +173,19 @@ public class SwerveDriveModule {
   }
 
   public void initSendable(SendableBuilder builder, String namePrefix) {
-    final String name = "." + mConfig.corner.name;
-    builder.addBooleanProperty(name + ".isZeroed", () -> isZeroed, null);
-    builder.addDoubleProperty(name + ".VelocityMs", () -> getDriveVelocityMs(), null);
+    final String name = "/" + mConfig.corner.name;
+    builder.addBooleanProperty(name + "/isZeroed", () -> isZeroed, null);
+    builder.addDoubleProperty(name + "/VelocityMs", () -> getDriveVelocityMs(), null);
     builder.addDoubleProperty(
-        name + ".VelocityErrorMs",
+        name + "/VelocityErrorMs",
         () ->
             DriveConstants.kChassisWheelCircumferenceMeters
                 * (driveVelocity.Velocity - mDriveMotor.getVelocity().getValueAsDouble()),
         null);
     builder.addDoubleProperty(
-        name + ".AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
+        name + "/AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
     builder.addDoubleProperty(
-        name + ".AzimuthErrorDeg",
+        name + "/AzimuthErrorDeg",
         () -> 360.0 * (azimuthPosition.Position - mAzimuthMotor.getPosition().getValueAsDouble()),
         null);
   }
@@ -319,7 +319,7 @@ public class SwerveDriveModule {
   }
 
   public boolean checkLightGate() {
-    return mLightGate.get(); // depend on the connection + -
+    return !mLightGate.get(); // depend on the connection + -
   }
 
   /**
