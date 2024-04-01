@@ -27,6 +27,9 @@ public class RobotContainer {
   /* Subsystems */
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
 
+  /* pre-constructed commands */
+  private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     sDrivetrainSubsystem.setDefaultCommand(
@@ -79,6 +82,6 @@ public class RobotContainer {
   }
 
   public void checkDrivetrainZeroing() {
-    sDrivetrainSubsystem.runZeroingCommand().schedule();
+    mZeroingCommand.schedule();
   }
 }
