@@ -257,6 +257,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   private Command runSingleModuleZeroing(SwerveDriveModule module) {
+    // [BEAUTIFUL] this does the thing as you read
     return new SequentialCommandGroup(
             Commands.runOnce(module::startZeroing),
             new WaitUntilCommand(module::checkLightGate),
@@ -266,16 +267,20 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public Command runZeroingCommand() {
     Command ret =
+    // zeroing process: run parallel for 4 modules
         new ParallelCommandGroup(
             runSingleModuleZeroing(mSwerveModules[0]),
             runSingleModuleZeroing(mSwerveModules[1]),
             runSingleModuleZeroing(mSwerveModules[2]),
             runSingleModuleZeroing(mSwerveModules[3]));
+    // ADD REQUIREMENT before anything else
     ret.addRequirements(this);
+    // run unless already zeroed
+    ret = ret.unless(this::allModuleZeroed);
     ret.setName("ZeroingCommand");
 
-    return ret.unless(this::allModuleZeroed)
-        .withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    // decorate with no interruption
+    return ret.withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
   }
 
   private boolean allModuleZeroed() {
