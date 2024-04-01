@@ -267,7 +267,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public Command runZeroingCommand() {
     Command ret =
-    // zeroing process: run parallel for 4 modules
+        // zeroing process: run parallel for 4 modules
         new ParallelCommandGroup(
             runSingleModuleZeroing(mSwerveModules[0]),
             runSingleModuleZeroing(mSwerveModules[1]),

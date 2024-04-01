@@ -155,10 +155,7 @@ public class SwerveDriveModule {
         null);
     builder.addDoubleProperty(
         name + "/AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
-    builder.addDoubleProperty(
-        name + "/AzimuthErrorDeg",
-        () -> azimuthErr(),
-        null);
+    builder.addDoubleProperty(name + "/AzimuthErrorDeg", () -> azimuthErr(), null);
   }
 
   public void initLogEntry(String namePrefix) {
