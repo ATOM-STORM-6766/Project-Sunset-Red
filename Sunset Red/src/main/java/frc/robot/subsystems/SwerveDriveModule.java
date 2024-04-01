@@ -12,11 +12,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.datalog.BooleanLogEntry;
-import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DebugConstants;
 import frc.robot.Constants.DriveConstants;
@@ -166,9 +162,6 @@ public class SwerveDriveModule {
   }
 
   public void initLogEntry(String namePrefix) {
-    final String name = namePrefix + "/" + mConfig.corner.name;
-
-    DataLog log = DataLogManager.getLog();
     // logEntries construct here
   }
 
