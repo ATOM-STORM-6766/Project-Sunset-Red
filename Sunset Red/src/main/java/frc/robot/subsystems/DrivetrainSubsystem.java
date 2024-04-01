@@ -270,8 +270,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             runSingleModuleZeroing(mSwerveModules[0]),
             runSingleModuleZeroing(mSwerveModules[1]),
             runSingleModuleZeroing(mSwerveModules[2]),
-            runSingleModuleZeroing(mSwerveModules[3])
-        );
+            runSingleModuleZeroing(mSwerveModules[3]));
     ret.addRequirements(this);
     ret.setName("ZeroingCommand");
 
