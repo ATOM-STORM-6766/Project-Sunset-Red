@@ -40,7 +40,7 @@ public class RobotContainer {
             () ->
                 (driverController.getLeftTriggerAxis() - driverController.getRightTriggerAxis())
                     * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
-            () -> driverController.rightBumper().getAsBoolean()));
+            () -> driverController.getHID().getRightBumper()));
 
     configureBindings();
 
