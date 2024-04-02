@@ -43,30 +43,27 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
   private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
 
-  private class EstimatorUpdateThread extends Thread{
+  private class EstimatorUpdateThread extends Thread {
     private boolean running = true;
 
     @Override
-    public void run(){
-      while(running){
+    public void run() {
+      while (running) {
         // Synchronize access to gyro yaw and module positions
-        synchronized(mPigeon){
-          synchronized(mSwerveModules){
+        synchronized (mPigeon) {
+          synchronized (mSwerveModules) {
             mEstimator.update(getGyroYaw(), getModulePositions());
           }
         }
-
       }
     }
 
-    public void terminate(){
+    public void terminate() {
       running = false;
-    
     }
   }
 
   private final EstimatorUpdateThread mEstimatorUpdateThread = new EstimatorUpdateThread();
-  
 
   /*
    * Constructor for DrivetrainSubsystem

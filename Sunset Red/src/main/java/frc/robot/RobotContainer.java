@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -36,14 +35,12 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     sDrivetrainSubsystem.setDefaultCommand(
-            new DefaultDriveCommand(
-                sDrivetrainSubsystem,
-                () -> driverController.getDriveVector(driverController.getSlowMode()).getX(),
-                () -> driverController.getDriveVector(driverController.getSlowMode()).getY(),
-                () -> driverController.getRawChangeRate(),
-                () -> driverController.getSlowMode()
-            )
-        );
+        new DefaultDriveCommand(
+            sDrivetrainSubsystem,
+            () -> driverController.getDriveVector(driverController.getSlowMode()).getX(),
+            () -> driverController.getDriveVector(driverController.getSlowMode()).getY(),
+            () -> driverController.getRawChangeRate(),
+            () -> driverController.getSlowMode()));
 
     configureBindings();
 
@@ -73,8 +70,8 @@ public class RobotContainer {
      */
     driverController.start().onTrue(new InstantCommand(() -> sDrivetrainSubsystem.zeroHeading()));
     new Trigger(() -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red)
-            .onTrue(new InstantCommand(() -> driverController.setTransDir(true)))
-            .onFalse(new InstantCommand(() -> driverController.setTransDir(false)));
+        .onTrue(new InstantCommand(() -> driverController.setTransDir(true)))
+        .onFalse(new InstantCommand(() -> driverController.setTransDir(false)));
   }
 
   /**
