@@ -43,6 +43,31 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
   private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
 
+  private class EstimatorUpdateThread extends Thread{
+    private boolean running = true;
+
+    @Override
+    public void run(){
+      while(running){
+        // Synchronize access to gyro yaw and module positions
+        synchronized(mPigeon){
+          synchronized(mSwerveModules){
+            mEstimator.update(getGyroYaw(), getModulePositions());
+          }
+        }
+
+      }
+    }
+
+    public void terminate(){
+      running = false;
+    
+    }
+  }
+
+  private final EstimatorUpdateThread mEstimatorUpdateThread = new EstimatorUpdateThread();
+  
+
   /*
    * Constructor for DrivetrainSubsystem
    */
@@ -79,6 +104,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
             VecBuilder.fill(0.5, 0.5, 0.5)); // adjust for need (vision-related)
 
     initLogEntry();
+
+    // start the thread
+    mEstimatorUpdateThread.start();
   }
 
   @Override
@@ -243,7 +271,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    mEstimator.update(getGyroYaw(), getModulePositions());
     mKinematicSpeed =
         mKinematics.toChassisSpeeds(
             mSwerveModules[0].getState(),

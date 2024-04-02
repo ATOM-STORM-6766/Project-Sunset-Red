@@ -4,13 +4,16 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.DriveConstants;
+
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
 /**
@@ -23,7 +26,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
   // * Controllers */
-  private final CommandXboxController driverController = new CommandXboxController(0);
+  private final CommandSwerveController driverController = new CommandSwerveController(0);
   /* Subsystems */
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
 
@@ -33,14 +36,14 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     sDrivetrainSubsystem.setDefaultCommand(
-        new DefaultDriveCommand(
-            sDrivetrainSubsystem,
-            () -> -driverController.getLeftY() * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
-            () -> -driverController.getLeftX() * DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
-            () ->
-                (driverController.getLeftTriggerAxis() - driverController.getRightTriggerAxis())
-                    * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
-            () -> driverController.getHID().getRightBumper()));
+            new DefaultDriveCommand(
+                sDrivetrainSubsystem,
+                () -> driverController.getDriveVector(driverController.getSlowMode()).getX(),
+                () -> driverController.getDriveVector(driverController.getSlowMode()).getY(),
+                () -> driverController.getRawChangeRate(),
+                () -> driverController.getSlowMode()
+            )
+        );
 
     configureBindings();
 
@@ -69,6 +72,9 @@ public class RobotContainer {
      * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
     driverController.start().onTrue(new InstantCommand(() -> sDrivetrainSubsystem.zeroHeading()));
+    new Trigger(() -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red)
+            .onTrue(new InstantCommand(() -> driverController.setTransDir(true)))
+            .onFalse(new InstantCommand(() -> driverController.setTransDir(false)));
   }
 
   /**
