@@ -128,7 +128,7 @@ public final class Constants {
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
   }
 
-  public static final class DebugConstants {
+  public static final class OdometryConstants {
     public static final double kLongCANTimeoutSec = 0.1;
     // Update Freq (Hz): minimum 4Hz, maximum 1000Hz
     public static final int kOdomUpdateFreq = 100; // signal for odometry

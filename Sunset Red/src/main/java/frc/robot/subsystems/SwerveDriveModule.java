@@ -14,7 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
-import frc.robot.Constants.DebugConstants;
+import frc.robot.Constants.OdometryConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.utils.Util;
@@ -74,21 +74,21 @@ public class SwerveDriveModule {
 
     Util.checkReturn(
         "swerve azimuth",
-        mAzimuthMotor.getConfigurator().apply(mAzimuthConfigs, DebugConstants.kLongCANTimeoutSec));
+        mAzimuthMotor.getConfigurator().apply(mAzimuthConfigs, OdometryConstants.kLongCANTimeoutSec));
     mAzimuthMotor.setControl(new NeutralOut());
     Util.checkReturn(
         "swerve azimuth position",
         mAzimuthMotor
             .getPosition()
-            .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(OdometryConstants.kOdomUpdateFreq, OdometryConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve azimuth velocity",
         mAzimuthMotor
             .getVelocity()
-            .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(OdometryConstants.kOdomUpdateFreq, OdometryConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve azimuth canbus",
-        mAzimuthMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
+        mAzimuthMotor.optimizeBusUtilization(OdometryConstants.kLongCANTimeoutSec));
 
     /* !todo Add logging and debugging info here */
 
@@ -113,21 +113,21 @@ public class SwerveDriveModule {
     mDriveConfig.Slot0.kD = mConfig.DRIVE_KD;
     Util.checkReturn(
         "swerve drive",
-        mDriveMotor.getConfigurator().apply(mDriveConfig, DebugConstants.kLongCANTimeoutSec));
+        mDriveMotor.getConfigurator().apply(mDriveConfig, OdometryConstants.kLongCANTimeoutSec));
     mDriveMotor.setControl(new NeutralOut());
     Util.checkReturn(
         "swerve drive position",
         mDriveMotor
             .getPosition()
-            .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(OdometryConstants.kOdomUpdateFreq, OdometryConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve drive velocity",
         mDriveMotor
             .getVelocity()
-            .setUpdateFrequency(DebugConstants.kOdomUpdateFreq, DebugConstants.kLongCANTimeoutSec));
+            .setUpdateFrequency(OdometryConstants.kOdomUpdateFreq, OdometryConstants.kLongCANTimeoutSec));
     Util.checkReturn(
         "swerve drive canbus",
-        mDriveMotor.optimizeBusUtilization(DebugConstants.kLongCANTimeoutSec));
+        mDriveMotor.optimizeBusUtilization(OdometryConstants.kLongCANTimeoutSec));
 
     mDriveMotor.setPosition(0);
   }
@@ -284,4 +284,5 @@ public class SwerveDriveModule {
   public Translation2d getTranslationToRobotCenter() {
     return mConfig.corner.modulePosition;
   }
+
 }
