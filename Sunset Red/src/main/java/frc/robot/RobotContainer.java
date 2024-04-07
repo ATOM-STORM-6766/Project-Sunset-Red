@@ -37,16 +37,12 @@ public class RobotContainer {
             sDrivetrainSubsystem,
             () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
             () -> driverController.getDriveRotationAngle(),
-            () -> driverController.isSlowMode()
-        )
-    );
+            () -> driverController.isSlowMode()));
 
     configureBindings();
 
     SmartDashboard.putData(sDrivetrainSubsystem);
-}
-
-
+  }
 
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -69,10 +65,14 @@ public class RobotContainer {
      * // cancelling on release.
      * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
-    driverController.start().onTrue(new InstantCommand(() -> {
-      sDrivetrainSubsystem.zeroHeading();
-      driverController.setTranslationDirection(true);
-  }));
+    driverController
+        .start()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  sDrivetrainSubsystem.zeroHeading();
+                  driverController.setTranslationDirection(true);
+                }));
   }
 
   /**

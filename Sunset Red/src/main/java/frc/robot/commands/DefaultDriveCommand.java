@@ -3,7 +3,6 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
-
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -50,10 +49,7 @@ public class DefaultDriveCommand extends Command {
 
     Translation2d driveVector = driveVectorSupplier.get();
     angularVelocity = angularVelocitySupplier.get().orElse(0.0);
-    mDrivetrainSubsystem.drive(
-        driveVector,
-        angularVelocity,
-        !robotCentricSupplier.getAsBoolean());
+    mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
 
   @Override
