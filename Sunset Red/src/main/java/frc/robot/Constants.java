@@ -19,7 +19,6 @@ import frc.robot.config.SwerveModuleConfig.ModuleCorner;
  */
 public final class Constants {
   public static final double kPeriodicDt = TimedRobot.kDefaultPeriod; // seconds
-  public static final double kPeriodicOdom = 0.01; // seconds
 
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;

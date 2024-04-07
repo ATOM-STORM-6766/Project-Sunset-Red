@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.NeutralOut;
@@ -289,5 +290,23 @@ public class SwerveDriveModule {
 
   public Translation2d getTranslationToRobotCenter() {
     return mConfig.corner.modulePosition;
+  }
+    public StatusSignal<Double> getAzimuthPositionSignal() {
+      return mAzimuthMotor.getPosition();
+  }
+
+  public StatusSignal<Double> getAzimuthVelocitySignal() {
+      return mAzimuthMotor.getVelocity();
+  }
+
+  public StatusSignal<Double> getDrivePositionSignal() {
+      return mDriveMotor.getPosition();
+  }
+
+  public StatusSignal<Double> getDriveVelocitySignal() {
+      return mDriveMotor.getVelocity();
+  }
+  public double getAzimuthOffsetRotations(){
+    return mConfig.azimuthEncoderOffsetRotation;
   }
 }
