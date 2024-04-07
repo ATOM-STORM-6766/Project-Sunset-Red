@@ -3,26 +3,20 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
+
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 public class DefaultDriveCommand extends Command {
   private final DrivetrainSubsystem mDrivetrainSubsystem;
 
-  /*
-   * Geting the x velocity from the product of the joysticks (Left Y) and the max velocity
-   */
-  private final DoubleSupplier xVelocitySupplier;
-
-  /*
-   * Getting y velocity from the product of the joysticks (Left X) and the max velocity
-   */
-  private final DoubleSupplier yVelocitySupplier;
+  private final Supplier<Translation2d> driveVectorSupplier;
 
   /*
    * Getting the angular velocity from the product of the joysticks (Right X) and the max angular velocity
    */
-  private final DoubleSupplier angularVelocitySupplier;
+  private final Supplier<Optional<Double>> angularVelocitySupplier;
 
   private final BooleanSupplier robotCentricSupplier;
 
@@ -39,13 +33,11 @@ public class DefaultDriveCommand extends Command {
    */
   public DefaultDriveCommand(
       DrivetrainSubsystem drivetrainSubsystem,
-      DoubleSupplier xVelocitySupplier,
-      DoubleSupplier yVelocitySupplier,
-      DoubleSupplier angularVelocitySupplier,
+      Supplier<Translation2d> driveVectorSupplier,
+      Supplier<Optional<Double>> angularVelocitySupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
-    this.xVelocitySupplier = xVelocitySupplier;
-    this.yVelocitySupplier = yVelocitySupplier;
+    this.driveVectorSupplier = driveVectorSupplier;
     this.angularVelocitySupplier = angularVelocitySupplier;
     this.robotCentricSupplier = robotCentricSupplier;
     addRequirements(drivetrainSubsystem); // required for default command
@@ -54,15 +46,12 @@ public class DefaultDriveCommand extends Command {
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    double xVelocity;
-    double yVelocity;
     double angularVelocity;
 
-    xVelocity = xVelocitySupplier.getAsDouble();
-    yVelocity = yVelocitySupplier.getAsDouble();
-    angularVelocity = angularVelocitySupplier.getAsDouble();
+    Translation2d driveVector = driveVectorSupplier.get();
+    angularVelocity = angularVelocitySupplier.get().orElse(0.0);
     mDrivetrainSubsystem.drive(
-        new Translation2d(xVelocity, yVelocity),
+        driveVector,
         angularVelocity,
         !robotCentricSupplier.getAsBoolean());
   }

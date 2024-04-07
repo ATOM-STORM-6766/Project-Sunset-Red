@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -37,15 +35,18 @@ public class RobotContainer {
     sDrivetrainSubsystem.setDefaultCommand(
         new DefaultDriveCommand(
             sDrivetrainSubsystem,
-            () -> driverController.getDriveVector(driverController.getSlowMode()).getX(),
-            () -> driverController.getDriveVector(driverController.getSlowMode()).getY(),
-            () -> driverController.getRawChangeRate(),
-            () -> driverController.getSlowMode()));
+            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+            () -> driverController.getDriveRotationAngle(),
+            () -> driverController.isSlowMode()
+        )
+    );
 
     configureBindings();
 
     SmartDashboard.putData(sDrivetrainSubsystem);
-  }
+}
+
+
 
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -68,10 +69,10 @@ public class RobotContainer {
      * // cancelling on release.
      * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
-    driverController.start().onTrue(new InstantCommand(() -> sDrivetrainSubsystem.zeroHeading()));
-    new Trigger(() -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red)
-        .onTrue(new InstantCommand(() -> driverController.setTransDir(true)))
-        .onFalse(new InstantCommand(() -> driverController.setTransDir(false)));
+    driverController.start().onTrue(new InstantCommand(() -> {
+      sDrivetrainSubsystem.zeroHeading();
+      driverController.setTranslationDirection(true);
+  }));
   }
 
   /**
