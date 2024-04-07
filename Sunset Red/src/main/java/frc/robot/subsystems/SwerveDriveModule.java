@@ -291,22 +291,24 @@ public class SwerveDriveModule {
   public Translation2d getTranslationToRobotCenter() {
     return mConfig.corner.modulePosition;
   }
-    public StatusSignal<Double> getAzimuthPositionSignal() {
-      return mAzimuthMotor.getPosition();
+
+  public StatusSignal<Double> getAzimuthPositionSignal() {
+    return mAzimuthMotor.getPosition();
   }
 
   public StatusSignal<Double> getAzimuthVelocitySignal() {
-      return mAzimuthMotor.getVelocity();
+    return mAzimuthMotor.getVelocity();
   }
 
   public StatusSignal<Double> getDrivePositionSignal() {
-      return mDriveMotor.getPosition();
+    return mDriveMotor.getPosition();
   }
 
   public StatusSignal<Double> getDriveVelocitySignal() {
-      return mDriveMotor.getVelocity();
+    return mDriveMotor.getVelocity();
   }
-  public double getAzimuthOffsetRotations(){
+
+  public double getAzimuthOffsetRotations() {
     return mConfig.azimuthEncoderOffsetRotation;
   }
 }

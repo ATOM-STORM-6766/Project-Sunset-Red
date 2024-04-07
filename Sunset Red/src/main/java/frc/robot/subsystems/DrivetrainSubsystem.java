@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -59,36 +58,40 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mPigeon.configFactoryDefault();
     // mPigeon.setYaw(0);
 
-    mSwerveModules = new SwerveDriveModule[] {
-        new SwerveDriveModule(SwerveModuleConstants.FL),
-        new SwerveDriveModule(SwerveModuleConstants.FR),
-        new SwerveDriveModule(SwerveModuleConstants.BR),
-        new SwerveDriveModule(SwerveModuleConstants.BL)
-    };
+    mSwerveModules =
+        new SwerveDriveModule[] {
+          new SwerveDriveModule(SwerveModuleConstants.FL),
+          new SwerveDriveModule(SwerveModuleConstants.FR),
+          new SwerveDriveModule(SwerveModuleConstants.BR),
+          new SwerveDriveModule(SwerveModuleConstants.BL)
+        };
 
-    mKinematics = new SwerveDriveKinematics(
-        mSwerveModules[0].getTranslationToRobotCenter(),
-        mSwerveModules[1].getTranslationToRobotCenter(),
-        mSwerveModules[2].getTranslationToRobotCenter(),
-        mSwerveModules[3].getTranslationToRobotCenter());
+    mKinematics =
+        new SwerveDriveKinematics(
+            mSwerveModules[0].getTranslationToRobotCenter(),
+            mSwerveModules[1].getTranslationToRobotCenter(),
+            mSwerveModules[2].getTranslationToRobotCenter(),
+            mSwerveModules[3].getTranslationToRobotCenter());
 
     mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(0.5, 0.5, Constants.kPeriodicDt);
 
-    mEstimator = new SwerveDrivePoseEstimator(
-        mKinematics,
-        getGyroYaw(),
-        getModulePositions(),
-        new Pose2d(),
-        VecBuilder.fill(0.1, 0.1, 0.1),
-        VecBuilder.fill(0.5, 0.5, 0.5)); // adjust for need (vision-related)
+    mEstimator =
+        new SwerveDrivePoseEstimator(
+            mKinematics,
+            getGyroYaw(),
+            getModulePositions(),
+            new Pose2d(),
+            VecBuilder.fill(0.1, 0.1, 0.1),
+            VecBuilder.fill(0.5, 0.5, 0.5)); // adjust for need (vision-related)
 
-    mNotifier = new Notifier(
-        () -> {
-          synchronized (mEstimator) {
-            updateOdom();
-          }
-        });
-    mNotifier.startPeriodic(1.0/OdometryConstants.kOdomUpdateFreq);
+    mNotifier =
+        new Notifier(
+            () -> {
+              synchronized (mEstimator) {
+                updateOdom();
+              }
+            });
+    mNotifier.startPeriodic(1.0 / OdometryConstants.kOdomUpdateFreq);
 
     initLogEntry();
   }
@@ -134,37 +137,31 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Drives the robot using the specified translation, rotation, and field-centric
-   * mode.
+   * Drives the robot using the specified translation, rotation, and field-centric mode.
    *
-   * @param translation  the translation vector representing the robot's desired
-   *                     movement in the
-   *                     field coordinate system
-   * @param rotation     the robot's desired rotation rate in radians per second
-   * @param fieldCentric a boolean indicating whether the robot should drive in
-   *                     field-centric mode
-   *                     or not
+   * @param translation the translation vector representing the robot's desired movement in the
+   *     field coordinate system
+   * @param rotation the robot's desired rotation rate in radians per second
+   * @param fieldCentric a boolean indicating whether the robot should drive in field-centric mode
+   *     or not
    */
   public void drive(Translation2d translation, double rotation, boolean fieldCentric) {
-    SwerveModuleState[] swerveModuleStates = mKinematics.toSwerveModuleStates(
-        fieldCentric
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                translation.getX(), translation.getY(), rotation, getHeading())
-            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
+    SwerveModuleState[] swerveModuleStates =
+        mKinematics.toSwerveModuleStates(
+            fieldCentric
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                    translation.getX(), translation.getY(), rotation, getHeading())
+                : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
     setModuleStates(swerveModuleStates);
   }
 
   /**
-   * Sets the desired states for each swerve module in the drivetrain. The desired
-   * states are
-   * specified as an array of SwerveModuleState objects. This method desaturates
-   * the wheel speeds
-   * based on the maximum physical speed and then sets the desired state for each
-   * swerve module.
+   * Sets the desired states for each swerve module in the drivetrain. The desired states are
+   * specified as an array of SwerveModuleState objects. This method desaturates the wheel speeds
+   * based on the maximum physical speed and then sets the desired state for each swerve module.
    *
-   * @param desiredStates an array of SwerveModuleState objects representing the
-   *                      desired states for
-   *                      each swerve module
+   * @param desiredStates an array of SwerveModuleState objects representing the desired states for
+   *     each swerve module
    */
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(
@@ -175,8 +172,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Returns an array of SwerveModuleState objects representing the current state
-   * of each swerve
+   * Returns an array of SwerveModuleState objects representing the current state of each swerve
    * module.
    *
    * @return an array of SwerveModuleState objects
@@ -190,8 +186,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Returns an array of SwerveModulePosition objects representing the positions
-   * of all swerve
+   * Returns an array of SwerveModulePosition objects representing the positions of all swerve
    * modules in the drivetrain.
    *
    * @return an array of SwerveModulePosition objects
@@ -204,7 +199,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return positions;
   }
 
-  private double compensate(StatusSignal<Double> pos_sig, StatusSignal<Double> pos_vel, double ctretime) {
+  private double compensate(
+      StatusSignal<Double> pos_sig, StatusSignal<Double> pos_vel, double ctretime) {
     final double nonCompensatedSignal = pos_sig.getValueAsDouble();
     final double changeInSignal = pos_vel.getValueAsDouble();
     double latency = ctretime - pos_sig.getTimestamp().getTime();
@@ -236,8 +232,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   /**
    * Returns the heading of the drivetrain subsystem.
    *
-   * @return the rotation object representing the heading of the drivetrain
-   *         subsystem
+   * @return the rotation object representing the heading of the drivetrain subsystem
    */
   private Rotation2d getHeading() {
     return getPose().getRotation();
@@ -256,8 +251,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   /**
-   * Resets the heading of the drivetrain subsystem to zero. This method updates
-   * the position
+   * Resets the heading of the drivetrain subsystem to zero. This method updates the position
    * estimator and sets the current pose's rotation to zero.
    */
   public void zeroHeading() {
@@ -281,11 +275,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
 
-    mKinematicSpeed = mKinematics.toChassisSpeeds(
-        mSwerveModules[0].getState(),
-        mSwerveModules[1].getState(),
-        mSwerveModules[2].getState(),
-        mSwerveModules[3].getState());
+    mKinematicSpeed =
+        mKinematics.toChassisSpeeds(
+            mSwerveModules[0].getState(),
+            mSwerveModules[1].getState(),
+            mSwerveModules[2].getState(),
+            mSwerveModules[3].getState());
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
 
     // add logging infomation here
@@ -299,26 +294,28 @@ public class DrivetrainSubsystem extends SubsystemBase {
       double ctretime = Utils.getCurrentTimeSeconds();
       for (int i = 0; i < mSwerveModules.length; i++) {
         SwerveDriveModule module = mSwerveModules[i];
-        double driverot = compensate(module.getDrivePositionSignal(),
-            module.getDriveVelocitySignal(), ctretime);
-        mModulePositions[i].distanceMeters = driverot* DriveConstants.kChassisWheelCircumferenceMeters;;
-        double anglerot = compensate(module.getAzimuthPositionSignal(),
-            module.getAzimuthVelocitySignal(), ctretime);
+        double driverot =
+            compensate(module.getDrivePositionSignal(), module.getDriveVelocitySignal(), ctretime);
+        mModulePositions[i].distanceMeters =
+            driverot * DriveConstants.kChassisWheelCircumferenceMeters;
+        ;
+        double anglerot =
+            compensate(
+                module.getAzimuthPositionSignal(), module.getAzimuthVelocitySignal(), ctretime);
         anglerot = anglerot - module.getAzimuthOffsetRotations();
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot);
       }
 
-      mEstimator.updateWithTime(timestamp,getGyroYaw(), mModulePositions);
+      mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
     }
-
   }
 
   private Command runSingleModuleZeroing(SwerveDriveModule module) {
     // [BEAUTIFUL] this does the thing as you read
     return new SequentialCommandGroup(
-        Commands.runOnce(module::startZeroing),
-        new WaitUntilCommand(module::checkLightGate),
-        Commands.runOnce(module::stopAndCalibrate))
+            Commands.runOnce(module::startZeroing),
+            new WaitUntilCommand(module::checkLightGate),
+            Commands.runOnce(module::stopAndCalibrate))
         .unless(module::getIsZeroed);
   }
 
