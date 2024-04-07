@@ -25,6 +25,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
+
 public class DrivetrainSubsystem extends SubsystemBase {
 
   private final PigeonIMU mPigeon;
@@ -41,7 +42,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private StructLogEntry<Pose2d> mPoseLog;
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
   private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
-  
 
   /*
    * Constructor for DrivetrainSubsystem
@@ -80,7 +80,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     initLogEntry();
   }
-  
 
   @Override
   public void initSendable(SendableBuilder builder) {
