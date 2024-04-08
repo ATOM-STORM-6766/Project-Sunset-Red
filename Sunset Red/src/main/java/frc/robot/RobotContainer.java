@@ -37,6 +37,7 @@ public class RobotContainer {
             sDrivetrainSubsystem,
             () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
             () -> driverController.getDriveRotationAngle(),
+            () -> driverController.getRawRotationRate(),
             () -> driverController.isSlowMode()));
 
     configureBindings();

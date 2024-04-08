@@ -19,6 +19,7 @@ public class DefaultDriveCommand extends Command {
 
   private final BooleanSupplier robotCentricSupplier;
 
+  private final Supplier<Double> rawRotationRateSupplier;
   /**
    * The default drive command constructor
    *
@@ -34,11 +35,13 @@ public class DefaultDriveCommand extends Command {
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
       Supplier<Optional<Double>> angularVelocitySupplier,
+      Supplier<Double> rawRotationRateSupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
     this.angularVelocitySupplier = angularVelocitySupplier;
     this.robotCentricSupplier = robotCentricSupplier;
+    this.rawRotationRateSupplier = rawRotationRateSupplier;
     addRequirements(drivetrainSubsystem); // required for default command
   }
 
@@ -48,7 +51,8 @@ public class DefaultDriveCommand extends Command {
     double angularVelocity;
 
     Translation2d driveVector = driveVectorSupplier.get();
-    angularVelocity = angularVelocitySupplier.get().orElse(0.0);
+    
+    angularVelocity = angularVelocitySupplier.get().orElse(rawRotationRateSupplier.get());
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
 
