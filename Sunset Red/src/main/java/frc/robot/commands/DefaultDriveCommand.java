@@ -51,7 +51,7 @@ public class DefaultDriveCommand extends Command {
     double angularVelocity;
 
     Translation2d driveVector = driveVectorSupplier.get();
-    
+
     angularVelocity = angularVelocitySupplier.get().orElse(rawRotationRateSupplier.get());
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
