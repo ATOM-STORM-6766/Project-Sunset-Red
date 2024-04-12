@@ -65,8 +65,7 @@ public class CommandSwerveController extends CommandXboxController {
     Rotation2d translationAngle = translation.getAngle();
     Rotation2d nearestPole = nearestPole(translationAngle);
 
-    if (Math.abs(translationAngle.minus(nearestPole).getDegrees())
-        < NEAR_POLE_DRIVE_DEGREES) {
+    if (Math.abs(translationAngle.minus(nearestPole).getDegrees()) < NEAR_POLE_DRIVE_DEGREES) {
       translation = new Translation2d(translation.getNorm(), nearestPole);
     }
 
