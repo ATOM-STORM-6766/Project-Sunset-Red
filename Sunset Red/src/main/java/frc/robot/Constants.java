@@ -37,8 +37,8 @@ public final class Constants {
       FL.corner = ModuleCorner.Front_Left;
       FL.invertDrive = InvertedValue.CounterClockwise_Positive;
       FL.invertAzimuth = InvertedValue.CounterClockwise_Positive;
-      FL.DRIVE_KP = 3.5;
-      FL.DRIVE_KI = 1.0;
+      FL.DRIVE_KP = 3.0;
+      FL.DRIVE_KI = 0.0;
       FL.DRIVE_KD = 0.0;
       FL.DRIVE_KF = 1.087;
       FL.AZIMUTH_KP = 60.0;
@@ -55,8 +55,8 @@ public final class Constants {
       FR.corner = ModuleCorner.Front_Right;
       FR.invertDrive = InvertedValue.CounterClockwise_Positive;
       FR.invertAzimuth = InvertedValue.CounterClockwise_Positive;
-      FR.DRIVE_KP = 3.5;
-      FR.DRIVE_KI = 1.0;
+      FR.DRIVE_KP = 3.0;
+      FR.DRIVE_KI = 0.0;
       FR.DRIVE_KD = 0.0;
       FR.DRIVE_KF = 1.087;
       FR.AZIMUTH_KP = 60.0;
@@ -73,8 +73,8 @@ public final class Constants {
       BL.corner = ModuleCorner.Back_Left;
       BL.invertDrive = InvertedValue.Clockwise_Positive;
       BL.invertAzimuth = InvertedValue.CounterClockwise_Positive;
-      BL.DRIVE_KP = 3.5;
-      BL.DRIVE_KI = 1.0;
+      BL.DRIVE_KP = 3.0;
+      BL.DRIVE_KI = 0.0;
       BL.DRIVE_KD = 0.0;
       BL.DRIVE_KF = 1.087;
       BL.AZIMUTH_KP = 60.0;
@@ -91,8 +91,8 @@ public final class Constants {
       BR.corner = ModuleCorner.Back_Right;
       BR.invertDrive = InvertedValue.Clockwise_Positive;
       BR.invertAzimuth = InvertedValue.CounterClockwise_Positive;
-      BR.DRIVE_KP = 3.5;
-      BR.DRIVE_KI = 1.0;
+      BR.DRIVE_KP = 3.0;
+      BR.DRIVE_KI = 0.0;
       BR.DRIVE_KD = 0.0;
       BR.DRIVE_KF = 1.087;
       BR.AZIMUTH_KP = 60.0;
