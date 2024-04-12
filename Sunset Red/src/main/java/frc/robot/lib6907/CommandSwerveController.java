@@ -65,7 +65,7 @@ public class CommandSwerveController extends CommandXboxController {
     Rotation2d translationAngle = translation.getAngle();
     Rotation2d nearestPole = nearestPole(translationAngle);
 
-    if (Math.abs(translationAngle.getDegrees() - nearestPole.getDegrees())
+    if (Math.abs(translationAngle.minus(nearestPole).getDegrees())
         < NEAR_POLE_DRIVE_DEGREES) {
       translation = new Translation2d(translation.getNorm(), nearestPole);
     }
@@ -79,7 +79,7 @@ public class CommandSwerveController extends CommandXboxController {
    * @return An Optional containing the target angle in degrees, or an empty Optional if the
    *     rotation is below the deadband.
    */
-  public Optional<Double> getDriveRotationAngle() {
+  public Optional<Rotation2d> getDriveRotationAngle() {
     double rightY = translationDirectionMultiplier * getRightY();
     double rightX = translationDirectionMultiplier * getRightX();
 
@@ -92,11 +92,10 @@ public class CommandSwerveController extends CommandXboxController {
     Rotation2d rotationAngle = rotationVector.getAngle();
     Rotation2d nearestPole = nearestPole(rotationAngle);
 
-    if (Math.abs(rotationAngle.getDegrees() - nearestPole.getDegrees()) < NEAR_POLE_TURN_DEGREES) {
+    if (Math.abs(rotationAngle.minus(nearestPole).getDegrees()) < NEAR_POLE_TURN_DEGREES) {
       rotationAngle = nearestPole;
     }
-
-    return Optional.of(rotationAngle.getDegrees());
+    return Optional.of(rotationAngle);
   }
 
   /**
