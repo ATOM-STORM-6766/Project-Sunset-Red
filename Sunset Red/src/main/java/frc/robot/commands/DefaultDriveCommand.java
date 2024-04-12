@@ -11,11 +11,9 @@ public class DefaultDriveCommand extends Command {
   private final DrivetrainSubsystem mDrivetrainSubsystem;
 
   private final Supplier<Translation2d> driveVectorSupplier;
-
   /*
    * Getting the angular velocity from the product of the joysticks (Right X) and the max angular velocity
    */
-  private final Supplier<Optional<Double>> angularVelocitySupplier;
 
   private final BooleanSupplier robotCentricSupplier;
 
@@ -28,18 +26,14 @@ public class DefaultDriveCommand extends Command {
    *     max velocity
    * @param yVelocitySupplier Gets the joystick value for the y velocity and multiplies it by the
    *     max velocity
-   * @param angularVelocitySupplier Gets the joystick value for the angular velocity and multiplies
-   *     it by the max angular velocity
    */
   public DefaultDriveCommand(
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
-      Supplier<Optional<Double>> angularVelocitySupplier,
       Supplier<Double> rawRotationRateSupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
-    this.angularVelocitySupplier = angularVelocitySupplier;
     this.robotCentricSupplier = robotCentricSupplier;
     this.rawRotationRateSupplier = rawRotationRateSupplier;
     addRequirements(drivetrainSubsystem); // required for default command
@@ -52,7 +46,8 @@ public class DefaultDriveCommand extends Command {
 
     Translation2d driveVector = driveVectorSupplier.get();
 
-    angularVelocity = angularVelocitySupplier.get().orElse(rawRotationRateSupplier.get());
+    angularVelocity = rawRotationRateSupplier.get();
+
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
 

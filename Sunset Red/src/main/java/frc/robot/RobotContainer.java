@@ -36,7 +36,6 @@ public class RobotContainer {
         new DefaultDriveCommand(
             sDrivetrainSubsystem,
             () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-            () -> driverController.getDriveRotationAngle(),
             () -> driverController.getRawRotationRate(),
             () -> driverController.isSlowMode()));
 
