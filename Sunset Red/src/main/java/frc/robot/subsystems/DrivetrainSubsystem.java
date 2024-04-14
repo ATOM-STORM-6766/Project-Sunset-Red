@@ -160,7 +160,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     } else if (rotation == 0 && lastRotation != 0) {
       mHeadingController.temporarilyDisable();
     }
-    if (goalHeading.isPresent()&&mHeadingController.getState()==SwerveHeadingController.State.On) {
+    if (goalHeading.isPresent()
+        && mHeadingController.getState() == SwerveHeadingController.State.On) {
       mHeadingController.setTarget(goalHeading.get());
     }
     lastRotation = rotation;
@@ -350,7 +351,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             runSingleModuleZeroing(mSwerveModules[3]));
     // ADD REQUIREMENT before anything else
     ret.addRequirements(this);
-    ret = ret.andThen(()-> mHeadingController.setTarget(getHeading()));
+    ret = ret.andThen(() -> mHeadingController.setTarget(getHeading()));
     // run unless already zeroed
     ret = ret.unless(this::allModuleZeroed);
     ret.setName("ZeroingCommand");
