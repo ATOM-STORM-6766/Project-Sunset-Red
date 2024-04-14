@@ -1,5 +1,7 @@
 package frc.robot.commands;
+import java.util.Optional;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -15,7 +17,7 @@ public class DefaultDriveCommand extends Command {
    */
 
   private final BooleanSupplier robotCentricSupplier;
-
+  private final Supplier<Optional<Rotation2d>> goalHeadingSupplier;
   private final Supplier<Double> rawRotationRateSupplier;
   /**
    * The default drive command constructor
@@ -30,10 +32,12 @@ public class DefaultDriveCommand extends Command {
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
       Supplier<Double> rawRotationRateSupplier,
+      Supplier<Optional<Rotation2d>> goalHeadingSupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
     this.robotCentricSupplier = robotCentricSupplier;
+    this.goalHeadingSupplier = goalHeadingSupplier;
     this.rawRotationRateSupplier = rawRotationRateSupplier;
     addRequirements(drivetrainSubsystem); // required for default command
   }
@@ -42,17 +46,18 @@ public class DefaultDriveCommand extends Command {
   public void execute() {
     // Running the lambda statements and getting the velocity values
     double angularVelocity;
-
+    Optional<Rotation2d> goalHeading;
     Translation2d driveVector = driveVectorSupplier.get();
 
     angularVelocity = rawRotationRateSupplier.get();
-
-    mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
+    goalHeading = goalHeadingSupplier.get();
+    mDrivetrainSubsystem.drive(driveVector, angularVelocity, goalHeading, !robotCentricSupplier.getAsBoolean());
   }
 
   @Override
   public void end(boolean interrupted) {
-    mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
+    //todo: change new Rotation2d() to currentHeading
+    mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0,Optional.of(new Rotation2d()), true);
   }
 
   @Override
