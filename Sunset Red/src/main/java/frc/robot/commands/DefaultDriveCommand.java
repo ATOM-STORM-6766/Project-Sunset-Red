@@ -1,10 +1,10 @@
 package frc.robot.commands;
-import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -51,13 +51,14 @@ public class DefaultDriveCommand extends Command {
 
     angularVelocity = rawRotationRateSupplier.get();
     goalHeading = goalHeadingSupplier.get();
-    mDrivetrainSubsystem.drive(driveVector, angularVelocity, goalHeading, !robotCentricSupplier.getAsBoolean());
+    mDrivetrainSubsystem.drive(
+        driveVector, angularVelocity, goalHeading, !robotCentricSupplier.getAsBoolean());
   }
 
   @Override
   public void end(boolean interrupted) {
-    //todo: change new Rotation2d() to currentHeading
-    mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0,Optional.of(new Rotation2d()), true);
+    // todo: change new Rotation2d() to currentHeading
+    mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, Optional.of(new Rotation2d()), true);
   }
 
   @Override

@@ -150,25 +150,31 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param fieldCentric a boolean indicating whether the robot should drive in field-centric mode
    *     or not
    */
-  public void drive(Translation2d translation, double rotation,Optional<Rotation2d> goalHeading, boolean fieldCentric) {
-    if(rotation != 0.0){
+  public void drive(
+      Translation2d translation,
+      double rotation,
+      Optional<Rotation2d> goalHeading,
+      boolean fieldCentric) {
+    if (rotation != 0.0) {
       mHeadingController.disable();
-    }else if(rotation == 0 && lastRotation !=0){
+    } else if (rotation == 0 && lastRotation != 0) {
       mHeadingController.temporarilyDisable();
     }
-    if(goalHeading.isPresent()){
+    if (goalHeading.isPresent()) {
       mHeadingController.setTarget(goalHeading.get());
     }
-      lastRotation = rotation;
+    lastRotation = rotation;
     SwerveModuleState[] swerveModuleStates =
         mKinematics.toSwerveModuleStates(
             fieldCentric
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    translation.getX(), translation.getY(), rotation+headingCorrection, getHeading())
-                : new ChassisSpeeds(translation.getX(), translation.getY(), rotation+headingCorrection));
+                    translation.getX(),
+                    translation.getY(),
+                    rotation + headingCorrection,
+                    getHeading())
+                : new ChassisSpeeds(
+                    translation.getX(), translation.getY(), rotation + headingCorrection));
     setModuleStates(swerveModuleStates);
-    
-    
   }
 
   /**
