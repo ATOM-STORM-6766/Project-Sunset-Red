@@ -57,7 +57,6 @@ public class DefaultDriveCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    // todo: change new Rotation2d() to currentHeading
     mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, Optional.empty(), true);
   }
 
