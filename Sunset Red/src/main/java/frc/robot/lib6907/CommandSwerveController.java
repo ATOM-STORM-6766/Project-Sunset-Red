@@ -186,7 +186,6 @@ public class CommandSwerveController extends CommandXboxController {
     return getHID().getBButton() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
   }
 
-
   public Boolean snapToAmpAngle() {
     return getHID().getAButton();
   }

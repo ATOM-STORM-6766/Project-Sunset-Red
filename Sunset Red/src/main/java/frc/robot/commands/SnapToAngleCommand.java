@@ -1,13 +1,12 @@
 package frc.robot.commands;
 
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 public class SnapToAngleCommand extends Command {
   private final DrivetrainSubsystem mDrivetrainSubsystem;
@@ -15,7 +14,7 @@ public class SnapToAngleCommand extends Command {
   /*
    * Getting the angular velocity from the product of the joysticks (Right X) and the max angular velocity
    */
-  private final BooleanSupplier interruptSupplier;  
+  private final BooleanSupplier interruptSupplier;
   private final BooleanSupplier robotCentricSupplier;
   private final Supplier<Optional<Rotation2d>> goalHeadingSupplier;
   /**
@@ -31,7 +30,7 @@ public class SnapToAngleCommand extends Command {
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
       Supplier<Optional<Rotation2d>> goalHeadingSupplier,
-      BooleanSupplier interruptSupplier, 
+      BooleanSupplier interruptSupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
@@ -48,8 +47,7 @@ public class SnapToAngleCommand extends Command {
     Translation2d driveVector = driveVectorSupplier.get();
     goalHeading = goalHeadingSupplier.get();
 
-    mDrivetrainSubsystem.drive(
-        driveVector, 0.0, goalHeading, !robotCentricSupplier.getAsBoolean());
+    mDrivetrainSubsystem.drive(driveVector, 0.0, goalHeading, !robotCentricSupplier.getAsBoolean());
   }
 
   @Override
@@ -57,10 +55,8 @@ public class SnapToAngleCommand extends Command {
     mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, Optional.empty(), true);
   }
 
-
-    @Override
-    public boolean isFinished() {
-        return interruptSupplier.getAsBoolean();
-    }
-
+  @Override
+  public boolean isFinished() {
+    return interruptSupplier.getAsBoolean();
+  }
 }

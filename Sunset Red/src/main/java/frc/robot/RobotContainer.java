@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,6 +14,7 @@ import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import java.util.Optional;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -80,12 +79,14 @@ public class RobotContainer {
                 }));
     new Trigger(() -> driverController.snapToAmpAngle())
         .onTrue(
-          new SnapToAngleCommand(
-            sDrivetrainSubsystem,
-            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-            () -> Optional.of(new Rotation2d(90.0)), // amp heading
-            () -> driverController.getRawRotationRate() ==0.0 | driverController.getDriveRotationAngle().isPresent(), 
-            () -> driverController.isSlowMode()));
+            new SnapToAngleCommand(
+                sDrivetrainSubsystem,
+                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+                () -> Optional.of(new Rotation2d(90.0)), // amp heading
+                () ->
+                    driverController.getRawRotationRate() == 0.0
+                        | driverController.getDriveRotationAngle().isPresent(),
+                () -> driverController.isSlowMode()));
   }
 
   /**
