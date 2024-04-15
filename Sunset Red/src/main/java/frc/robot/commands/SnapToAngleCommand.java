@@ -1,24 +1,23 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
-public class DefaultDriveCommand extends Command {
-  private final DrivetrainSubsystem mDrivetrainSubsystem;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.DrivetrainSubsystem;
 
+public class SnapToAngleCommand extends Command {
+  private final DrivetrainSubsystem mDrivetrainSubsystem;
   private final Supplier<Translation2d> driveVectorSupplier;
   /*
    * Getting the angular velocity from the product of the joysticks (Right X) and the max angular velocity
    */
-
+  private final BooleanSupplier interruptSupplier;  
   private final BooleanSupplier robotCentricSupplier;
   private final Supplier<Optional<Rotation2d>> goalHeadingSupplier;
-  private final Supplier<Double> rawRotationRateSupplier;
   /**
    * The default drive command constructor
    *
@@ -28,31 +27,29 @@ public class DefaultDriveCommand extends Command {
    * @param yVelocitySupplier Gets the joystick value for the y velocity and multiplies it by the
    *     max velocity
    */
-  public DefaultDriveCommand(
+  public SnapToAngleCommand(
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
-      Supplier<Double> rawRotationRateSupplier,
       Supplier<Optional<Rotation2d>> goalHeadingSupplier,
+      BooleanSupplier interruptSupplier, 
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
     this.robotCentricSupplier = robotCentricSupplier;
     this.goalHeadingSupplier = goalHeadingSupplier;
-    this.rawRotationRateSupplier = rawRotationRateSupplier;
+    this.interruptSupplier = interruptSupplier;
     addRequirements(drivetrainSubsystem); // required for default command
   }
 
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    double angularVelocity;
     Optional<Rotation2d> goalHeading;
     Translation2d driveVector = driveVectorSupplier.get();
-
-    angularVelocity = rawRotationRateSupplier.get();
     goalHeading = goalHeadingSupplier.get();
+
     mDrivetrainSubsystem.drive(
-        driveVector, angularVelocity, goalHeading, !robotCentricSupplier.getAsBoolean());
+        driveVector, 0.0, goalHeading, !robotCentricSupplier.getAsBoolean());
   }
 
   @Override
@@ -61,8 +58,10 @@ public class DefaultDriveCommand extends Command {
     mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, Optional.empty(), true);
   }
 
-  @Override
-  public boolean isFinished() {
-    return false; // Default command never ends
-  }
+
+    @Override
+    public boolean isFinished() {
+        return interruptSupplier.getAsBoolean();
+    }
+
 }
