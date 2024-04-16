@@ -84,7 +84,7 @@ public class RobotContainer {
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> Optional.of(new Rotation2d(90.0)), // amp heading
                 () ->
-                    driverController.getRawRotationRate() == 0.0
+                    driverController.getRawRotationRate() != 0.0
                         | driverController.getDriveRotationAngle().isPresent(),
                 () -> driverController.isSlowMode()));
   }
