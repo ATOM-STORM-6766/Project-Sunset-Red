@@ -316,6 +316,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
       double timestamp = Timer.getFPGATimestamp();
       double ctretime = Utils.getCurrentTimeSeconds();
       for (int i = 0; i < mSwerveModules.length; i++) {
+        mModulePositions[i] =new SwerveModulePosition();
         SwerveDriveModule module = mSwerveModules[i];
         double driverot =
             compensate(module.getDrivePositionSignal(), module.getDriveVelocitySignal(), ctretime);
