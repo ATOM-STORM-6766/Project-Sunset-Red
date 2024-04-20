@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -9,6 +10,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class SnapToAngleCommand extends Command {
+  private final PIDController snapToAnglePID = new PIDController(4.0, 0, 0.2);
+
   private final DrivetrainSubsystem mDrivetrainSubsystem;
   private final Supplier<Translation2d> driveVectorSupplier;
   /*
@@ -30,8 +33,8 @@ public class SnapToAngleCommand extends Command {
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
       Supplier<Optional<Rotation2d>> goalHeadingSupplier,
-      BooleanSupplier interruptSupplier,
-      BooleanSupplier robotCentricSupplier) {
+      BooleanSupplier robotCentricSupplier,
+      BooleanSupplier interruptSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
     this.robotCentricSupplier = robotCentricSupplier;
@@ -40,19 +43,40 @@ public class SnapToAngleCommand extends Command {
     addRequirements(drivetrainSubsystem); // required for default command
   }
 
+  public SnapToAngleCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Supplier<Translation2d> driveVectorSupplier,
+      Supplier<Optional<Rotation2d>> goalHeadingSupplier,
+      BooleanSupplier robotCentricSupplier
+  ){
+    this(      
+      drivetrainSubsystem,
+      driveVectorSupplier,
+      goalHeadingSupplier,
+      robotCentricSupplier,
+      () -> false
+      );
+  }
+  @Override
+  public void initialize() {
+    snapToAnglePID.reset();
+    snapToAnglePID.enableContinuousInput(-Math.PI,Math.PI);
+  }
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
     Optional<Rotation2d> goalHeading;
     Translation2d driveVector = driveVectorSupplier.get();
     goalHeading = goalHeadingSupplier.get();
-
-    mDrivetrainSubsystem.drive(driveVector, 0.0, goalHeading, !robotCentricSupplier.getAsBoolean());
+    if(goalHeading.isPresent()){
+      snapToAnglePID.setSetpoint(goalHeading.get().getRadians());
+    }
+    mDrivetrainSubsystem.drive(driveVector, snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians()), !robotCentricSupplier.getAsBoolean());
   }
 
   @Override
   public void end(boolean interrupted) {
-    mDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, Optional.empty(), true);
+    mDrivetrainSubsystem.drive(new Translation2d(0, 0),0, true);
   }
 
   @Override

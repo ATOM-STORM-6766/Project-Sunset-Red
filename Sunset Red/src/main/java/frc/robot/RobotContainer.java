@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -36,12 +36,11 @@ public class RobotContainer {
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     sDrivetrainSubsystem.setDefaultCommand(
-        new DefaultDriveCommand(
-            sDrivetrainSubsystem,
-            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-            () -> driverController.getRawRotationRate(),
-            () -> driverController.getDriveRotationAngle(),
-            () -> driverController.isSlowMode()));
+        new SnapToAngleCommand(
+                sDrivetrainSubsystem,
+                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+                () -> driverController.getDriveRotationAngle(), // amp heading
+                () -> driverController.isSlowMode()));
 
     configureBindings();
 
@@ -77,18 +76,28 @@ public class RobotContainer {
                   sDrivetrainSubsystem.zeroHeading();
                   driverController.setTranslationDirection(true);
                 }));
-    new Trigger(() -> driverController.snapToAmpAngle())
+
+    new Trigger(() -> driverController.snapToAmpAngle() && driverController.getRawRotationRate()==0.0)
         .onTrue(
             new SnapToAngleCommand(
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-                () -> Optional.of(new Rotation2d(90.0)), // amp heading
-                () ->
-                    driverController.getRawRotationRate() != 0.0
-                        | driverController.getDriveRotationAngle().isPresent(),
-                () -> driverController.isSlowMode()));
+                () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp heading
+                () -> driverController.isSlowMode(),
+                () ->driverController.getDriveRotationAngle().isPresent()));
+
+    new Trigger(() -> driverController.getRawRotationRate()!=0.0)
+        .onTrue(
+            new DriveWithTriggerCommand(
+                sDrivetrainSubsystem,
+                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+                () -> driverController.getRawRotationRate(), // amp heading
+                () -> driverController.isSlowMode()
+                ));
   }
 
+
+  
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *

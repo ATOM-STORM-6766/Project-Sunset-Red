@@ -42,7 +42,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   private final SwerveDriveKinematics mKinematics;
   private final ChassisSpeedKalmanFilterSimplified mSpeedFilter;
-  private SwerveHeadingController mHeadingController = new SwerveHeadingController();
 
   private ChassisSpeeds mKinematicSpeed;
   private ChassisSpeeds mFilteredSpeed;
@@ -52,8 +51,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
   private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
 
-  private double lastRotation = 0.0;
-  private double headingCorrection = 0.0;
   /*
    * Constructor for DrivetrainSubsystem
    */
@@ -149,32 +146,22 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param rotation the robot's desired rotation rate in radians per second
    * @param fieldCentric a boolean indicating whether the robot should drive in field-centric mode
    *     or not
+   * 
    */
   public void drive(
       Translation2d translation,
       double rotation,
-      Optional<Rotation2d> goalHeading,
       boolean fieldCentric) {
-    if (rotation != 0.0) {
-      mHeadingController.disable();
-    } else if (rotation == 0 && lastRotation != 0) {
-      mHeadingController.temporarilyDisable();
-    }
-    if (goalHeading.isPresent()
-        && mHeadingController.getState() == SwerveHeadingController.State.On) {
-      mHeadingController.setTarget(goalHeading.get());
-    }
-    lastRotation = rotation;
     SwerveModuleState[] swerveModuleStates =
         mKinematics.toSwerveModuleStates(
             fieldCentric
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     translation.getX(),
                     translation.getY(),
-                    rotation + headingCorrection,
+                    rotation,
                     getHeading())
                 : new ChassisSpeeds(
-                    translation.getX(), translation.getY(), rotation + headingCorrection));
+                    translation.getX(), translation.getY(), rotation));
     setModuleStates(swerveModuleStates);
   }
 
@@ -186,7 +173,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param desiredStates an array of SwerveModuleState objects representing the desired states for
    *     each swerve module
    */
-  public void setModuleStates(SwerveModuleState[] desiredStates) {
+  private void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(
         desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
     for (int i = 0; i < mSwerveModules.length; i++) {
@@ -257,7 +244,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    *
    * @return the rotation object representing the heading of the drivetrain subsystem
    */
-  private Rotation2d getHeading() {
+  public Rotation2d getHeading() {
     return getPose().getRotation();
   }
 
@@ -297,7 +284,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    double timestamp = Timer.getFPGATimestamp();
     mKinematicSpeed =
         mKinematics.toChassisSpeeds(
             mSwerveModules[0].getState(),
@@ -305,7 +291,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
             mSwerveModules[2].getState(),
             mSwerveModules[3].getState());
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
-    headingCorrection = mHeadingController.updateRotationCorrection(getHeading(), timestamp);
     // add logging infomation here
     updateLogEntry();
   }
@@ -352,7 +337,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
             runSingleModuleZeroing(mSwerveModules[3]));
     // ADD REQUIREMENT before anything else
     ret.addRequirements(this);
-    ret = ret.andThen(() -> mHeadingController.setTarget(getHeading()));
     // run unless already zeroed
     ret = ret.unless(this::allModuleZeroed);
     ret.setName("ZeroingCommand");
