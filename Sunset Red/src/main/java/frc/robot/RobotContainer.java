@@ -4,13 +4,17 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.OperatorConstants;
-import frc.robot.commands.Autos;
-import frc.robot.commands.ExampleCommand;
-import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.SnapToAngleCommand;
+import frc.robot.lib6907.CommandSwerveController;
+import frc.robot.subsystems.DrivetrainSubsystem;
+import java.util.Optional;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,16 +24,28 @@ import frc.robot.subsystems.ExampleSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  private final CommandXboxController m_driverController =
-      new CommandXboxController(OperatorConstants.kDriverControllerPort);
+  // * Controllers */
+  private final CommandSwerveController driverController = new CommandSwerveController(0);
+  /* Subsystems */
+  private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
+
+  /* pre-constructed commands */
+  private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // Configure the trigger bindings
+    sDrivetrainSubsystem.setDefaultCommand(
+        new DefaultDriveCommand(
+            sDrivetrainSubsystem,
+            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+            () -> driverController.getRawRotationRate(),
+            () -> driverController.getDriveRotationAngle(),
+            () -> driverController.isSlowMode()));
+
     configureBindings();
+
+    SmartDashboard.putData(sDrivetrainSubsystem);
   }
 
   /**
@@ -42,13 +58,35 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-    new Trigger(m_exampleSubsystem::exampleCondition)
-        .onTrue(new ExampleCommand(m_exampleSubsystem));
 
-    // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
-    // cancelling on release.
-    m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+    /*
+     * // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+     * new Trigger(m_exampleSubsystem::exampleCondition)
+     * .onTrue(new ExampleCommand(m_exampleSubsystem));
+     *
+     * // Schedule `exampleMethodCommand` when the Xbox controller's B button is
+     * // pressed,
+     * // cancelling on release.
+     * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+     */
+    driverController
+        .start()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  sDrivetrainSubsystem.zeroHeading();
+                  driverController.setTranslationDirection(true);
+                }));
+    new Trigger(() -> driverController.snapToAmpAngle())
+        .onTrue(
+            new SnapToAngleCommand(
+                sDrivetrainSubsystem,
+                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+                () -> Optional.of(new Rotation2d(90.0)), // amp heading
+                () ->
+                    driverController.getRawRotationRate() != 0.0
+                        | driverController.getDriveRotationAngle().isPresent(),
+                () -> driverController.isSlowMode()));
   }
 
   /**
@@ -58,6 +96,10 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
+    return new InstantCommand();
+  }
+
+  public void checkDrivetrainZeroing() {
+    mZeroingCommand.schedule();
   }
 }
