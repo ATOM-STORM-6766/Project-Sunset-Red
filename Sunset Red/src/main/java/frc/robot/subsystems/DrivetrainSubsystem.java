@@ -30,8 +30,6 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OdometryConstants;
 import frc.robot.Constants.SwerveModuleConstants;
 import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
-import frc.robot.utils.SwerveHeadingController;
-import java.util.Optional;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
@@ -146,22 +144,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param rotation the robot's desired rotation rate in radians per second
    * @param fieldCentric a boolean indicating whether the robot should drive in field-centric mode
    *     or not
-   * 
    */
-  public void drive(
-      Translation2d translation,
-      double rotation,
-      boolean fieldCentric) {
+  public void drive(Translation2d translation, double rotation, boolean fieldCentric) {
     SwerveModuleState[] swerveModuleStates =
         mKinematics.toSwerveModuleStates(
             fieldCentric
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    translation.getX(),
-                    translation.getY(),
-                    rotation,
-                    getHeading())
-                : new ChassisSpeeds(
-                    translation.getX(), translation.getY(), rotation));
+                    translation.getX(), translation.getY(), rotation, getHeading())
+                : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
     setModuleStates(swerveModuleStates);
   }
 

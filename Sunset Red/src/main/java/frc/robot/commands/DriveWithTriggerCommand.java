@@ -1,10 +1,8 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -32,8 +30,7 @@ public class DriveWithTriggerCommand extends Command {
       DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
       Supplier<Double> rawRotationRateSupplier,
-      BooleanSupplier robotCentricSupplier
-      ) {
+      BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
     this.robotCentricSupplier = robotCentricSupplier;
@@ -47,7 +44,6 @@ public class DriveWithTriggerCommand extends Command {
     angularVelocity = rawRotationRateSupplier.get();
     Translation2d driveVector = driveVectorSupplier.get();
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
-    
   }
 
   @Override

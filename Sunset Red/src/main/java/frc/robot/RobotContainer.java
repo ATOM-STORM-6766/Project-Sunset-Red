@@ -37,10 +37,10 @@ public class RobotContainer {
   public RobotContainer() {
     sDrivetrainSubsystem.setDefaultCommand(
         new SnapToAngleCommand(
-                sDrivetrainSubsystem,
-                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-                () -> driverController.getDriveRotationAngle(), // amp heading
-                () -> driverController.isSlowMode()));
+            sDrivetrainSubsystem,
+            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+            () -> driverController.getDriveRotationAngle(), // amp heading
+            () -> driverController.isSlowMode()));
 
     configureBindings();
 
@@ -77,27 +77,25 @@ public class RobotContainer {
                   driverController.setTranslationDirection(true);
                 }));
 
-    new Trigger(() -> driverController.snapToAmpAngle() && driverController.getRawRotationRate()==0.0)
+    new Trigger(
+            () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
         .onTrue(
             new SnapToAngleCommand(
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp heading
                 () -> driverController.isSlowMode(),
-                () ->driverController.getDriveRotationAngle().isPresent()));
+                () -> driverController.getDriveRotationAngle().isPresent()));
 
-    new Trigger(() -> driverController.getRawRotationRate()!=0.0)
+    new Trigger(() -> driverController.getRawRotationRate() != 0.0)
         .onTrue(
             new DriveWithTriggerCommand(
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> driverController.getRawRotationRate(), // amp heading
-                () -> driverController.isSlowMode()
-                ));
+                () -> driverController.isSlowMode()));
   }
 
-
-  
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
