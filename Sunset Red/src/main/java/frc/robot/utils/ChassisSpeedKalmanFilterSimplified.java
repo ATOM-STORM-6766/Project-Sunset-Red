@@ -26,7 +26,7 @@ public class ChassisSpeedKalmanFilterSimplified {
 
   public ChassisSpeedKalmanFilterSimplified(double xyDev, double angleDev, double dt) {
     // state model deviation (Q) = 0
-    Vector<N3> stateStdDev = VecBuilder.fill(5.0, 5.0, 5.0);
+    Vector<N3> stateStdDev = VecBuilder.fill(7.1, 7.1, 7.5);
     // measurement deviation (R)
     Vector<N3> measurementStdDev = VecBuilder.fill(xyDev, xyDev, angleDev);
 
