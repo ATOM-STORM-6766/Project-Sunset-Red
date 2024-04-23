@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -8,9 +9,14 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
 
 public class SnapToAngleCommand extends Command {
-  private final PIDController snapToAnglePID = new PIDController(4.0, 0, 0.2);
+  
+  private final TrapezoidProfile.Constraints swerveRotateConstraints = new TrapezoidProfile.Constraints(Units.degreesToRadians(180), Units.degreesToRadians(300));
+  private final ProfiledPIDController snapToAnglePID = new ProfiledPIDController(4.0, 0, 0.2,swerveRotateConstraints);
 
   private final DrivetrainSubsystem mDrivetrainSubsystem;
   private final Supplier<Translation2d> driveVectorSupplier;
@@ -20,6 +26,7 @@ public class SnapToAngleCommand extends Command {
   private final BooleanSupplier interruptSupplier;
   private final BooleanSupplier robotCentricSupplier;
   private final Supplier<Optional<Rotation2d>> goalHeadingSupplier;
+  private Optional<Rotation2d> goalHeading = Optional.empty();
   /**
    * The default drive command constructor
    *
@@ -35,6 +42,7 @@ public class SnapToAngleCommand extends Command {
       Supplier<Optional<Rotation2d>> goalHeadingSupplier,
       BooleanSupplier robotCentricSupplier,
       BooleanSupplier interruptSupplier) {
+    this.setName("snapToAmp");
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
     this.robotCentricSupplier = robotCentricSupplier;
@@ -54,22 +62,24 @@ public class SnapToAngleCommand extends Command {
         goalHeadingSupplier,
         robotCentricSupplier,
         () -> false);
+    this.setName("driveWithRightStick");
   }
 
   @Override
   public void initialize() {
-    snapToAnglePID.reset();
+    snapToAnglePID.reset(mDrivetrainSubsystem.getHeading().getRadians());
     snapToAnglePID.enableContinuousInput(-Math.PI, Math.PI);
+    snapToAnglePID.setGoal(mDrivetrainSubsystem.getHeading().getRadians());
   }
 
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    Optional<Rotation2d> goalHeading;
+    
     Translation2d driveVector = driveVectorSupplier.get();
     goalHeading = goalHeadingSupplier.get();
     if (goalHeading.isPresent()) {
-      snapToAnglePID.setSetpoint(goalHeading.get().getRadians());
+      snapToAnglePID.setGoal(goalHeading.get().getRadians());
     }
     mDrivetrainSubsystem.drive(
         driveVector,
@@ -85,5 +95,11 @@ public class SnapToAngleCommand extends Command {
   @Override
   public boolean isFinished() {
     return interruptSupplier.getAsBoolean();
+  }
+  @Override
+  public void initSendable(SendableBuilder builder) {
+      // TODO Auto-generated method stub
+      super.initSendable(builder);
+      builder.addBooleanProperty("rightStickInputPresent:",()->goalHeading.isPresent(),null);
   }
 }
