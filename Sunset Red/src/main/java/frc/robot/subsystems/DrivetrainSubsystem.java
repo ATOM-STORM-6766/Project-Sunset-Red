@@ -103,8 +103,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     builder.addDoubleProperty("PoseXMeter", () -> getPose().getX(), null);
     builder.addDoubleProperty("PoseYMeter", () -> getPose().getY(), null);
     builder.addDoubleProperty("PoseAngleDegree", () -> getPose().getRotation().getDegrees(), null);
-    builder.addDoubleProperty("ChassisSpeed.omega", () -> mKinematicSpeed.omegaRadiansPerSecond, null);
-    builder.addDoubleProperty("FilteredSpeed.omega", () -> mFilteredSpeed.omegaRadiansPerSecond, null);
+    builder.addDoubleProperty(
+        "ChassisSpeed.omega", () -> mKinematicSpeed.omegaRadiansPerSecond, null);
+    builder.addDoubleProperty(
+        "FilteredSpeed.omega", () -> mFilteredSpeed.omegaRadiansPerSecond, null);
     builder.addDoubleProperty("ChassisSpeed.vx", () -> mKinematicSpeed.vxMetersPerSecond, null);
     builder.addDoubleProperty("FilteredSpeed.vx", () -> mFilteredSpeed.vxMetersPerSecond, null);
     mSwerveModules[0].initSendable(builder, getName());

@@ -33,11 +33,12 @@ public class RobotContainer {
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
-  private final SnapToAngleCommand mDriveWithRightStick = new SnapToAngleCommand(
-            sDrivetrainSubsystem,
-            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-            () -> driverController.getDriveRotationAngle(), // amp heading
-            () -> driverController.isSlowMode());
+  private final SnapToAngleCommand mDriveWithRightStick =
+      new SnapToAngleCommand(
+          sDrivetrainSubsystem,
+          () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+          () -> driverController.getDriveRotationAngle(), // amp heading
+          () -> driverController.isSlowMode());
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {

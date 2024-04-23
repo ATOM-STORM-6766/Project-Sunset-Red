@@ -1,22 +1,23 @@
 package frc.robot.commands;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.sendable.SendableBuilder;
 
 public class SnapToAngleCommand extends Command {
-  
-  private final TrapezoidProfile.Constraints swerveRotateConstraints = new TrapezoidProfile.Constraints(Units.degreesToRadians(180), Units.degreesToRadians(300));
-  private final ProfiledPIDController snapToAnglePID = new ProfiledPIDController(4.0, 0, 0.2,swerveRotateConstraints);
+
+  private final TrapezoidProfile.Constraints swerveRotateConstraints =
+      new TrapezoidProfile.Constraints(Units.degreesToRadians(180), Units.degreesToRadians(300));
+  private final ProfiledPIDController snapToAnglePID =
+      new ProfiledPIDController(4.0, 0, 0.2, swerveRotateConstraints);
 
   private final DrivetrainSubsystem mDrivetrainSubsystem;
   private final Supplier<Translation2d> driveVectorSupplier;
@@ -75,7 +76,7 @@ public class SnapToAngleCommand extends Command {
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    
+
     Translation2d driveVector = driveVectorSupplier.get();
     goalHeading = goalHeadingSupplier.get();
     if (goalHeading.isPresent()) {
@@ -96,10 +97,11 @@ public class SnapToAngleCommand extends Command {
   public boolean isFinished() {
     return interruptSupplier.getAsBoolean();
   }
+
   @Override
   public void initSendable(SendableBuilder builder) {
-      // TODO Auto-generated method stub
-      super.initSendable(builder);
-      builder.addBooleanProperty("rightStickInputPresent:",()->goalHeading.isPresent(),null);
+    // TODO Auto-generated method stub
+    super.initSendable(builder);
+    builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
   }
 }
