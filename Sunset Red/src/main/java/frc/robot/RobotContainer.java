@@ -126,5 +126,5 @@ public class RobotContainer {
     mChooser.setDefaultOption("example", new TestAutoCommand(sDrivetrainSubsystem));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
-}
+  }
 }
