@@ -5,12 +5,13 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.auto.AutoModeSelector;
+import frc.robot.auto.modes.TestAutoCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
@@ -26,7 +27,8 @@ import java.util.Optional;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
-  private final AutoModeSelector mAutoModeSelector= AutoModeSelector.getInstance();
+  private SendableChooser<Command> mChooser = new SendableChooser<>();
+
   // * Controllers */
   private final CommandSwerveController driverController = new CommandSwerveController(0);
   /* Subsystems */
@@ -48,7 +50,7 @@ public class RobotContainer {
 
     configureBindings();
     sDrivetrainSubsystem.configureAutoBuilder();
-    mAutoModeSelector.pushChooser();
+    pushChooser();
     SmartDashboard.putData(sDrivetrainSubsystem);
     SmartDashboard.putData(mDriveWithRightStick);
   }
@@ -109,10 +111,20 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return mAutoModeSelector.getSelected();
+    return mChooser.getSelected();
   }
 
   public void checkDrivetrainZeroing() {
     mZeroingCommand.schedule();
   }
+
+  public void pushChooser() {
+    // init points
+    mChooser = new SendableChooser<>();
+
+    // tested
+    mChooser.setDefaultOption("example", new TestAutoCommand(sDrivetrainSubsystem));
+
+    SmartDashboard.putData("AUTO CHOICES", mChooser);
+}
 }
