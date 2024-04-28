@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.auto.AutoModeSelector;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
@@ -25,6 +26,7 @@ import java.util.Optional;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
+  private final AutoModeSelector mAutoModeSelector= AutoModeSelector.getInstance();
   // * Controllers */
   private final CommandSwerveController driverController = new CommandSwerveController(0);
   /* Subsystems */
@@ -45,7 +47,8 @@ public class RobotContainer {
     sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
 
     configureBindings();
-
+    sDrivetrainSubsystem.configureAutoBuilder();
+    mAutoModeSelector.pushChooser();
     SmartDashboard.putData(sDrivetrainSubsystem);
     SmartDashboard.putData(mDriveWithRightStick);
   }
@@ -106,7 +109,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return new InstantCommand();
+    return mAutoModeSelector.getSelected();
   }
 
   public void checkDrivetrainZeroing() {

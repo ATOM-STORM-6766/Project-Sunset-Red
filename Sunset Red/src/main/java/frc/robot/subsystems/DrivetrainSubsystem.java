@@ -3,6 +3,11 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,7 +21,10 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.StructLogEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -94,6 +102,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mNotifier.startPeriodic(1.0 / OdometryConstants.kOdomUpdateFreq);
 
     initLogEntry();
+
   }
 
   @Override
@@ -157,6 +166,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     translation.getX(), translation.getY(), rotation, getHeading())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
+    setModuleStates(swerveModuleStates);
+  }
+
+  public void driveWithChassisSpeed(ChassisSpeeds mChassisSpeeds){
+    SwerveModuleState[] swerveModuleStates = mKinematics.toSwerveModuleStates(mChassisSpeeds);
     setModuleStates(swerveModuleStates);
   }
 
@@ -346,4 +360,40 @@ public class DrivetrainSubsystem extends SubsystemBase {
         && mSwerveModules[2].getIsZeroed()
         && mSwerveModules[3].getIsZeroed();
   }
+
+  public void configureAutoBuilder() {
+    if (AutoBuilder.isConfigured())
+        return;
+    
+    AutoBuilder.configureHolonomic(
+        this::getPose, // poseSupplier
+        this::setPose, // resetPose
+        ()->mKinematicSpeed, // robotRelativeSpeedsSupplier
+        this::driveWithChassisSpeed, // robotRelativeOutput
+        new HolonomicPathFollowerConfig(
+            // translationConstants: PPLib uses wpilib PIDController
+            // input is pose error in meters, output is compensated velocity in meters per second
+            new PIDConstants(5.0, 0.0, 0.0),
+            // rotationConstants: PPLib uses wpilib PIDController
+            // input is angle error in radius, output is compensated rotation in radians per second
+            new PIDConstants(5.0, 0.0, 0.0),
+            DriveConstants.kPhysicalMaxSpeedMetersPerSecond, // maxModuleSpeed
+            DriveConstants.kWheelBase / Math.sqrt(2), // driveBaseRadius
+            new ReplanningConfig(), // replanningConfig (how and when should a path be replanned)
+            Constants.kPeriodicDt // period for pid update, KEEP SYNC WITH ROBOT PERIOD
+        ),
+        () -> {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+            var alliance = DriverStation.getAlliance();
+            if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+            }
+            return false;
+        },
+        this
+    );
+    }
 }
