@@ -2,8 +2,6 @@ package frc.robot.auto.modes;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-
-
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -14,9 +12,7 @@ public class TestAutoCommand extends SequentialCommandGroup {
     addCommands(
         mDrivetrainSubsystem.runZeroingCommand(),
         Commands.runOnce(
-            () ->
-                mDrivetrainSubsystem.setPose(startPath.getPreviewStartingHolonomicPose())),
-        AutoBuilder.followPath(startPath)
-    );
+            () -> mDrivetrainSubsystem.setPose(startPath.getPreviewStartingHolonomicPose())),
+        AutoBuilder.followPath(startPath));
   }
 }
