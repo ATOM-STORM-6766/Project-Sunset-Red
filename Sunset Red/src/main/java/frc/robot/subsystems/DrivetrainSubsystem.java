@@ -219,7 +219,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     final double nonCompensatedSignal = pos_sig.getValueAsDouble();
     final double changeInSignal = pos_vel.getValueAsDouble();
     double latency = ctretime - pos_sig.getTimestamp().getTime();
-    return nonCompensatedSignal + (changeInSignal * latency);
+    return nonCompensatedSignal;//+ (changeInSignal * latency);
   }
 
   /**
@@ -316,9 +316,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
             compensate(
                 module.getAzimuthPositionSignal(), module.getAzimuthVelocitySignal(), ctretime);
         anglerot = anglerot - module.getAzimuthOffsetRotations();
-        mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot);
+        mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot*360);
       }
-
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
     }
   }
