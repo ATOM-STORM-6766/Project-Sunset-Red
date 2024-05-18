@@ -136,12 +136,12 @@ public final class Constants {
     public static final int kDefaultUpdateFreq = 50;
   }
 
-  public static final class IntakeConstants{
-     // INTAKER
-     public static final int INTAKER_ID = 11;
-     public static final int INTAKER_CENTER_ID = 13;
-     // used for LED to tell note entered state
-     public static final int INTAKER_ENTER_OMRON_ID = 5;
-     public static final NeutralOut NEUTRAL = new NeutralOut();
+  public static final class IntakeConstants {
+    // INTAKER
+    public static final int INTAKER_ID = 11;
+    public static final int INTAKER_CENTER_ID = 13;
+    // used for LED to tell note entered state
+    public static final int INTAKER_ENTER_OMRON_ID = 5;
+    public static final NeutralOut NEUTRAL = new NeutralOut();
   }
 }
