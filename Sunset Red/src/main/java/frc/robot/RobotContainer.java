@@ -18,7 +18,6 @@ import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
-
 import java.util.Optional;
 
 /**
@@ -37,7 +36,7 @@ public class RobotContainer {
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
   private final Intake mIntake = new Intake();
   private final Transfer mTransfer = new Transfer();
-  
+
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 

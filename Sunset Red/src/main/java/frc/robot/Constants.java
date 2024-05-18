@@ -24,7 +24,6 @@ public final class Constants {
   public static final double kLongCANTimeoutSec = 0.1; // use for constructors
   public static final int kLongCANTimeoutMs = 100; // use for constructors
 
-
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }

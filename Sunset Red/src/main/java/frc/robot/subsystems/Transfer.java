@@ -11,70 +11,73 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.utils.Util;
 
-
 public class Transfer extends SubsystemBase {
 
-    public static final double INTAKE_VOLTS = 4.0;
-    public static final double FEED_VOLTS = 8.0;
-    public static final double AMP_RELEASE_VOLTS = 8.0;
-    public static final double OUTTAKE_VOLTS = -8.0;
+  public static final double INTAKE_VOLTS = 4.0;
+  public static final double FEED_VOLTS = 8.0;
+  public static final double AMP_RELEASE_VOLTS = 8.0;
+  public static final double OUTTAKE_VOLTS = -8.0;
 
-    private final TalonFX mTransferTalon;
-    private final DigitalInput mTransferOmron;
+  private final TalonFX mTransferTalon;
+  private final DigitalInput mTransferOmron;
 
-    private static class PeriodicIO {
-        // INPUTS
-        public boolean omron_detected = false;
+  private static class PeriodicIO {
+    // INPUTS
+    public boolean omron_detected = false;
 
-        // OUTPUTS
-        public VoltageOut ctrlval = new VoltageOut(0.0);
-    }
-    private final PeriodicIO mPeriodicIO;
+    // OUTPUTS
+    public VoltageOut ctrlval = new VoltageOut(0.0);
+  }
 
-    public Transfer() {
-        mPeriodicIO = new PeriodicIO();
-        mTransferTalon = new TalonFX(Constants.TransferConstants.TRANSFER_ID);
-        mTransferOmron = new DigitalInput(Constants.TransferConstants.TRANSFER_OMRON_PORT);
+  private final PeriodicIO mPeriodicIO;
 
-        TalonFXConfiguration transferConfigs = new TalonFXConfiguration();
-        transferConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        transferConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        transferConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
-        transferConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
-        transferConfigs.Voltage.PeakForwardVoltage = 12.0;
-        transferConfigs.Voltage.PeakReverseVoltage = -12.0;
-        transferConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
-        transferConfigs.CurrentLimits.SupplyCurrentLimit = 20.0;
-        transferConfigs.CurrentLimits.SupplyCurrentThreshold = 20.0;
-        transferConfigs.CurrentLimits.SupplyTimeThreshold = 0.0;
-        Util.checkReturn("transfer", mTransferTalon.getConfigurator().apply(transferConfigs, Constants.kLongCANTimeoutSec));
-        mTransferTalon.setControl(Constants.NEUTRAL);
-        Util.checkReturn("transfer canbus", mTransferTalon.optimizeBusUtilization(Constants.kLongCANTimeoutSec));
+  public Transfer() {
+    mPeriodicIO = new PeriodicIO();
+    mTransferTalon = new TalonFX(Constants.TransferConstants.TRANSFER_ID);
+    mTransferOmron = new DigitalInput(Constants.TransferConstants.TRANSFER_OMRON_PORT);
 
-        stop();
-    }
+    TalonFXConfiguration transferConfigs = new TalonFXConfiguration();
+    transferConfigs.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    transferConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    transferConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
+    transferConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
+    transferConfigs.Voltage.PeakForwardVoltage = 12.0;
+    transferConfigs.Voltage.PeakReverseVoltage = -12.0;
+    transferConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+    transferConfigs.CurrentLimits.SupplyCurrentLimit = 20.0;
+    transferConfigs.CurrentLimits.SupplyCurrentThreshold = 20.0;
+    transferConfigs.CurrentLimits.SupplyTimeThreshold = 0.0;
+    Util.checkReturn(
+        "transfer",
+        mTransferTalon.getConfigurator().apply(transferConfigs, Constants.kLongCANTimeoutSec));
+    mTransferTalon.setControl(Constants.NEUTRAL);
+    Util.checkReturn(
+        "transfer canbus", mTransferTalon.optimizeBusUtilization(Constants.kLongCANTimeoutSec));
 
-    @Override
-    public void periodic() {
-        mPeriodicIO.omron_detected = !mTransferOmron.get();
-        mTransferTalon.setControl(mPeriodicIO.ctrlval);
-        outputTelemetry();
-    }
+    stop();
+  }
 
-    public void setVoltage(double voltage) {
-        mPeriodicIO.ctrlval.Output = voltage;
-    }
+  @Override
+  public void periodic() {
+    mPeriodicIO.omron_detected = !mTransferOmron.get();
+    mTransferTalon.setControl(mPeriodicIO.ctrlval);
+    outputTelemetry();
+  }
 
-    public void stop() {
-        setVoltage(0.0);
-    }
+  public void setVoltage(double voltage) {
+    mPeriodicIO.ctrlval.Output = voltage;
+  }
 
-    public boolean isOmronDetected() {
-        return mPeriodicIO.omron_detected;
-    }
+  public void stop() {
+    setVoltage(0.0);
+  }
 
-    public void outputTelemetry() {
-        SmartDashboard.putNumber("Transfer Volt Out", mPeriodicIO.ctrlval.Output);
-        SmartDashboard.putBoolean("Transfer Omron Detected", mPeriodicIO.omron_detected);
-    }
+  public boolean isOmronDetected() {
+    return mPeriodicIO.omron_detected;
+  }
+
+  public void outputTelemetry() {
+    SmartDashboard.putNumber("Transfer Volt Out", mPeriodicIO.ctrlval.Output);
+    SmartDashboard.putBoolean("Transfer Omron Detected", mPeriodicIO.omron_detected);
+  }
 }
