@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
@@ -133,5 +134,14 @@ public final class Constants {
     // Update Freq (Hz): minimum 4Hz, maximum 1000Hz
     public static final int kOdomUpdateFreq = 100; // signal for odometry
     public static final int kDefaultUpdateFreq = 50;
+  }
+
+  public static final class IntakeConstants{
+     // INTAKER
+     public static final int INTAKER_ID = 11;
+     public static final int INTAKER_CENTER_ID = 13;
+     // used for LED to tell note entered state
+     public static final int INTAKER_ENTER_OMRON_ID = 5;
+     public static final NeutralOut NEUTRAL = new NeutralOut();
   }
 }

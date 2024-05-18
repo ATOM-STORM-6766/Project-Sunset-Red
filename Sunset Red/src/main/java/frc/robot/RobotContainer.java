@@ -11,9 +11,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.Intake;
+
 import java.util.Optional;
 
 /**
@@ -27,9 +31,10 @@ public class RobotContainer {
 
   // * Controllers */
   private final CommandSwerveController driverController = new CommandSwerveController(0);
+  private final CommandXboxController operatorController = new CommandXboxController(1);
   /* Subsystems */
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
-
+  private final Intake mIntake = new frc.robot.subsystems.Intake();
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
@@ -46,6 +51,7 @@ public class RobotContainer {
     configureBindings();
 
     SmartDashboard.putData(sDrivetrainSubsystem);
+    SmartDashboard.putData(mIntake);
   }
 
   /**
@@ -87,6 +93,10 @@ public class RobotContainer {
                     driverController.getRawRotationRate() != 0.0
                         | driverController.getDriveRotationAngle().isPresent(),
                 () -> driverController.isSlowMode()));
+
+    // intake system bindings
+    operatorController.a().whileTrue(new IntakeCommand(mIntake));
+    operatorController.b().whileTrue(new OuttakeCommand(mIntake));
   }
 
   /**
