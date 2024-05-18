@@ -17,6 +17,8 @@ import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Transfer;
+
 import java.util.Optional;
 
 /**
@@ -33,7 +35,9 @@ public class RobotContainer {
   private final CommandXboxController operatorController = new CommandXboxController(1);
   /* Subsystems */
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
-  private final Intake mIntake = new frc.robot.subsystems.Intake();
+  private final Intake mIntake = new Intake();
+  private final Transfer mTransfer = new Transfer();
+  
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
@@ -51,6 +55,7 @@ public class RobotContainer {
 
     SmartDashboard.putData(sDrivetrainSubsystem);
     SmartDashboard.putData(mIntake);
+    SmartDashboard.putData(mTransfer);
   }
 
   /**
@@ -94,8 +99,8 @@ public class RobotContainer {
                 () -> driverController.isSlowMode()));
 
     // intake system bindings
-    operatorController.a().whileTrue(new IntakeCommand(mIntake));
-    operatorController.b().whileTrue(new OuttakeCommand(mIntake));
+    operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+    operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
   }
 
   /**

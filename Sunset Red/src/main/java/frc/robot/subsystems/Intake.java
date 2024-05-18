@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
@@ -51,7 +52,7 @@ public class Intake extends SubsystemBase {
     intakeConfigs.CurrentLimits.SupplyCurrentThreshold = 20.0;
     intakeConfigs.CurrentLimits.SupplyTimeThreshold = 0.0;
     mIntakeMotor.getConfigurator().apply(intakeConfigs);
-    mIntakeMotor.setControl(IntakeConstants.NEUTRAL);
+    mIntakeMotor.setControl(Constants.NEUTRAL);
     mIntakeMotor.optimizeBusUtilization();
 
     VictorSPXConfiguration centerConfigs = new VictorSPXConfiguration();

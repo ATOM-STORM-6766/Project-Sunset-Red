@@ -20,6 +20,10 @@ import frc.robot.config.SwerveModuleConfig.ModuleCorner;
  */
 public final class Constants {
   public static final double kPeriodicDt = TimedRobot.kDefaultPeriod; // seconds
+  public static final NeutralOut NEUTRAL = new NeutralOut();
+  public static final double kLongCANTimeoutSec = 0.1; // use for constructors
+  public static final int kLongCANTimeoutMs = 100; // use for constructors
+
 
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
@@ -142,6 +146,11 @@ public final class Constants {
     public static final int INTAKER_CENTER_ID = 13;
     // used for LED to tell note entered state
     public static final int INTAKER_ENTER_OMRON_ID = 5;
-    public static final NeutralOut NEUTRAL = new NeutralOut();
+  }
+
+  public static final class TransferConstants {
+    // TRANSFER
+    public static final int TRANSFER_ID = 27;
+    public static final int TRANSFER_OMRON_PORT = 5;
   }
 }
