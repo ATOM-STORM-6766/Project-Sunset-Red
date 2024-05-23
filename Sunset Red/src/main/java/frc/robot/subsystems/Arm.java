@@ -1,0 +1,185 @@
+package frc.robot.subsystems;
+import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.utils.Util;
+
+public class Arm extends SubsystemBase{
+    private static final double ARM_GEAR_RATIO = 80.0;
+    //private static final double ARM_CLIMB_TARGET_DEG = 30.0;
+    //private static final double ARM_CLIMB_MAX_DEG = 35.0;
+    private static final double ERR_TOL = 1.0 / 360.0;
+    private static final double STABILIZE_TIME = 0.1;
+    
+    private static final double LOW_SHOOT_TOLERANCE_ROTATION = 23.5 / 360.0;
+
+    private final TalonFX mArmTalon;
+    private final DelayedBoolean mArmInPosition;
+    private boolean mIsInPosition;
+    //private boolean climbTargetReached = false;
+    private final SoftwareLimitSwitchConfigs mSoftLimitConf = new SoftwareLimitSwitchConfigs();
+
+    private static class DelayedBoolean {
+        private boolean mLastValue;
+        private double mTransitionTimestamp;
+        private final double mDelay;
+    
+        public DelayedBoolean(double timestamp, double delay) {
+            mTransitionTimestamp = timestamp;
+            mLastValue = false;
+            mDelay = delay;
+        }
+    
+        public boolean update(double timestamp, boolean value) {
+            boolean result = false;
+    
+            if (value && !mLastValue) {
+                mTransitionTimestamp = timestamp;
+            }
+    
+            // If we are still true and we have transitioned.
+            if (value && (timestamp - mTransitionTimestamp > mDelay)) {
+                result = true;
+            }
+    
+            mLastValue = value;
+            return result;
+        }
+    }
+
+    private static class PeriodicIO {
+        public double armPosition = 0.0;
+        public double armCurrent = 0.0;
+        public MotionMagicVoltage ctrlval = new MotionMagicVoltage(ArmConstants.ARM_REST_POSITION);
+        public VoltageOut voltval = new VoltageOut(0.0);
+    }
+
+    private final PeriodicIO mPeriodicIO = new PeriodicIO();
+
+    private static Arm sInstance;
+    public static Arm getInstance(){
+        if(sInstance == null){
+            sInstance = new Arm();
+        }
+        return sInstance;
+    }
+    public Arm(){
+        mArmTalon = new TalonFX(ArmConstants.ARM_ID);
+        mArmInPosition = new DelayedBoolean(0.0, STABILIZE_TIME);
+        var armConfig = new TalonFXConfiguration();
+        armConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        armConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        mSoftLimitConf.ForwardSoftLimitThreshold = ArmConstants.ARM_MAX_POSITION;
+        mSoftLimitConf.ForwardSoftLimitEnable = true;
+        mSoftLimitConf.ReverseSoftLimitThreshold = ArmConstants.ARM_REST_POSITION;
+        mSoftLimitConf.ReverseSoftLimitEnable = true;
+        armConfig.SoftwareLimitSwitch = mSoftLimitConf;
+        armConfig.Voltage.PeakForwardVoltage = 12.0;
+        armConfig.Voltage.PeakReverseVoltage = -12.0;
+        armConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.02;
+        armConfig.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.02;
+        armConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        armConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
+        armConfig.CurrentLimits.SupplyCurrentThreshold = 60.0;
+        armConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
+        armConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+        armConfig.Slot0.kG = 0.7;
+        armConfig.Slot0.kV = 9.028;
+        armConfig.Slot0.kP = 100.0;
+        armConfig.Slot0.kI = 0.0;
+        armConfig.Slot0.kD = 0.0;
+        armConfig.MotionMagic.MotionMagicJerk = 0.0;
+        // seems mechanism rotation not rotor position
+        armConfig.MotionMagic.MotionMagicCruiseVelocity = 1.25;
+        armConfig.MotionMagic.MotionMagicAcceleration = 2.0;
+        armConfig.Feedback.SensorToMechanismRatio = ARM_GEAR_RATIO;
+        Util.checkReturn("arm", mArmTalon.getConfigurator().apply(armConfig, Constants.kLongCANTimeoutSec));
+        mArmTalon.setPosition(ArmConstants.ARM_REST_POSITION, Constants.kLongCANTimeoutSec);
+        Util.checkReturn("arm position", mArmTalon.getPosition().setUpdateFrequency(100, Constants.kLongCANTimeoutSec));
+        Util.checkReturn("arm current", mArmTalon.getTorqueCurrent().setUpdateFrequency(50, Constants.kLongCANTimeoutSec));
+        Util.checkReturn("arm canbus", mArmTalon.optimizeBusUtilization(Constants.kLongCANTimeoutSec));
+
+       stop();
+    }
+
+    @Override
+    public void periodic(){
+        readPeriodicInputs();
+        mArmTalon.setControl(mPeriodicIO.ctrlval);
+        outputTelemetry();
+    }
+
+    public void setAngle(double angle_deg) {
+        if (angle_deg < ArmConstants.ARM_REST_ANGLE || angle_deg > ArmConstants.ARM_MAX_ANGLE)
+            return;
+
+        setReverseLimit(true);
+        double angle_rotation = angle_deg / 360.0;
+        boolean same_target = (mPeriodicIO.ctrlval.Position == angle_rotation);
+        mPeriodicIO.ctrlval.Position = angle_rotation;
+        if (!same_target) {
+            // change of target re-evaluate inPosition status
+            mIsInPosition = mArmInPosition.update(Timer.getFPGATimestamp(), errorTolerated());
+        }
+    }
+    public void stop() {
+        mPeriodicIO.ctrlval.Position = ArmConstants.ARM_REST_POSITION;
+        setReverseLimit(true);
+    }
+
+    public void setVoltage(double voltage) {
+        mPeriodicIO.voltval.Output = voltage;
+        mArmTalon.setControl(mPeriodicIO.voltval);
+    }
+
+    public double getArmCurrent() {
+        return mPeriodicIO.armCurrent;
+    }
+
+    private boolean errorTolerated() {
+        return Math.abs(mPeriodicIO.ctrlval.Position - mPeriodicIO.armPosition) < ERR_TOL
+            || (mPeriodicIO.ctrlval.Position < LOW_SHOOT_TOLERANCE_ROTATION
+                && mPeriodicIO.armPosition <  LOW_SHOOT_TOLERANCE_ROTATION);
+    }
+
+    public boolean getInPosition() {
+        return mIsInPosition;
+    }
+
+    public double getAngleDeg() {
+        return mPeriodicIO.armPosition * 360.0;
+    }
+
+    private void readPeriodicInputs() {
+        mPeriodicIO.armPosition = mArmTalon.getPosition().getValueAsDouble();
+        mPeriodicIO.armCurrent = mArmTalon.getTorqueCurrent().getValueAsDouble();
+    }
+
+    public void setReverseLimit(boolean enable) {
+        if (mSoftLimitConf.ReverseSoftLimitEnable != enable) {
+            mSoftLimitConf.ReverseSoftLimitEnable = enable;
+            mArmTalon.getConfigurator().apply(mSoftLimitConf);
+        }
+    }
+
+    private void outputTelemetry() {
+        SmartDashboard.putNumber("Arm Angle", getAngleDeg());
+        SmartDashboard.putNumber("Arm Current", mPeriodicIO.armCurrent);
+        SmartDashboard.putBoolean("Arm In Position", getInPosition());
+        SmartDashboard.putString("Arm Control Req", mArmTalon.getAppliedControl().toString());
+    }
+
+
+}

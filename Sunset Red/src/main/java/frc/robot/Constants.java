@@ -152,4 +152,17 @@ public final class Constants {
     public static final int TRANSFER_ID = 27;
     public static final int TRANSFER_OMRON_PORT = 5;
   }
+
+  public static final class ArmConstants {
+    // ARM
+    public static final int ARM_ID = 10;
+    // arm pitch when resting in degrees
+    public static final double ARM_REST_ANGLE = 22.0;
+    // arm pitch when resting in rotations
+    public static final double ARM_REST_POSITION = ARM_REST_ANGLE / 360.0;
+    // arm pitch when in max pitch in degrees
+    public static final double ARM_MAX_ANGLE = 120.0;
+    // arm pitch when in max pitch in rotations
+    public static final double ARM_MAX_POSITION = ARM_MAX_ANGLE / 360.0;
+  }
 }
