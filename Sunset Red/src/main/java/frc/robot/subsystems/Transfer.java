@@ -30,8 +30,6 @@ public class Transfer extends SubsystemBase {
     public VoltageOut ctrlval = new VoltageOut(0.0);
   }
 
- 
-
   public Transfer() {
     mTransferTalon = new TalonFX(Constants.TransferConstants.TRANSFER_ID);
     mTransferOmron = new DigitalInput(Constants.TransferConstants.TRANSFER_OMRON_PORT);
