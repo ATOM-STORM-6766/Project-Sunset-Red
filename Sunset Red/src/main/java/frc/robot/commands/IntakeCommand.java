@@ -21,6 +21,14 @@ public class IntakeCommand extends Command {
   }
 
   @Override
+  public void execute(){
+    if(mTransfer.isOmronDetected()){
+      mTransfer.stop();
+      mIntake.stop();
+    }
+  }
+
+  @Override
   public void end(boolean interrupted) {
     mIntake.stop();
     mTransfer.stop();
