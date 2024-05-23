@@ -9,6 +9,8 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
@@ -19,13 +21,6 @@ public class Intake extends SubsystemBase {
   private static final double OUTTAKE_VOLTS = -6.0;
   private static final double OUTTAKE_CENTER_PERC = -0.4;
 
-  public enum IntakeState {
-    STOP,
-    INTAKE,
-    OUTTAKE
-  }
-
-  private IntakeState mIntakeState = IntakeState.STOP;
   private final TalonFX mIntakeMotor;
   private final VictorSPX mCenterMotor;
   private final PeriodicIO mPeriodicIO = new PeriodicIO();
@@ -72,27 +67,26 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     mIntakeMotor.setControl(mPeriodicIO.ctrlVal);
     mCenterMotor.set(ControlMode.PercentOutput, mPeriodicIO.centerPerc);
+    outputTelemetry();
   }
 
   public synchronized void setIntake() {
-    mIntakeState = IntakeState.INTAKE;
     mPeriodicIO.ctrlVal.Output = INTAKE_VOLTS;
     mPeriodicIO.centerPerc = INTAKE_CENTER_PERC;
   }
 
   public synchronized void setOuttake() {
-    mIntakeState = IntakeState.OUTTAKE;
     mPeriodicIO.ctrlVal.Output = OUTTAKE_VOLTS;
     mPeriodicIO.centerPerc = OUTTAKE_CENTER_PERC;
   }
 
   public synchronized void stop() {
-    mIntakeState = IntakeState.STOP;
     mPeriodicIO.ctrlVal.Output = 0.0;
     mPeriodicIO.centerPerc = 0.0;
   }
 
-  public synchronized IntakeState getIntakeState() {
-    return mIntakeState;
+  private void outputTelemetry() {
+    SmartDashboard.putNumber("Intake Voltage", mPeriodicIO.ctrlVal.Output);
+    SmartDashboard.putNumber("Intake Center Percent", mPeriodicIO.centerPerc);
   }
 }

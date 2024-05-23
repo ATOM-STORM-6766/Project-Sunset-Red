@@ -20,19 +20,19 @@ public class Transfer extends SubsystemBase {
 
   private final TalonFX mTransferTalon;
   private final DigitalInput mTransferOmron;
+  private final PeriodicIO mPeriodicIO = new PeriodicIO();
 
   private static class PeriodicIO {
     // INPUTS
-    public boolean omron_detected = false;
+    public boolean omronDetected = false;
 
     // OUTPUTS
     public VoltageOut ctrlval = new VoltageOut(0.0);
   }
 
-  private final PeriodicIO mPeriodicIO;
+ 
 
   public Transfer() {
-    mPeriodicIO = new PeriodicIO();
     mTransferTalon = new TalonFX(Constants.TransferConstants.TRANSFER_ID);
     mTransferOmron = new DigitalInput(Constants.TransferConstants.TRANSFER_OMRON_PORT);
 
@@ -59,13 +59,13 @@ public class Transfer extends SubsystemBase {
 
   @Override
   public void periodic() {
-    mPeriodicIO.omron_detected = !mTransferOmron.get();
+    mPeriodicIO.omronDetected = !mTransferOmron.get();
     mTransferTalon.setControl(mPeriodicIO.ctrlval);
     outputTelemetry();
   }
 
   public void setVoltage(double voltage) {
-    mPeriodicIO.ctrlval.Output = voltage;
+    mPeriodicIO.ctrlval = new VoltageOut(voltage);
   }
 
   public void stop() {
@@ -73,11 +73,11 @@ public class Transfer extends SubsystemBase {
   }
 
   public boolean isOmronDetected() {
-    return mPeriodicIO.omron_detected;
+    return mPeriodicIO.omronDetected;
   }
 
   public void outputTelemetry() {
     SmartDashboard.putNumber("Transfer Volt Out", mPeriodicIO.ctrlval.Output);
-    SmartDashboard.putBoolean("Transfer Omron Detected", mPeriodicIO.omron_detected);
+    SmartDashboard.putBoolean("Transfer Omron Detected", mPeriodicIO.omronDetected);
   }
 }
