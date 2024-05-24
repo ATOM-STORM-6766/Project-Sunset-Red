@@ -28,7 +28,8 @@ public class InitializeArmCommand extends Command {
 
   @Override
   public void execute() {
-    if(mArmIsInPosition.update(Timer.getFPGATimestamp(), mArm.getArmCurrent() < -INIT_CURRENT_THRESHOLD)){
+    if (mArmIsInPosition.update(
+        Timer.getFPGATimestamp(), mArm.getArmCurrent() < -INIT_CURRENT_THRESHOLD)) {
       mArm.setTalonToInitPosition();
       isFinished = true;
       System.out.println("Arm Init Finished");
@@ -37,7 +38,7 @@ public class InitializeArmCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
-    mArm.stop();
+    
   }
 
   @Override

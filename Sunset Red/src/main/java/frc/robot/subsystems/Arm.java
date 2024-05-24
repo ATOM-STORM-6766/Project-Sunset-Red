@@ -10,12 +10,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.utils.Util;
 
 public class Arm extends SubsystemBase {
@@ -146,7 +144,7 @@ public class Arm extends SubsystemBase {
     }
   }
 
-  public void setTalonToInitPosition(){
+  public void setTalonToInitPosition() {
     mArmTalon.setPosition(ArmConstants.ARM_REST_POSITION);
   }
 
