@@ -2,7 +2,9 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -32,6 +34,7 @@ public class Arm extends SubsystemBase {
   private static class PeriodicIO {
     public double armPosition = 0.0;
     public double armCurrent = 0.0;
+    public ControlRequest activeCtrlReq = new NeutralOut();
     public MotionMagicVoltage ctrlval = new MotionMagicVoltage(ArmConstants.ARM_REST_POSITION);
     public VoltageOut voltval = new VoltageOut(0.0);
   }
@@ -93,7 +96,7 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     readPeriodicInputs();
-    mArmTalon.setControl(mPeriodicIO.ctrlval);
+    mArmTalon.setControl(mPeriodicIO.activeCtrlReq);
     outputTelemetry();
   }
 
@@ -103,16 +106,18 @@ public class Arm extends SubsystemBase {
     setReverseLimit(true);
     double angle_rotation = angle_deg / 360.0;
     mPeriodicIO.ctrlval.Position = angle_rotation;
+    mPeriodicIO.activeCtrlReq = mPeriodicIO.ctrlval;
   }
 
   public void stop() {
     mPeriodicIO.ctrlval.Position = ArmConstants.ARM_REST_POSITION;
+    mPeriodicIO.activeCtrlReq = mPeriodicIO.ctrlval;
     setReverseLimit(true);
   }
 
   public void setVoltage(double voltage) {
     mPeriodicIO.voltval.Output = voltage;
-    mArmTalon.setControl(mPeriodicIO.voltval);
+    mPeriodicIO.activeCtrlReq = mPeriodicIO.voltval;
   }
 
   public double getArmCurrent() {
@@ -146,8 +151,10 @@ public class Arm extends SubsystemBase {
   }
 
   private void outputTelemetry() {
+    SmartDashboard.putNumber("Arm Target Angle", mPeriodicIO.ctrlval.Position*360);
     SmartDashboard.putNumber("Arm Angle", getAngleDeg());
     SmartDashboard.putNumber("Arm Current", mPeriodicIO.armCurrent);
     SmartDashboard.putString("Arm Control Req", mArmTalon.getAppliedControl().toString());
+
   }
 }
