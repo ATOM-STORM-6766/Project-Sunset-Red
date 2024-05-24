@@ -11,10 +11,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.InitializeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.OuttakeCommand;
+import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
@@ -36,6 +39,7 @@ public class RobotContainer {
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
   private final Intake mIntake = new Intake();
   private final Transfer mTransfer = new Transfer();
+  private final Arm mArm = new Arm();
 
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
@@ -55,6 +59,7 @@ public class RobotContainer {
     SmartDashboard.putData(sDrivetrainSubsystem);
     SmartDashboard.putData(mIntake);
     SmartDashboard.putData(mTransfer);
+    SmartDashboard.putData(mArm);
   }
 
   /**
@@ -100,6 +105,9 @@ public class RobotContainer {
     // intake system bindings
     operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
     operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+
+    operatorController.x().whileTrue(new InitializeArmCommand(mArm));
+    operatorController.y().whileTrue(new SetArmAngleCommand(mArm, 20));
   }
 
   /**

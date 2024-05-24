@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.utils.Util;
 
 public class Arm extends SubsystemBase {
@@ -25,38 +26,8 @@ public class Arm extends SubsystemBase {
   private static final double LOW_SHOOT_TOLERANCE_ROTATION = 23.5 / 360.0;
 
   private final TalonFX mArmTalon;
-  private final DelayedBoolean mArmInPosition;
-  private boolean mIsInPosition;
   // private boolean climbTargetReached = false;
   private final SoftwareLimitSwitchConfigs mSoftLimitConf = new SoftwareLimitSwitchConfigs();
-
-  private static class DelayedBoolean {
-    private boolean mLastValue;
-    private double mTransitionTimestamp;
-    private final double mDelay;
-
-    public DelayedBoolean(double timestamp, double delay) {
-      mTransitionTimestamp = timestamp;
-      mLastValue = false;
-      mDelay = delay;
-    }
-
-    public boolean update(double timestamp, boolean value) {
-      boolean result = false;
-
-      if (value && !mLastValue) {
-        mTransitionTimestamp = timestamp;
-      }
-
-      // If we are still true and we have transitioned.
-      if (value && (timestamp - mTransitionTimestamp > mDelay)) {
-        result = true;
-      }
-
-      mLastValue = value;
-      return result;
-    }
-  }
 
   private static class PeriodicIO {
     public double armPosition = 0.0;
@@ -78,7 +49,6 @@ public class Arm extends SubsystemBase {
 
   public Arm() {
     mArmTalon = new TalonFX(ArmConstants.ARM_ID);
-    mArmInPosition = new DelayedBoolean(0.0, STABILIZE_TIME);
     var armConfig = new TalonFXConfiguration();
     armConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     armConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -132,12 +102,7 @@ public class Arm extends SubsystemBase {
 
     setReverseLimit(true);
     double angle_rotation = angle_deg / 360.0;
-    boolean same_target = (mPeriodicIO.ctrlval.Position == angle_rotation);
     mPeriodicIO.ctrlval.Position = angle_rotation;
-    if (!same_target) {
-      // change of target re-evaluate inPosition status
-      mIsInPosition = mArmInPosition.update(Timer.getFPGATimestamp(), errorTolerated());
-    }
   }
 
   public void stop() {
@@ -154,14 +119,10 @@ public class Arm extends SubsystemBase {
     return mPeriodicIO.armCurrent;
   }
 
-  private boolean errorTolerated() {
+  public boolean shootErrorTolerated() {
     return Math.abs(mPeriodicIO.ctrlval.Position - mPeriodicIO.armPosition) < ERR_TOL
         || (mPeriodicIO.ctrlval.Position < LOW_SHOOT_TOLERANCE_ROTATION
             && mPeriodicIO.armPosition < LOW_SHOOT_TOLERANCE_ROTATION);
-  }
-
-  public boolean getInPosition() {
-    return mIsInPosition;
   }
 
   public double getAngleDeg() {
@@ -180,10 +141,13 @@ public class Arm extends SubsystemBase {
     }
   }
 
+  public void setTalonToInitPosition(){
+    mArmTalon.setPosition(ArmConstants.ARM_REST_POSITION);
+  }
+
   private void outputTelemetry() {
     SmartDashboard.putNumber("Arm Angle", getAngleDeg());
     SmartDashboard.putNumber("Arm Current", mPeriodicIO.armCurrent);
-    SmartDashboard.putBoolean("Arm In Position", getInPosition());
     SmartDashboard.putString("Arm Control Req", mArmTalon.getAppliedControl().toString());
   }
 }
