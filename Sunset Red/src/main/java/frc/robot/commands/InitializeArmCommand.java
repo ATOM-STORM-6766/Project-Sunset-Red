@@ -10,7 +10,7 @@ public class InitializeArmCommand extends Command {
   private final Arm mArm;
   private static final double ARM_CLIMB_VOLTS = -2.0;
   private static final double INIT_CURRENT_THRESHOLD = 30.0;
-  private boolean isFinished = false; 
+  private boolean isFinished = false;
 
   private DelayedBoolean mArmIsInPosition;
 
@@ -28,16 +28,15 @@ public class InitializeArmCommand extends Command {
 
   @Override
   public void execute() {
-    if(mArmIsInPosition.update(Timer.getFPGATimestamp(), mArm.getArmCurrent() < -INIT_CURRENT_THRESHOLD)){
+    if (mArmIsInPosition.update(
+        Timer.getFPGATimestamp(), mArm.getArmCurrent() < -INIT_CURRENT_THRESHOLD)) {
       mArm.setTalonToInitPosition();
       isFinished = true;
     }
   }
 
   @Override
-  public void end(boolean interrupted) {
-    
-  }
+  public void end(boolean interrupted) {}
 
   @Override
   public boolean isFinished() {
