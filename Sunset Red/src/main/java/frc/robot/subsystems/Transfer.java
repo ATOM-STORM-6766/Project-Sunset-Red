@@ -16,7 +16,7 @@ public class Transfer extends SubsystemBase {
   public static final double INTAKE_VOLTS = 4.0;
   public static final double FEED_VOLTS = 8.0;
   public static final double AMP_RELEASE_VOLTS = 8.0;
-  public static final double OUTTAKE_VOLTS = -8.0;
+  public static final double OUTTAKE_VOLTS = -4.0;
 
   private final TalonFX mTransferTalon;
   private final DigitalInput mTransferOmron;
