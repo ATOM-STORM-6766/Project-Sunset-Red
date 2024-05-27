@@ -10,7 +10,7 @@ public class InitializeArmCommand extends Command {
   private final Arm mArm;
   private static final double ARM_CLIMB_VOLTS = -0.5;
   private static final double INIT_CURRENT_THRESHOLD = 10.0;
-  private boolean isFinished = false; 
+  private boolean isFinished = false;
 
   private DelayedBoolean mArmIsInPosition;
 
@@ -37,9 +37,7 @@ public class InitializeArmCommand extends Command {
   }
 
   @Override
-  public void end(boolean interrupted) {
-    
-  }
+  public void end(boolean interrupted) {}
 
   @Override
   public boolean isFinished() {

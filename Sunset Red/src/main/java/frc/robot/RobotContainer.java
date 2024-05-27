@@ -105,7 +105,7 @@ public class RobotContainer {
     // intake system bindings
     operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
     operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-    
+
     operatorController.povLeft().onTrue(new SetArmAngleCommand(mArm, 22.5));
     operatorController.x().onTrue(new InitializeArmCommand(mArm));
     operatorController.y().onTrue(new SetArmAngleCommand(mArm, 50));

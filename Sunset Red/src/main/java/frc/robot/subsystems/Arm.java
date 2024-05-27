@@ -149,10 +149,9 @@ public class Arm extends SubsystemBase {
   }
 
   private void outputTelemetry() {
-    SmartDashboard.putNumber("Arm Target Angle", mPeriodicIO.ctrlval.Position*360);
+    SmartDashboard.putNumber("Arm Target Angle", mPeriodicIO.ctrlval.Position * 360);
     SmartDashboard.putNumber("Arm Angle", getAngleDeg());
     SmartDashboard.putNumber("Arm Current", mPeriodicIO.armCurrent);
     SmartDashboard.putString("Arm Control Req", mArmTalon.getAppliedControl().toString());
-
   }
 }
