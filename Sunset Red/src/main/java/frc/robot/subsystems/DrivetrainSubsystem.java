@@ -44,8 +44,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final ChassisSpeedKalmanFilterSimplified mSpeedFilter;
   private SwerveHeadingController mHeadingController = new SwerveHeadingController();
 
-  private ChassisSpeeds mKinematicSpeed;
-  private ChassisSpeeds mFilteredSpeed;
+  private ChassisSpeeds mKinematicSpeed = new ChassisSpeeds();
+  private ChassisSpeeds mFilteredSpeed = new ChassisSpeeds();
 
   // LogEntries
   private StructLogEntry<Pose2d> mPoseLog;
@@ -78,7 +78,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             mSwerveModules[2].getTranslationToRobotCenter(),
             mSwerveModules[3].getTranslationToRobotCenter());
 
-    mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(0.5, 0.5, Constants.kPeriodicDt);
+    mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(0.4, 0.4, Constants.kPeriodicDt);
 
     mEstimator =
         new SwerveDrivePoseEstimator(
@@ -108,6 +108,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     builder.addDoubleProperty("PoseXMeter", () -> getPose().getX(), null);
     builder.addDoubleProperty("PoseYMeter", () -> getPose().getY(), null);
     builder.addDoubleProperty("PoseAngleDegree", () -> getPose().getRotation().getDegrees(), null);
+    builder.addDoubleProperty("chassis sped x", () -> mKinematicSpeed.vxMetersPerSecond, null);
+    builder.addDoubleProperty("filtered speed x", () -> mFilteredSpeed.vxMetersPerSecond, null);
 
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
