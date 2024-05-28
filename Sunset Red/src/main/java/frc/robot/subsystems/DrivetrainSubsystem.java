@@ -285,6 +285,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
           getGyroYaw(),
           getModulePositions(),
           new Pose2d(getPose().getTranslation(), new Rotation2d()));
+      mHeadingController.reset();
     }
   }
 

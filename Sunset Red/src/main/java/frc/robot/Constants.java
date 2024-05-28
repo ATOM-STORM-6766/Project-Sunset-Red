@@ -107,6 +107,9 @@ public final class Constants {
   }
 
   public static final class DriveConstants {
+
+    public static final double MAX_VMS = 3; // maximum velocity in meters per second
+    public static final double MAX_RADPS = 5; // maximum radians per second rotation
     // driver constants
     public static final double kDeadband = 0.1;
 

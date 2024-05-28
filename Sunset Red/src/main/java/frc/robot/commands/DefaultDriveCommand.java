@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -47,9 +48,9 @@ public class DefaultDriveCommand extends Command {
     // Running the lambda statements and getting the velocity values
     double angularVelocity;
     Optional<Rotation2d> goalHeading;
-    Translation2d driveVector = driveVectorSupplier.get();
+    Translation2d driveVector = driveVectorSupplier.get().times(DriveConstants.MAX_VMS);
 
-    angularVelocity = rawRotationRateSupplier.get();
+    angularVelocity = rawRotationRateSupplier.get() * DriveConstants.MAX_RADPS;
     goalHeading = goalHeadingSupplier.get();
     mDrivetrainSubsystem.drive(
         driveVector, angularVelocity, goalHeading, !robotCentricSupplier.getAsBoolean());
