@@ -10,17 +10,23 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.commands.DefaultDriveCommand;
+import frc.robot.commands.FeedCommand;
 import frc.robot.commands.InitializeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
+import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
+import frc.robot.utils.ShootingParameters;
+
 import java.util.Optional;
 
 /**
@@ -39,6 +45,7 @@ public class RobotContainer {
   private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
   private final Intake mIntake = new Intake();
   private final Transfer mTransfer = new Transfer();
+  private final Shooter mShooter = new Shooter();
   private final Arm mArm = new Arm();
 
   /* pre-constructed commands */
@@ -60,6 +67,7 @@ public class RobotContainer {
     SmartDashboard.putData(mIntake);
     SmartDashboard.putData(mTransfer);
     SmartDashboard.putData(mArm);
+    SmartDashboard.putData(mShooter);
   }
 
   /**
@@ -103,12 +111,23 @@ public class RobotContainer {
                 () -> driverController.isSlowMode()));
 
     // intake system bindings
-    operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
-    operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+    driverController.y().whileTrue(new IntakeCommand(mIntake, mTransfer));
+    // operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
-    operatorController.povLeft().onTrue(new SetArmAngleCommand(mArm, 22.5));
-    operatorController.x().onTrue(new InitializeArmCommand(mArm));
-    operatorController.y().onTrue(new SetArmAngleCommand(mArm, 50));
+    // operatorController.povLeft().onTrue(new SetArmAngleCommand(mArm, 22.5));
+    // operatorController.x().onTrue(new InitializeArmCommand(mArm));
+    // operatorController.y().onTrue(new SetArmAngleCommand(mArm, 50));
+
+    // Below Speaker
+    driverController.x().whileTrue( // use whileTrue because need to cancel feed if button released
+                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps) // this command finished means shooter reached target velocity
+      .alongWith(new SetArmAngleCommand(mArm, ShootingParameters.BELOW_SPEAKER.angle_deg)) // this command finished means arm reached target angle
+      .andThen(  new FeedCommand(mTransfer))
+    );
+    driverController.x().onFalse(
+               new SetShooterTargetCommand(mShooter, 0)
+      .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE))
+    );
   }
 
   /**

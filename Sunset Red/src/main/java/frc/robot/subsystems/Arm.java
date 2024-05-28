@@ -10,6 +10,8 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -92,10 +94,31 @@ public class Arm extends SubsystemBase {
   }
 
   @Override
+  public void initSendable(SendableBuilder builder) {
+      super.initSendable(builder);
+
+      builder.addBooleanProperty("isShootErrorTolerated", ()->shootErrorTolerated(), null);
+  }
+
+  @Override
   public void periodic() {
     readPeriodicInputs();
-    mArmTalon.setControl(mPeriodicIO.activeCtrlReq);
+    writePeriodicOutputs();
     outputTelemetry();
+  }
+
+  private void readPeriodicInputs() {
+    mPeriodicIO.armPosition = mArmTalon.getPosition().getValueAsDouble();
+    mPeriodicIO.armCurrent = mArmTalon.getTorqueCurrent().getValueAsDouble();
+  }
+
+  private void writePeriodicOutputs(){
+    if(mPeriodicIO.ctrlval.Position < ArmConstants.ARM_REST_POSITION + 5.0/360 && mPeriodicIO.armPosition < ArmConstants.ARM_REST_POSITION + 5.0/360) {
+      // stop power when resting
+      mArmTalon.setControl(Constants.NEUTRAL);
+    }else{
+      mArmTalon.setControl(mPeriodicIO.activeCtrlReq);
+    }
   }
 
   public void setAngle(double angle_deg) {
@@ -109,7 +132,7 @@ public class Arm extends SubsystemBase {
 
   public void stop() {
     mPeriodicIO.ctrlval.Position = ArmConstants.ARM_REST_POSITION;
-    mPeriodicIO.activeCtrlReq = mPeriodicIO.ctrlval;
+    mPeriodicIO.activeCtrlReq = Constants.NEUTRAL;
     setReverseLimit(true);
   }
 
@@ -132,10 +155,7 @@ public class Arm extends SubsystemBase {
     return mPeriodicIO.armPosition * 360.0;
   }
 
-  private void readPeriodicInputs() {
-    mPeriodicIO.armPosition = mArmTalon.getPosition().getValueAsDouble();
-    mPeriodicIO.armCurrent = mArmTalon.getTorqueCurrent().getValueAsDouble();
-  }
+  
 
   public void setReverseLimit(boolean enable) {
     if (mSoftLimitConf.ReverseSoftLimitEnable != enable) {

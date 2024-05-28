@@ -167,4 +167,9 @@ public final class Constants {
 
     public static final double STABILIZE_TIME = 0.1;
   }
+
+  public static final class ShooterConstants{
+    public static final int SHOOTER_ID = 12;
+    public static final int SHOOTER_FOLLOWER = 15;
+  }
 }
