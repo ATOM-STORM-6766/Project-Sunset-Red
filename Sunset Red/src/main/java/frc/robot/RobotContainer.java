@@ -112,6 +112,7 @@ public class RobotContainer {
 
     // intake system bindings
     driverController.y().whileTrue(new IntakeCommand(mIntake, mTransfer));
+    driverController.back().whileFalse(new OuttakeCommand(mIntake, mTransfer));
     // operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
     // operatorController.povLeft().onTrue(new SetArmAngleCommand(mArm, 22.5));
@@ -120,8 +121,8 @@ public class RobotContainer {
 
     // Below Speaker
     driverController.x().whileTrue( // use whileTrue because need to cancel feed if button released
-                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps) // this command finished means shooter reached target velocity
-      .alongWith(new SetArmAngleCommand(mArm, ShootingParameters.BELOW_SPEAKER.angle_deg)) // this command finished means arm reached target angle
+                 new SetShooterTargetCommand(mShooter, ShootingParameters.NEAR_SHOOT.speed_rps) // this command finished means shooter reached target velocity
+      .alongWith(new SetArmAngleCommand(mArm, ShootingParameters.NEAR_SHOOT.angle_deg)) // this command finished means arm reached target angle
       .andThen(  new FeedCommand(mTransfer))
     );
     driverController.x().onFalse(

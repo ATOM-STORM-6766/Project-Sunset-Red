@@ -9,6 +9,10 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -22,21 +26,24 @@ public class Intake extends SubsystemBase {
 
   private final TalonFX mIntakeMotor;
   private final VictorSPX mCenterMotor;
+  private final CANSparkMax mExteriorIntakeMotor;
   private final PeriodicIO mPeriodicIO = new PeriodicIO();
 
   private static class PeriodicIO {
     // OUTPUTS
     public VoltageOut ctrlVal = new VoltageOut(0.0);
     public double centerPerc = 0.0;
+    public double exteriorVolt = 0.0;
   }
 
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);
     mCenterMotor = new VictorSPX(IntakeConstants.INTAKER_CENTER_ID);
+    mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
 
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
     intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    intakeConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     intakeConfigs.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
     intakeConfigs.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
     intakeConfigs.Voltage.PeakForwardVoltage = 12.0;
@@ -56,8 +63,14 @@ public class Intake extends SubsystemBase {
     centerConfigs.peakOutputReverse = -1.0;
     mCenterMotor.configAllSettings(centerConfigs);
     mCenterMotor.setInverted(false);
-    mCenterMotor.setNeutralMode(NeutralMode.Brake);
+    mCenterMotor.setNeutralMode(NeutralMode.Coast);
     mCenterMotor.set(ControlMode.PercentOutput, 0.0);
+
+    mExteriorIntakeMotor.clearFaults();
+    mExteriorIntakeMotor.setInverted(true);
+    mExteriorIntakeMotor.setIdleMode(IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
+    mExteriorIntakeMotor.setVoltage(0);
+    mExteriorIntakeMotor.burnFlash();
 
     stop();
   }
@@ -66,26 +79,31 @@ public class Intake extends SubsystemBase {
   public void periodic() {
     mIntakeMotor.setControl(mPeriodicIO.ctrlVal);
     mCenterMotor.set(ControlMode.PercentOutput, mPeriodicIO.centerPerc);
+    mExteriorIntakeMotor.set(mPeriodicIO.exteriorVolt);
     outputTelemetry();
   }
 
   public synchronized void setIntake() {
     mPeriodicIO.ctrlVal.Output = INTAKE_VOLTS;
     mPeriodicIO.centerPerc = INTAKE_CENTER_PERC;
+    mPeriodicIO.exteriorVolt = 0.5;
   }
 
   public synchronized void setOuttake() {
     mPeriodicIO.ctrlVal.Output = OUTTAKE_VOLTS;
     mPeriodicIO.centerPerc = OUTTAKE_CENTER_PERC;
+    mPeriodicIO.exteriorVolt = -0.5;
   }
 
   public synchronized void stop() {
     mPeriodicIO.ctrlVal.Output = 0.0;
     mPeriodicIO.centerPerc = 0.0;
+    mPeriodicIO.exteriorVolt = 0.0;
   }
 
   private void outputTelemetry() {
     SmartDashboard.putNumber("Intake Voltage", mPeriodicIO.ctrlVal.Output);
     SmartDashboard.putNumber("Intake Center Percent", mPeriodicIO.centerPerc);
+    SmartDashboard.putNumber("Intake Exterior Perc", mPeriodicIO.exteriorVolt);
   }
 }
