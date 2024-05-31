@@ -56,18 +56,21 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
   private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
 
-  private SwerveSetpoint mSetpoint = new SwerveSetpoint(new ChassisSpeeds(), new SwerveModuleState[] {
-        new SwerveModuleState(),
-        new SwerveModuleState(),
-        new SwerveModuleState(),
-        new SwerveModuleState(),
-    });
+  private SwerveSetpoint mSetpoint =
+      new SwerveSetpoint(
+          new ChassisSpeeds(),
+          new SwerveModuleState[] {
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+          });
   private SwerveSetpointGenerator mSetpointGenerator;
-  private SwerveKinematicLimits mKinematicLimits = new SwerveKinematicLimits(
-      DriveConstants.kPhysicalMaxSpeedMetersPerSecond * 0.95,
-      DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 0.3,
-      100
-  );
+  private SwerveKinematicLimits mKinematicLimits =
+      new SwerveKinematicLimits(
+          DriveConstants.kPhysicalMaxSpeedMetersPerSecond * 0.95,
+          DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 0.3,
+          100);
 
   private double lastRotation = 0.0;
   private double headingCorrection = 0.0;
@@ -161,24 +164,24 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   private void genSetpointAndApply(ChassisSpeeds des_cs) {
-        final Pose2d kPose2dIdentity = new Pose2d();
-        final double kLooperFreq = 1.0 / Constants.kPeriodicDt;
+    final Pose2d kPose2dIdentity = new Pose2d();
+    final double kLooperFreq = 1.0 / Constants.kPeriodicDt;
 
-        Pose2d robot_pose_vel = new Pose2d(
+    Pose2d robot_pose_vel =
+        new Pose2d(
             des_cs.vxMetersPerSecond * Constants.kPeriodicDt,
             des_cs.vyMetersPerSecond * Constants.kPeriodicDt,
-            Rotation2d.fromRadians(des_cs.omegaRadiansPerSecond * Constants.kPeriodicDt)
-        );
-        Twist2d twist_vel = kPose2dIdentity.log(robot_pose_vel);
-        ChassisSpeeds updated_chassis_speeds = new ChassisSpeeds(
-            twist_vel.dx * kLooperFreq, 
-            twist_vel.dy * kLooperFreq, 
-            twist_vel.dtheta * kLooperFreq
-        );
-        mSetpoint = mSetpointGenerator.generateSetpoint(mKinematicLimits, mSetpoint, updated_chassis_speeds, Constants.kPeriodicDt, this);
-        
-        setModuleStates(mSetpoint.mModuleStates);
-    }
+            Rotation2d.fromRadians(des_cs.omegaRadiansPerSecond * Constants.kPeriodicDt));
+    Twist2d twist_vel = kPose2dIdentity.log(robot_pose_vel);
+    ChassisSpeeds updated_chassis_speeds =
+        new ChassisSpeeds(
+            twist_vel.dx * kLooperFreq, twist_vel.dy * kLooperFreq, twist_vel.dtheta * kLooperFreq);
+    mSetpoint =
+        mSetpointGenerator.generateSetpoint(
+            mKinematicLimits, mSetpoint, updated_chassis_speeds, Constants.kPeriodicDt, this);
+
+    setModuleStates(mSetpoint.mModuleStates);
+  }
 
   /**
    * Drives the robot using the specified translation, rotation, and field-centric mode.
@@ -205,14 +208,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
     lastRotation = rotation;
     genSetpointAndApply(
-      fieldCentric
-          ? ChassisSpeeds.fromFieldRelativeSpeeds(
-              translation.getX(),
-              translation.getY(),
-              rotation + headingCorrection,
-              getHeading())
-          : new ChassisSpeeds(
-              translation.getX(), translation.getY(), rotation + headingCorrection));
+        fieldCentric
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), translation.getY(), rotation + headingCorrection, getHeading())
+            : new ChassisSpeeds(
+                translation.getX(), translation.getY(), rotation + headingCorrection));
   }
 
   /**
@@ -409,5 +409,5 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public SwerveDriveModule[] getModuleArray() {
     return mSwerveModules;
-}
+  }
 }

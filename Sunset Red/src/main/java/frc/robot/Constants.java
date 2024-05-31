@@ -9,7 +9,6 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
-import frc.robot.subsystems.SwerveDriveModule;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -109,7 +108,7 @@ public final class Constants {
 
   public static final class DriveConstants {
 
-       // driver constants
+    // driver constants
     public static final double kDeadband = 0.1;
 
     // chassis dimensions
@@ -171,7 +170,7 @@ public final class Constants {
     public static final double STABILIZE_TIME = 0.1;
   }
 
-  public static final class ShooterConstants{
+  public static final class ShooterConstants {
     public static final int SHOOTER_ID = 12;
     public static final int SHOOTER_FOLLOWER = 15;
   }

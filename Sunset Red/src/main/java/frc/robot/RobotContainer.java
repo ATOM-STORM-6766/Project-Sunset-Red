@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.FeedCommand;
-import frc.robot.commands.InitializeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
@@ -26,7 +25,6 @@ import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
 import frc.robot.utils.ShootingParameters;
-
 import java.util.Optional;
 
 /**
@@ -120,15 +118,24 @@ public class RobotContainer {
     // operatorController.y().onTrue(new SetArmAngleCommand(mArm, 50));
 
     // Below Speaker
-    driverController.x().whileTrue( // use whileTrue because need to cancel feed if button released
-                 new SetShooterTargetCommand(mShooter, ShootingParameters.NEAR_SHOOT.speed_rps) // this command finished means shooter reached target velocity
-      .alongWith(new SetArmAngleCommand(mArm, ShootingParameters.NEAR_SHOOT.angle_deg)) // this command finished means arm reached target angle
-      .andThen(  new FeedCommand(mTransfer))
-    );
-    driverController.x().onFalse(
-               new SetShooterTargetCommand(mShooter, 0)
-      .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE))
-    );
+    driverController
+        .x()
+        .whileTrue( // use whileTrue because need to cancel feed if button released
+            new SetShooterTargetCommand(
+                    mShooter,
+                    ShootingParameters.NEAR_SHOOT
+                        .speed_rps) // this command finished means shooter reached target velocity
+                .alongWith(
+                    new SetArmAngleCommand(
+                        mArm,
+                        ShootingParameters.NEAR_SHOOT
+                            .angle_deg)) // this command finished means arm reached target angle
+                .andThen(new FeedCommand(mTransfer)));
+    driverController
+        .x()
+        .onFalse(
+            new SetShooterTargetCommand(mShooter, 0)
+                .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
   }
 
   /**

@@ -48,9 +48,11 @@ public class DefaultDriveCommand extends Command {
     // Running the lambda statements and getting the velocity values
     double angularVelocity;
     Optional<Rotation2d> goalHeading;
-    Translation2d driveVector = driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
+    Translation2d driveVector =
+        driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond);
 
-    angularVelocity = rawRotationRateSupplier.get() * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond;
+    angularVelocity =
+        rawRotationRateSupplier.get() * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond;
     goalHeading = goalHeadingSupplier.get();
     mDrivetrainSubsystem.drive(
         driveVector, angularVelocity, goalHeading, !robotCentricSupplier.getAsBoolean());

@@ -9,10 +9,9 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import com.revrobotics.CANSparkMax;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -39,7 +38,8 @@ public class Intake extends SubsystemBase {
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);
     mCenterMotor = new VictorSPX(IntakeConstants.INTAKER_CENTER_ID);
-    mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
+    mExteriorIntakeMotor =
+        new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
 
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
     intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -68,7 +68,8 @@ public class Intake extends SubsystemBase {
 
     mExteriorIntakeMotor.clearFaults();
     mExteriorIntakeMotor.setInverted(true);
-    mExteriorIntakeMotor.setIdleMode(IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
+    mExteriorIntakeMotor.setIdleMode(
+        IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
     mExteriorIntakeMotor.setVoltage(0);
     mExteriorIntakeMotor.burnFlash();
 

@@ -10,7 +10,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -95,9 +94,9 @@ public class Arm extends SubsystemBase {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-      super.initSendable(builder);
+    super.initSendable(builder);
 
-      builder.addBooleanProperty("isShootErrorTolerated", ()->shootErrorTolerated(), null);
+    builder.addBooleanProperty("isShootErrorTolerated", () -> shootErrorTolerated(), null);
   }
 
   @Override
@@ -112,11 +111,12 @@ public class Arm extends SubsystemBase {
     mPeriodicIO.armCurrent = mArmTalon.getTorqueCurrent().getValueAsDouble();
   }
 
-  private void writePeriodicOutputs(){
-    if(mPeriodicIO.ctrlval.Position < ArmConstants.ARM_REST_POSITION + 3.0/360 && mPeriodicIO.armPosition < ArmConstants.ARM_REST_POSITION + 5.0/360) {
+  private void writePeriodicOutputs() {
+    if (mPeriodicIO.ctrlval.Position < ArmConstants.ARM_REST_POSITION + 3.0 / 360
+        && mPeriodicIO.armPosition < ArmConstants.ARM_REST_POSITION + 5.0 / 360) {
       // stop power when resting
       mArmTalon.setControl(Constants.NEUTRAL);
-    }else{
+    } else {
       mArmTalon.setControl(mPeriodicIO.activeCtrlReq);
     }
   }
@@ -154,8 +154,6 @@ public class Arm extends SubsystemBase {
   public double getAngleDeg() {
     return mPeriodicIO.armPosition * 360.0;
   }
-
-  
 
   public void setReverseLimit(boolean enable) {
     if (mSoftLimitConf.ReverseSoftLimitEnable != enable) {
