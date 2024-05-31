@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
+import frc.robot.subsystems.SwerveDriveModule;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -108,9 +109,7 @@ public final class Constants {
 
   public static final class DriveConstants {
 
-    public static final double MAX_VMS = 3; // maximum velocity in meters per second
-    public static final double MAX_RADPS = 5; // maximum radians per second rotation
-    // driver constants
+       // driver constants
     public static final double kDeadband = 0.1;
 
     // chassis dimensions
@@ -148,6 +147,7 @@ public final class Constants {
     public static final int INTAKER_CENTER_ID = 13;
     // used for LED to tell note entered state
     public static final int INTAKER_ENTER_OMRON_ID = 5;
+    public static final int INTAKE_EXTERIOR_ID = 30;
   }
 
   public static final class TransferConstants {

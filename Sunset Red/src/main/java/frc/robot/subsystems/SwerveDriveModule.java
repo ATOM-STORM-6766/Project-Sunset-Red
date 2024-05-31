@@ -311,4 +311,11 @@ public class SwerveDriveModule {
   public double getAzimuthOffsetRotations() {
     return mConfig.azimuthEncoderOffsetRotation;
   }
+
+  /**
+     * Module position relative to chassis center, robot oriented
+     */
+  public Translation2d getModulePositionToCenter() {
+    return mConfig.corner.modulePosition;
+  }
 }

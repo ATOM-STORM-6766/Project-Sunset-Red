@@ -8,6 +8,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -29,6 +30,9 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OdometryConstants;
 import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.lib6907.swerve.SwerveKinematicLimits;
+import frc.robot.lib6907.swerve.SwerveSetpoint;
+import frc.robot.lib6907.swerve.SwerveSetpointGenerator;
 import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
 import frc.robot.utils.SwerveHeadingController;
 import java.util.Optional;
@@ -51,6 +55,19 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private StructLogEntry<Pose2d> mPoseLog;
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
   private StructLogEntry<ChassisSpeeds> mFilteredSpeedLog;
+
+  private SwerveSetpoint mSetpoint = new SwerveSetpoint(new ChassisSpeeds(), new SwerveModuleState[] {
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+    });
+  private SwerveSetpointGenerator mSetpointGenerator;
+  private SwerveKinematicLimits mKinematicLimits = new SwerveKinematicLimits(
+      DriveConstants.kPhysicalMaxSpeedMetersPerSecond * 0.95,
+      DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 0.3,
+      100
+  );
 
   private double lastRotation = 0.0;
   private double headingCorrection = 0.0;
@@ -77,7 +94,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             mSwerveModules[1].getTranslationToRobotCenter(),
             mSwerveModules[2].getTranslationToRobotCenter(),
             mSwerveModules[3].getTranslationToRobotCenter());
-
+    mSetpointGenerator = new SwerveSetpointGenerator(mKinematics);
     mSpeedFilter = new ChassisSpeedKalmanFilterSimplified(0.4, 0.4, Constants.kPeriodicDt);
 
     mEstimator =
@@ -143,6 +160,26 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mSwerveModules[3].updateLogEntry();
   }
 
+  private void genSetpointAndApply(ChassisSpeeds des_cs) {
+        final Pose2d kPose2dIdentity = new Pose2d();
+        final double kLooperFreq = 1.0 / Constants.kPeriodicDt;
+
+        Pose2d robot_pose_vel = new Pose2d(
+            des_cs.vxMetersPerSecond * Constants.kPeriodicDt,
+            des_cs.vyMetersPerSecond * Constants.kPeriodicDt,
+            Rotation2d.fromRadians(des_cs.omegaRadiansPerSecond * Constants.kPeriodicDt)
+        );
+        Twist2d twist_vel = kPose2dIdentity.log(robot_pose_vel);
+        ChassisSpeeds updated_chassis_speeds = new ChassisSpeeds(
+            twist_vel.dx * kLooperFreq, 
+            twist_vel.dy * kLooperFreq, 
+            twist_vel.dtheta * kLooperFreq
+        );
+        mSetpoint = mSetpointGenerator.generateSetpoint(mKinematicLimits, mSetpoint, updated_chassis_speeds, Constants.kPeriodicDt, this);
+        
+        setModuleStates(mSetpoint.mModuleStates);
+    }
+
   /**
    * Drives the robot using the specified translation, rotation, and field-centric mode.
    *
@@ -167,17 +204,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
       mHeadingController.setTarget(goalHeading.get());
     }
     lastRotation = rotation;
-    SwerveModuleState[] swerveModuleStates =
-        mKinematics.toSwerveModuleStates(
-            fieldCentric
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    translation.getX(),
-                    translation.getY(),
-                    rotation + headingCorrection,
-                    getHeading())
-                : new ChassisSpeeds(
-                    translation.getX(), translation.getY(), rotation + headingCorrection));
-    setModuleStates(swerveModuleStates);
+    genSetpointAndApply(
+      fieldCentric
+          ? ChassisSpeeds.fromFieldRelativeSpeeds(
+              translation.getX(),
+              translation.getY(),
+              rotation + headingCorrection,
+              getHeading())
+          : new ChassisSpeeds(
+              translation.getX(), translation.getY(), rotation + headingCorrection));
   }
 
   /**
@@ -273,6 +308,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
       mEstimator.resetPosition(
           getGyroYaw(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
     }
+    mHeadingController.reset(heading);
   }
 
   /**
@@ -370,4 +406,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         && mSwerveModules[2].getIsZeroed()
         && mSwerveModules[3].getIsZeroed();
   }
+
+  public SwerveDriveModule[] getModuleArray() {
+    return mSwerveModules;
+}
 }

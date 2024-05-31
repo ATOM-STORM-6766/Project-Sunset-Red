@@ -113,7 +113,7 @@ public class Arm extends SubsystemBase {
   }
 
   private void writePeriodicOutputs(){
-    if(mPeriodicIO.ctrlval.Position < ArmConstants.ARM_REST_POSITION + 5.0/360 && mPeriodicIO.armPosition < ArmConstants.ARM_REST_POSITION + 5.0/360) {
+    if(mPeriodicIO.ctrlval.Position < ArmConstants.ARM_REST_POSITION + 3.0/360 && mPeriodicIO.armPosition < ArmConstants.ARM_REST_POSITION + 5.0/360) {
       // stop power when resting
       mArmTalon.setControl(Constants.NEUTRAL);
     }else{
