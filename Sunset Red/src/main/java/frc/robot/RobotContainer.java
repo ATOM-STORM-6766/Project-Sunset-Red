@@ -98,14 +98,17 @@ public class RobotContainer {
      * // cancelling on release.
      * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
-    driverController
-        .start()
-        .onTrue(
-            new InstantCommand(
+
+    Command resetHeadingCommand = new InstantCommand(
                 () -> {
                   sDrivetrainSubsystem.zeroHeading();
                   driverController.setTranslationDirection(true);
-                }));
+                });
+                resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
+    driverController
+        .start()
+        .onTrue(resetHeadingCommand
+            );
 
     new Trigger(
             () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)

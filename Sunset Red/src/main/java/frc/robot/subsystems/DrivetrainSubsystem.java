@@ -360,7 +360,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
     
     if(Timer.getFPGATimestamp()-lastVisionOdomUpdateTime > 1.0 && robotStationary()){
-      // lastVisionOdomUpdateTime = updateOdomFromVision(); // does not change value if not update from vision.
+      lastVisionOdomUpdateTime = updateOdomFromVision(); // does not change value if not update from vision.
     }
     mPosePublisher.set(getPose());
   }
