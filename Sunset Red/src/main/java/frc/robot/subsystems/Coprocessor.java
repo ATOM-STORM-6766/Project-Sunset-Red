@@ -25,6 +25,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Coprocessor extends SubsystemBase {
+    private static Coprocessor mCoprocessor = new Coprocessor();
+    public static Coprocessor getInstance(){
+        return mCoprocessor;
+    }
+
+    private Coprocessor(){
+
+    }
+
     private PhotonCamera ov9281 = new PhotonCamera("OV9281");
     private Transform3d kRobotToCamera = new Transform3d(0.25, 0.06, 0.25, new Rotation3d(0, 210.0/180*Math.PI, Math.PI));
     private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
@@ -43,14 +52,12 @@ public class Coprocessor extends SubsystemBase {
     public void periodic() {
         Optional<EstimatedRobotPose> currRobotPose = getEstimatedGlobalPose(lastRobotPose);
         if(currRobotPose.isPresent()){
-            publisher.set(currRobotPose.get().estimatedPose.toPose2d());
+            // publisher.set(currRobotPose.get().estimatedPose.toPose2d());
             lastRobotPose = currRobotPose.get().estimatedPose.toPose2d();
             SmartDashboard.putBoolean("photon_pose_present", true);
         }else{
-            publisher.set(lastRobotPose);
+            // publisher.set(lastRobotPose);
             SmartDashboard.putBoolean("photon_pose_present", false);
         }
-
-
     }
 }

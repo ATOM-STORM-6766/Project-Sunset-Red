@@ -46,7 +46,7 @@ public class RobotContainer {
   private final Transfer mTransfer = new Transfer();
   private final Shooter mShooter = new Shooter();
   private final Arm mArm = new Arm();
-  private final Coprocessor mCoprocessor = new Coprocessor();
+  private final Coprocessor mCoprocessor = Coprocessor.getInstance();
 
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
