@@ -6,6 +6,10 @@ import com.ctre.phoenix6.Utils;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,6 +26,7 @@ import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.StructLogEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,7 +44,7 @@ import frc.robot.lib6907.swerve.SwerveKinematicLimits;
 import frc.robot.lib6907.swerve.SwerveSetpoint;
 import frc.robot.lib6907.swerve.SwerveSetpointGenerator;
 import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
-import frc.robot.utils.SwerveHeadingController;
+
 import java.util.Optional;
 
 import javax.swing.text.html.Option;
@@ -58,7 +63,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   private final SwerveDriveKinematics mKinematics;
   private final ChassisSpeedKalmanFilterSimplified mSpeedFilter;
-  private SwerveHeadingController mHeadingController = new SwerveHeadingController();
 
   private ChassisSpeeds mKinematicSpeed = new ChassisSpeeds();
   private ChassisSpeeds mFilteredSpeed = new ChassisSpeeds();
@@ -140,9 +144,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
     builder.addDoubleProperty("PoseXMeter", () -> getPose().getX(), null);
     builder.addDoubleProperty("PoseYMeter", () -> getPose().getY(), null);
     builder.addDoubleProperty("PoseAngleDegree", () -> getPose().getRotation().getDegrees(), null);
-    builder.addDoubleProperty("chassis sped x", () -> mKinematicSpeed.vxMetersPerSecond, null);
-    builder.addDoubleProperty("filtered speed x", () -> mFilteredSpeed.vxMetersPerSecond, null);
-
+    builder.addDoubleProperty(
+        "ChassisSpeed.omega", () -> mKinematicSpeed.omegaRadiansPerSecond, null);
+    builder.addDoubleProperty(
+        "FilteredSpeed.omega", () -> mFilteredSpeed.omegaRadiansPerSecond, null);
+    builder.addDoubleProperty("ChassisSpeed.vx", () -> mKinematicSpeed.vxMetersPerSecond, null);
+    builder.addDoubleProperty("FilteredSpeed.vx", () -> mFilteredSpeed.vxMetersPerSecond, null);
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
     mSwerveModules[2].initSendable(builder, getName());
@@ -204,27 +211,19 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param fieldCentric a boolean indicating whether the robot should drive in field-centric mode
    *     or not
    */
-  public void drive(
-      Translation2d translation,
-      double rotation,
-      Optional<Rotation2d> goalHeading,
-      boolean fieldCentric) {
-    if (rotation != 0.0) {
-      mHeadingController.disable();
-    } else if (rotation == 0 && lastRotation != 0) {
-      mHeadingController.temporarilyDisable();
-    }
-    if (goalHeading.isPresent()
-        && mHeadingController.getState() == SwerveHeadingController.State.On) {
-      mHeadingController.setTarget(goalHeading.get());
-    }
-    lastRotation = rotation;
-    genSetpointAndApply(
-        fieldCentric
-            ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                translation.getX(), translation.getY(), rotation + headingCorrection, getHeading())
-            : new ChassisSpeeds(
-                translation.getX(), translation.getY(), rotation + headingCorrection));
+  public void drive(Translation2d translation, double rotation, boolean fieldCentric) {
+    SwerveModuleState[] swerveModuleStates =
+        mKinematics.toSwerveModuleStates(
+            fieldCentric
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                    translation.getX(), translation.getY(), rotation, getHeading())
+                : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
+    setModuleStates(swerveModuleStates);
+  }
+
+  public void driveWithChassisSpeed(ChassisSpeeds mChassisSpeeds) {
+    SwerveModuleState[] swerveModuleStates = mKinematics.toSwerveModuleStates(mChassisSpeeds);
+    setModuleStates(swerveModuleStates);
   }
 
   /**
@@ -235,7 +234,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @param desiredStates an array of SwerveModuleState objects representing the desired states for
    *     each swerve module
    */
-  public void setModuleStates(SwerveModuleState[] desiredStates) {
+  private void setModuleStates(SwerveModuleState[] desiredStates) {
     SwerveDriveKinematics.desaturateWheelSpeeds(
         desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
     for (int i = 0; i < mSwerveModules.length; i++) {
@@ -276,7 +275,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     final double nonCompensatedSignal = pos_sig.getValueAsDouble();
     final double changeInSignal = pos_vel.getValueAsDouble();
     double latency = ctretime - pos_sig.getTimestamp().getTime();
-    return nonCompensatedSignal + (changeInSignal * latency);
+    return nonCompensatedSignal; // + (changeInSignal * latency);
   }
 
   /**
@@ -306,7 +305,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    *
    * @return the rotation object representing the heading of the drivetrain subsystem
    */
-  private Rotation2d getHeading() {
+  public Rotation2d getHeading() {
     return getPose().getRotation();
   }
 
@@ -320,7 +319,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
       mEstimator.resetPosition(
           getGyroYaw(), getModulePositions(), new Pose2d(getPose().getTranslation(), heading));
     }
-    mHeadingController.reset(heading);
   }
 
   /**
@@ -333,7 +331,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
           getGyroYaw(),
           getModulePositions(),
           new Pose2d(getPose().getTranslation(), new Rotation2d()));
-      mHeadingController.reset();
     }
   }
 
@@ -350,7 +347,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   double lastVisionOdomUpdateTime = Timer.getFPGATimestamp();
   @Override
   public void periodic() {
-    double timestamp = Timer.getFPGATimestamp();
+    
     mKinematicSpeed =
         mKinematics.toChassisSpeeds(
             mSwerveModules[0].getState(),
@@ -358,12 +355,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
             mSwerveModules[2].getState(),
             mSwerveModules[3].getState());
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
-    headingCorrection = mHeadingController.updateRotationCorrection(getHeading(), timestamp);
     // add logging infomation here
     updateLogEntry();
 
     
-    if(timestamp-lastVisionOdomUpdateTime > 1.0 && robotStationary()){
+    if(Timer.getFPGATimestamp()-lastVisionOdomUpdateTime > 1.0 && robotStationary()){
       // lastVisionOdomUpdateTime = updateOdomFromVision(); // does not change value if not update from vision.
     }
     mPosePublisher.set(getPose());
@@ -407,7 +403,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
         anglerot = anglerot - module.getAzimuthOffsetRotations();
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot*360);
       }
-
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
     }
   }
@@ -431,7 +426,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
             runSingleModuleZeroing(mSwerveModules[3]));
     // ADD REQUIREMENT before anything else
     ret.addRequirements(this);
-    ret = ret.andThen(() -> mHeadingController.setTarget(getHeading()));
     // run unless already zeroed
     ret = ret.unless(this::allModuleZeroed);
     ret.setName("ZeroingCommand");
@@ -449,5 +443,38 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   public SwerveDriveModule[] getModuleArray() {
     return mSwerveModules;
+  }
+  public void configureAutoBuilder() {
+    if (AutoBuilder.isConfigured()) return;
+
+    AutoBuilder.configureHolonomic(
+        this::getPose, // poseSupplier
+        this::setPose, // resetPose
+        () -> mKinematicSpeed, // robotRelativeSpeedsSupplier
+        this::driveWithChassisSpeed, // robotRelativeOutput
+        new HolonomicPathFollowerConfig(
+            // translationConstants: PPLib uses wpilib PIDController
+            // input is pose error in meters, output is compensated velocity in meters per second
+            new PIDConstants(5.0, 0.0, 0.0),
+            // rotationConstants: PPLib uses wpilib PIDController
+            // input is angle error in radius, output is compensated rotation in radians per second
+            new PIDConstants(5.0, 0.0, 0.0),
+            DriveConstants.kPhysicalMaxSpeedMetersPerSecond, // maxModuleSpeed
+            DriveConstants.kWheelBase / Math.sqrt(2), // driveBaseRadius
+            new ReplanningConfig(), // replanningConfig (how and when should a path be replanned)
+            Constants.kPeriodicDt // period for pid update, KEEP SYNC WITH ROBOT PERIOD
+            ),
+        () -> {
+          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        this);
   }
 }

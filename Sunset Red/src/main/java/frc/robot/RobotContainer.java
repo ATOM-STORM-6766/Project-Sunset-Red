@@ -5,18 +5,20 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.commands.DefaultDriveCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
+import frc.robot.auto.modes.TestAutoCommand;
+import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.Arm;
@@ -37,6 +39,8 @@ import java.util.Optional;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
 
+  private SendableChooser<Command> mChooser = new SendableChooser<>();
+
   // * Controllers */
   private final CommandSwerveController driverController = new CommandSwerveController(0);
   private final CommandXboxController operatorController = new CommandXboxController(1);
@@ -51,23 +55,26 @@ public class RobotContainer {
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
+  private final SnapToAngleCommand mDriveWithRightStick =
+      new SnapToAngleCommand(
+          sDrivetrainSubsystem,
+          () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+          () -> driverController.getDriveRotationAngle(), // amp heading
+          () -> driverController.isSlowMode());
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    sDrivetrainSubsystem.setDefaultCommand(
-        new DefaultDriveCommand(
-            sDrivetrainSubsystem,
-            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-            () -> driverController.getRawRotationRate(),
-            () -> driverController.getDriveRotationAngle(),
-            () -> driverController.isSlowMode()));
+    sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
 
     configureBindings();
-
+    sDrivetrainSubsystem.configureAutoBuilder();
+    pushChooser();
     SmartDashboard.putData(sDrivetrainSubsystem);
     SmartDashboard.putData(mIntake);
     SmartDashboard.putData(mTransfer);
     SmartDashboard.putData(mArm);
     SmartDashboard.putData(mShooter);
+    SmartDashboard.putData(mDriveWithRightStick);
   }
 
   /**
@@ -99,15 +106,23 @@ public class RobotContainer {
                   sDrivetrainSubsystem.zeroHeading();
                   driverController.setTranslationDirection(true);
                 }));
-    new Trigger(() -> driverController.snapToAmpAngle())
+
+    new Trigger(
+            () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
         .onTrue(
             new SnapToAngleCommand(
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-                () -> Optional.of(new Rotation2d(90.0)), // amp heading
-                () ->
-                    driverController.getRawRotationRate() != 0.0
-                        | driverController.getDriveRotationAngle().isPresent(),
+                () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp heading
+                () -> driverController.isSlowMode(),
+                () -> driverController.getDriveRotationAngle().isPresent()));
+
+    new Trigger(() -> driverController.getRawRotationRate() != 0.0)
+        .onTrue(
+            new DriveWithTriggerCommand(
+                sDrivetrainSubsystem,
+                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+                () -> driverController.getRawRotationRate(), // amp heading
                 () -> driverController.isSlowMode()));
 
     // intake system bindings
@@ -147,10 +162,20 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return new InstantCommand();
+    return mChooser.getSelected();
   }
 
   public void checkDrivetrainZeroing() {
     mZeroingCommand.schedule();
+  }
+
+  public void pushChooser() {
+    // init points
+    mChooser = new SendableChooser<>();
+
+    // tested
+    mChooser.setDefaultOption("example", new TestAutoCommand(sDrivetrainSubsystem));
+
+    SmartDashboard.putData("AUTO CHOICES", mChooser);
   }
 }
