@@ -20,6 +20,7 @@ import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Coprocessor;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
@@ -45,6 +46,7 @@ public class RobotContainer {
   private final Transfer mTransfer = new Transfer();
   private final Shooter mShooter = new Shooter();
   private final Arm mArm = new Arm();
+  private final Coprocessor mCoprocessor = new Coprocessor();
 
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
