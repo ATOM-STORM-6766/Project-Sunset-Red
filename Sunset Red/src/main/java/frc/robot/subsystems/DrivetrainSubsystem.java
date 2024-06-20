@@ -3,13 +3,12 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
-
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -44,12 +43,7 @@ import frc.robot.lib6907.swerve.SwerveKinematicLimits;
 import frc.robot.lib6907.swerve.SwerveSetpoint;
 import frc.robot.lib6907.swerve.SwerveSetpointGenerator;
 import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
-
 import java.util.Optional;
-
-import javax.swing.text.html.Option;
-
-import org.ejml.equation.MatrixConstructor;
 import org.photonvision.EstimatedRobotPose;
 
 public class DrivetrainSubsystem extends SubsystemBase {
@@ -59,7 +53,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
 
-  StructPublisher<Pose2d> mPosePublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard").getStructTopic("RobotPose", Pose2d.struct).publish();
+  StructPublisher<Pose2d> mPosePublisher =
+      NetworkTableInstance.getDefault()
+          .getTable("SmartDashboard")
+          .getStructTopic("RobotPose", Pose2d.struct)
+          .publish();
 
   private final SwerveDriveKinematics mKinematics;
   private final ChassisSpeedKalmanFilterSimplified mSpeedFilter;
@@ -343,11 +341,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return Rotation2d.fromDegrees(mPigeon.getFusedHeading());
   }
 
-
   double lastVisionOdomUpdateTime = Timer.getFPGATimestamp();
+
   @Override
   public void periodic() {
-    
+
     mKinematicSpeed =
         mKinematics.toChassisSpeeds(
             mSwerveModules[0].getState(),
@@ -358,27 +356,34 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // add logging infomation here
     updateLogEntry();
 
-    
-    if(Timer.getFPGATimestamp()-lastVisionOdomUpdateTime > 1.0 && robotStationary()){
-      lastVisionOdomUpdateTime = updateOdomFromVision(); // does not change value if not update from vision.
+    if (Timer.getFPGATimestamp() - lastVisionOdomUpdateTime > 1.0 && robotStationary()) {
+      lastVisionOdomUpdateTime =
+          updateOdomFromVision(); // does not change value if not update from vision.
     }
     mPosePublisher.set(getPose());
   }
 
-  public boolean robotStationary(){
-    return Math.abs(mFilteredSpeed.vxMetersPerSecond) < 0.1 && Math.abs(mFilteredSpeed.vyMetersPerSecond) < 0.1 && Math.abs(mFilteredSpeed.omegaRadiansPerSecond) < 0.1;
+  public boolean robotStationary() {
+    return Math.abs(mFilteredSpeed.vxMetersPerSecond) < 0.1
+        && Math.abs(mFilteredSpeed.vyMetersPerSecond) < 0.1
+        && Math.abs(mFilteredSpeed.omegaRadiansPerSecond) < 0.1;
   }
 
-  private double updateOdomFromVision(){
-    synchronized(mEstimator){
-      Optional<EstimatedRobotPose> visionEstimatedPose = Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition());
-      if(visionEstimatedPose.isPresent()){
+  private double updateOdomFromVision() {
+    synchronized (mEstimator) {
+      Optional<EstimatedRobotPose> visionEstimatedPose =
+          Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition());
+      if (visionEstimatedPose.isPresent()) {
         Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
         Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), getHeading());
 
-        // if(estimatedPose2d.minus(mEstimator.getEstimatedPosition()).getTranslation().getNorm() < 1.0){ // if vision measurement is in 1 meter of odom measurement
-          mEstimator.addVisionMeasurement(useIMUPose2d, Timer.getFPGATimestamp()-0.03, new Matrix<>(Nat.N3(), Nat.N1(),new double[]{0.1,0.1,1.0}));
-          return Timer.getFPGATimestamp();
+        // if(estimatedPose2d.minus(mEstimator.getEstimatedPosition()).getTranslation().getNorm() <
+        // 1.0){ // if vision measurement is in 1 meter of odom measurement
+        mEstimator.addVisionMeasurement(
+            useIMUPose2d,
+            Timer.getFPGATimestamp() - 0.03,
+            new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 1.0}));
+        return Timer.getFPGATimestamp();
         // }
       }
       return lastVisionOdomUpdateTime;
@@ -401,7 +406,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
             compensate(
                 module.getAzimuthPositionSignal(), module.getAzimuthVelocitySignal(), ctretime);
         anglerot = anglerot - module.getAzimuthOffsetRotations();
-        mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot*360);
+        mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
     }
@@ -444,6 +449,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public SwerveDriveModule[] getModuleArray() {
     return mSwerveModules;
   }
+
   public void configureAutoBuilder() {
     if (AutoBuilder.isConfigured()) return;
 

@@ -12,13 +12,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.auto.modes.TestAutoCommand;
+import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
-import frc.robot.auto.modes.TestAutoCommand;
-import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.SnapToAngleCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.subsystems.Arm;
@@ -99,16 +99,14 @@ public class RobotContainer {
      * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
 
-    Command resetHeadingCommand = new InstantCommand(
-                () -> {
-                  sDrivetrainSubsystem.zeroHeading();
-                  driverController.setTranslationDirection(true);
-                });
-                resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
-    driverController
-        .start()
-        .onTrue(resetHeadingCommand
-            );
+    Command resetHeadingCommand =
+        new InstantCommand(
+            () -> {
+              sDrivetrainSubsystem.zeroHeading();
+              driverController.setTranslationDirection(true);
+            });
+    resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
+    driverController.start().onTrue(resetHeadingCommand);
 
     new Trigger(
             () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
