@@ -1,11 +1,10 @@
 package frc.robot.commands;
 
-import java.util.function.DoubleSupplier;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.subsystems.Shooter;
+import java.util.function.DoubleSupplier;
 
 /**
  * Set a single velocity target for the shooter subsystem, finishes when the target is reached.

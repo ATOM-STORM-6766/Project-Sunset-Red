@@ -141,20 +141,30 @@ public class RobotContainer {
         .whileTrue( // use whileTrue because need to cancel feed if button released
             new SetShooterTargetCommand(
                     mShooter,
-                    () -> {return ShootingParameters.BELOW_SPEAKER
-                        .speed_rps;}) // this command finished means shooter reached target velocity
+                    () -> {
+                      return ShootingParameters.BELOW_SPEAKER.speed_rps;
+                    }) // this command finished means shooter reached target velocity
                 .alongWith(
                     new SetArmAngleCommand(
                         mArm,
-                        () -> {return ShootingParameters.BELOW_SPEAKER
-                            .angle_deg;})) // this command finished means arm reached target angle
-                .andThen(new FeedCommand(mTransfer))); // feed 
+                        () -> {
+                          return ShootingParameters.BELOW_SPEAKER.angle_deg;
+                        })) // this command finished means arm reached target angle
+                .andThen(new FeedCommand(mTransfer))); // feed
 
-    driverController.x().onFalse(new InstantCommand(()->{ // stop shooting, arm back
-                  mShooter.stop();
-                }).andThen(new SetArmAngleCommand(mArm, () -> {return ArmConstants.ARM_REST_ANGLE;})));
-                
-            
+    driverController
+        .x()
+        .onFalse(
+            new InstantCommand(
+                    () -> { // stop shooting, arm back
+                      mShooter.stop();
+                    })
+                .andThen(
+                    new SetArmAngleCommand(
+                        mArm,
+                        () -> {
+                          return ArmConstants.ARM_REST_ANGLE;
+                        })));
   }
 
   /**
