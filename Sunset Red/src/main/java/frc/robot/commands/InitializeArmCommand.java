@@ -33,7 +33,6 @@ public class InitializeArmCommand extends Command {
         Timer.getFPGATimestamp(), mArm.getStatorCurrent() < -INIT_CURRENT_THRESHOLD)) {
       mArm.setTalonToInitPosition();
       isFinished = true;
-      System.out.println("Arm Init Finished");
       mArm.stop();
     }
   }

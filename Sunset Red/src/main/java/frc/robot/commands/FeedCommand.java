@@ -13,11 +13,11 @@ public class FeedCommand extends Command {
   public FeedCommand(Transfer transfer) {
     mTransfer = transfer;
     addRequirements(mTransfer);
-    start_time = Timer.getFPGATimestamp();
   }
 
   @Override
   public void initialize() {
+    start_time = Timer.getFPGATimestamp();
     mTransfer.setVoltage(Transfer.FEED_VOLTS);
   }
 

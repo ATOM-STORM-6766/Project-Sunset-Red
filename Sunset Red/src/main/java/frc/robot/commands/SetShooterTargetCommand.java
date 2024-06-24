@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib6907.DelayedBoolean;
@@ -23,10 +25,9 @@ public class SetShooterTargetCommand extends Command {
   /**
    * @brief sets the shooter to a target rps, finishes when target reached, do not interact with transfer subsystem
    */
-  public SetShooterTargetCommand(Shooter shooter, double targetRPS) {
+  public SetShooterTargetCommand(Shooter shooter, DoubleSupplier targetRPS) {
     mShooter = shooter;
-    this.shooterTargetRPS = targetRPS;
-
+    this.shooterTargetRPS = targetRPS.getAsDouble();
     addRequirements(mShooter);
   }
 

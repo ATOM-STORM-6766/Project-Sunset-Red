@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ArmConstants;
@@ -15,11 +17,10 @@ public class SetArmAngleCommand extends Command {
   private final double ERR_TOL = 1.0; // degree
   private final double LOW_SHOOT_TOLERANCE_ROTATION = 23.5;
 
-  public SetArmAngleCommand(Arm arm, double angle) {
+  public SetArmAngleCommand(Arm arm, DoubleSupplier angle) {
     sArm = arm;
-    targetAngle = angle;
+    targetAngle = angle.getAsDouble();
     addRequirements(sArm);
-    System.out.println("target angle: " + targetAngle);
   }
 
   @Override
@@ -35,7 +36,6 @@ public class SetArmAngleCommand extends Command {
     if(targetAngle < ArmConstants.ARM_REST_ANGLE + 3.0 && sArm.getAngleDeg() < ArmConstants.ARM_REST_ANGLE + 5.0){
       sArm.stop(); // Neutral Out
       isFinished = true;
-      System.out.println("Arm Homed");
       return;
     }
     
@@ -43,8 +43,6 @@ public class SetArmAngleCommand extends Command {
     // TODO: amp & climb?
     if(targetAngle > ArmConstants.ARM_REST_ANGLE + 3.0 && shootErrorTolerated()){
       isFinished = true;
-      System.out.println("Arm Target Reached");
-
       return;
     }
   }

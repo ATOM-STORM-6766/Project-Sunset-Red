@@ -14,12 +14,13 @@ public class OuttakeCommand extends Command {
   public OuttakeCommand(Intake intake, Transfer transfer) {
     mIntake = intake;
     mTransfer = transfer;
-    start_time = Timer.getFPGATimestamp();
     addRequirements(mIntake, mTransfer);
   }
 
   @Override
   public void initialize() {
+    start_time = Timer.getFPGATimestamp();
+
     mIntake.setOuttake();
     mTransfer.setVoltage(Transfer.OUTTAKE_VOLTS);
   }
