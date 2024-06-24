@@ -29,7 +29,8 @@ public class Intake extends SubsystemBase {
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);
     mCenterMotor = new VictorSPX(IntakeConstants.INTAKER_CENTER_ID);
-    // mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
+    // mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID,
+    // MotorType.kBrushless);
 
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
     intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -68,11 +69,18 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-      super.initSendable(builder);
+    super.initSendable(builder);
 
-      builder.addStringProperty(getName() + "Intake Motor Control Request", ()-> mIntakeMotor.getAppliedControl().toString(), null);
-      builder.addDoubleProperty(getName() + "Intake Motor Temp", ()->mIntakeMotor.getDeviceTemp().getValueAsDouble(), null);
-      builder.addDoubleProperty(getName() + "Center Motor Voltage", () -> mCenterMotor.getMotorOutputVoltage(), null);
+    builder.addStringProperty(
+        getName() + "Intake Motor Control Request",
+        () -> mIntakeMotor.getAppliedControl().toString(),
+        null);
+    builder.addDoubleProperty(
+        getName() + "Intake Motor Temp",
+        () -> mIntakeMotor.getDeviceTemp().getValueAsDouble(),
+        null);
+    builder.addDoubleProperty(
+        getName() + "Center Motor Voltage", () -> mCenterMotor.getMotorOutputVoltage(), null);
   }
 
   public synchronized void setIntake() {

@@ -11,7 +11,7 @@ public class DelayedBoolean {
     mDelay = delay;
   }
 
-  public boolean get(){
+  public boolean get() {
     return mLastValue;
   }
 
