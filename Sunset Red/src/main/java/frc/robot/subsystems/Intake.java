@@ -9,10 +9,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
@@ -25,21 +22,14 @@ public class Intake extends SubsystemBase {
 
   private final TalonFX mIntakeMotor;
   private final VictorSPX mCenterMotor;
-  private final CANSparkMax mExteriorIntakeMotor;
-  private final PeriodicIO mPeriodicIO = new PeriodicIO();
+  // private final CANSparkMax mExteriorIntakeMotor;
 
-  private static class PeriodicIO {
-    // OUTPUTS
-    public VoltageOut ctrlVal = new VoltageOut(0.0);
-    public double centerPerc = 0.0;
-    public double exteriorVolt = 0.0;
-  }
+  private final VoltageOut intakeVoltage = new VoltageOut(0);
 
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);
     mCenterMotor = new VictorSPX(IntakeConstants.INTAKER_CENTER_ID);
-    mExteriorIntakeMotor =
-        new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
+    // mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
 
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
     intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -66,45 +56,40 @@ public class Intake extends SubsystemBase {
     mCenterMotor.setNeutralMode(NeutralMode.Coast);
     mCenterMotor.set(ControlMode.PercentOutput, 0.0);
 
-    mExteriorIntakeMotor.clearFaults();
-    mExteriorIntakeMotor.setInverted(true);
-    mExteriorIntakeMotor.setIdleMode(
-        IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
-    mExteriorIntakeMotor.setVoltage(0);
-    mExteriorIntakeMotor.burnFlash();
+    // mExteriorIntakeMotor.clearFaults();
+    // mExteriorIntakeMotor.setInverted(true);
+    // mExteriorIntakeMotor.setIdleMode(
+    //     IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
+    // mExteriorIntakeMotor.setVoltage(0);
+    // mExteriorIntakeMotor.burnFlash();
 
     stop();
   }
 
   @Override
-  public void periodic() {
-    mIntakeMotor.setControl(mPeriodicIO.ctrlVal);
-    mCenterMotor.set(ControlMode.PercentOutput, mPeriodicIO.centerPerc);
-    mExteriorIntakeMotor.set(mPeriodicIO.exteriorVolt);
-    outputTelemetry();
+  public void initSendable(SendableBuilder builder) {
+      super.initSendable(builder);
+
+      builder.addStringProperty(getName() + "Intake Motor Control Request", ()-> mIntakeMotor.getAppliedControl().toString(), null);
+      builder.addDoubleProperty(getName() + "Intake Motor Temp", ()->mIntakeMotor.getDeviceTemp().getValueAsDouble(), null);
+      builder.addDoubleProperty(getName() + "Center Motor Voltage", () -> mCenterMotor.getMotorOutputVoltage(), null);
   }
 
   public synchronized void setIntake() {
-    mPeriodicIO.ctrlVal.Output = INTAKE_VOLTS;
-    mPeriodicIO.centerPerc = INTAKE_CENTER_PERC;
-    mPeriodicIO.exteriorVolt = 0.5;
+    mIntakeMotor.setControl(intakeVoltage.withOutput(INTAKE_VOLTS));
+    mCenterMotor.set(ControlMode.PercentOutput, INTAKE_CENTER_PERC);
+    // TODO: exterior motor
   }
 
   public synchronized void setOuttake() {
-    mPeriodicIO.ctrlVal.Output = OUTTAKE_VOLTS;
-    mPeriodicIO.centerPerc = OUTTAKE_CENTER_PERC;
-    mPeriodicIO.exteriorVolt = -0.5;
+    mIntakeMotor.setControl(intakeVoltage.withOutput(OUTTAKE_VOLTS));
+    mCenterMotor.set(ControlMode.PercentOutput, OUTTAKE_CENTER_PERC);
+    // TODO: exterior motor
   }
 
   public synchronized void stop() {
-    mPeriodicIO.ctrlVal.Output = 0.0;
-    mPeriodicIO.centerPerc = 0.0;
-    mPeriodicIO.exteriorVolt = 0.0;
-  }
-
-  private void outputTelemetry() {
-    SmartDashboard.putNumber("Intake Voltage", mPeriodicIO.ctrlVal.Output);
-    SmartDashboard.putNumber("Intake Center Percent", mPeriodicIO.centerPerc);
-    SmartDashboard.putNumber("Intake Exterior Perc", mPeriodicIO.exteriorVolt);
+    mIntakeMotor.setControl(Constants.NEUTRAL);
+    mCenterMotor.set(ControlMode.PercentOutput, 0);
+    // TODO: exterior motor
   }
 }

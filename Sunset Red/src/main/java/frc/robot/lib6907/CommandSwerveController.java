@@ -121,7 +121,7 @@ public class CommandSwerveController extends CommandXboxController {
    *
    * @return True if the swerve drive should be in slow mode, false otherwise.
    */
-  public boolean isSlowMode() {
+  public boolean robotCentric() {
     return getHID().getRightBumper();
   }
 

@@ -60,7 +60,7 @@ public class RobotContainer {
           sDrivetrainSubsystem,
           () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
           () -> driverController.getDriveRotationAngle(), // amp heading
-          () -> driverController.isSlowMode());
+          () -> driverController.robotCentric());
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -115,7 +115,7 @@ public class RobotContainer {
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp heading
-                () -> driverController.isSlowMode(),
+                () -> driverController.robotCentric(),
                 () -> driverController.getDriveRotationAngle().isPresent()));
 
     new Trigger(() -> driverController.getRawRotationRate() != 0.0)
@@ -124,11 +124,11 @@ public class RobotContainer {
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> driverController.getRawRotationRate(), // amp heading
-                () -> driverController.isSlowMode()));
+                () -> driverController.robotCentric()));
 
     // intake system bindings
     driverController.y().whileTrue(new IntakeCommand(mIntake, mTransfer));
-    driverController.back().whileFalse(new OuttakeCommand(mIntake, mTransfer));
+    driverController.back().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     // operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
     // operatorController.povLeft().onTrue(new SetArmAngleCommand(mArm, 22.5));
@@ -141,19 +141,20 @@ public class RobotContainer {
         .whileTrue( // use whileTrue because need to cancel feed if button released
             new SetShooterTargetCommand(
                     mShooter,
-                    ShootingParameters.NEAR_SHOOT
+                    ShootingParameters.BELOW_SPEAKER
                         .speed_rps) // this command finished means shooter reached target velocity
                 .alongWith(
                     new SetArmAngleCommand(
                         mArm,
-                        ShootingParameters.NEAR_SHOOT
+                        ShootingParameters.BELOW_SPEAKER
                             .angle_deg)) // this command finished means arm reached target angle
-                .andThen(new FeedCommand(mTransfer)));
-    driverController
-        .x()
-        .onFalse(
-            new SetShooterTargetCommand(mShooter, 0)
-                .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
+                .andThen(new FeedCommand(mTransfer))); // feed 
+
+    driverController.x().onFalse(new InstantCommand(()->{ // stop shooting, arm back
+                  mShooter.stop();
+                }).andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
+                
+            
   }
 
   /**

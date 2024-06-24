@@ -22,6 +22,7 @@ public class InitializeArmCommand extends Command {
   @Override
   public void initialize() {
     mArmIsInPosition = new DelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME);
+    isFinished = false;
     mArm.setReverseLimit(false);
     mArm.setVoltage(ARM_CLIMB_VOLTS);
   }
@@ -29,10 +30,11 @@ public class InitializeArmCommand extends Command {
   @Override
   public void execute() {
     if (mArmIsInPosition.update(
-        Timer.getFPGATimestamp(), mArm.getArmCurrent() < -INIT_CURRENT_THRESHOLD)) {
+        Timer.getFPGATimestamp(), mArm.getStatorCurrent() < -INIT_CURRENT_THRESHOLD)) {
       mArm.setTalonToInitPosition();
       isFinished = true;
       System.out.println("Arm Init Finished");
+      mArm.stop();
     }
   }
 

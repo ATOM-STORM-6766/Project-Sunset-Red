@@ -5,6 +5,8 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,15 +22,8 @@ public class Transfer extends SubsystemBase {
 
   private final TalonFX mTransferTalon;
   private final DigitalInput mTransferOmron;
-  private final PeriodicIO mPeriodicIO = new PeriodicIO();
 
-  private static class PeriodicIO {
-    // INPUTS
-    public boolean omronDetected = false;
-
-    // OUTPUTS
-    public VoltageOut ctrlval = new VoltageOut(0.0);
-  }
+  private VoltageOut transferVoltage = new VoltageOut(0.0);
 
   public Transfer() {
     mTransferTalon = new TalonFX(Constants.TransferConstants.TRANSFER_ID);
@@ -56,14 +51,21 @@ public class Transfer extends SubsystemBase {
   }
 
   @Override
+  public void initSendable(SendableBuilder builder) {
+      // TODO Auto-generated method stub
+      super.initSendable(builder);
+
+      builder.addStringProperty(getName()+"Transfer Motor Control Request", ()->mTransferTalon.getAppliedControl().toString(), null);
+      builder.addBooleanProperty(getName()+"Omron Detected", ()->isOmronDetected(), null);
+  }
+
+  @Override
   public void periodic() {
-    mPeriodicIO.omronDetected = !mTransferOmron.get();
-    mTransferTalon.setControl(mPeriodicIO.ctrlval);
-    outputTelemetry();
+
   }
 
   public void setVoltage(double voltage) {
-    mPeriodicIO.ctrlval = new VoltageOut(voltage);
+    mTransferTalon.setControl(transferVoltage.withOutput(voltage));
   }
 
   public void stop() {
@@ -73,10 +75,5 @@ public class Transfer extends SubsystemBase {
 
   public boolean isOmronDetected() {
     return !mTransferOmron.get(); // lowest latency
-  }
-
-  public void outputTelemetry() {
-    SmartDashboard.putNumber("Transfer Volt Out", mPeriodicIO.ctrlval.Output);
-    SmartDashboard.putBoolean("Transfer Omron Detected", mPeriodicIO.omronDetected);
   }
 }

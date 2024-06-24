@@ -22,10 +22,7 @@ public class IntakeCommand extends Command {
 
   @Override
   public void execute() {
-    if (mTransfer.isOmronDetected()) {
-      mTransfer.stop();
-      mIntake.stop();
-    }
+    
   }
 
   @Override
@@ -36,6 +33,6 @@ public class IntakeCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return false;
+    return mTransfer.isOmronDetected(); // conditional finish
   }
 }

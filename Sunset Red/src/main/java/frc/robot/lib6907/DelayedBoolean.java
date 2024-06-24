@@ -11,6 +11,10 @@ public class DelayedBoolean {
     mDelay = delay;
   }
 
+  public boolean get(){
+    return mLastValue;
+  }
+
   public boolean update(double timestamp, boolean value) {
     boolean result = false;
 

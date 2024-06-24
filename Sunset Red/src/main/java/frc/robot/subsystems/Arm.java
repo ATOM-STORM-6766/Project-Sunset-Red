@@ -2,16 +2,13 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.SoftwareLimitSwitchConfigs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.ControlRequest;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.ArmConstants;
@@ -22,7 +19,6 @@ public class Arm extends SubsystemBase {
   // private static final double ARM_CLIMB_TARGET_DEG = 30.0;
   // private static final double ARM_CLIMB_MAX_DEG = 35.0;
   private static final double ERR_TOL = 1.0 / 360.0;
-  private static final double STABILIZE_TIME = 0.1;
 
   private static final double LOW_SHOOT_TOLERANCE_ROTATION = 23.5 / 360.0;
 
@@ -30,24 +26,8 @@ public class Arm extends SubsystemBase {
   // private boolean climbTargetReached = false;
   private final SoftwareLimitSwitchConfigs mSoftLimitConf = new SoftwareLimitSwitchConfigs();
 
-  private static class PeriodicIO {
-    public double armPosition = 0.0;
-    public double armCurrent = 0.0;
-    public ControlRequest activeCtrlReq = new NeutralOut();
-    public MotionMagicVoltage ctrlval = new MotionMagicVoltage(ArmConstants.ARM_REST_POSITION);
-    public VoltageOut voltval = new VoltageOut(0.0);
-  }
-
-  private final PeriodicIO mPeriodicIO = new PeriodicIO();
-
-  private static Arm sInstance;
-
-  public static Arm getInstance() {
-    if (sInstance == null) {
-      sInstance = new Arm();
-    }
-    return sInstance;
-  }
+  private final MotionMagicVoltage ArmMotionMagic = new MotionMagicVoltage(ArmConstants.ARM_REST_POSITION);
+  private final VoltageOut ArmVoltage = new VoltageOut(0);
 
   public Arm() {
     mArmTalon = new TalonFX(ArmConstants.ARM_ID);
@@ -95,30 +75,14 @@ public class Arm extends SubsystemBase {
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
-
-    builder.addBooleanProperty("isShootErrorTolerated", () -> shootErrorTolerated(), null);
+    builder.addDoubleProperty(getName() + "Target Angle Degree", () -> getTargetAngleDeg(), null);
+    builder.addDoubleProperty(getName() + "Angle Degree", () -> getAngleDeg(), null);
+    builder.addDoubleProperty(getName() + "Current", ()->getStatorCurrent(), null);
+    builder.addStringProperty(getName() + "Active Control Request", ()->mArmTalon.getAppliedControl().toString(), null);
   }
 
   @Override
   public void periodic() {
-    readPeriodicInputs();
-    writePeriodicOutputs();
-    outputTelemetry();
-  }
-
-  private void readPeriodicInputs() {
-    mPeriodicIO.armPosition = mArmTalon.getPosition().getValueAsDouble();
-    mPeriodicIO.armCurrent = mArmTalon.getTorqueCurrent().getValueAsDouble();
-  }
-
-  private void writePeriodicOutputs() {
-    if (mPeriodicIO.ctrlval.Position < ArmConstants.ARM_REST_POSITION + 3.0 / 360
-        && mPeriodicIO.armPosition < ArmConstants.ARM_REST_POSITION + 5.0 / 360) {
-      // stop power when resting
-      mArmTalon.setControl(Constants.NEUTRAL);
-    } else {
-      mArmTalon.setControl(mPeriodicIO.activeCtrlReq);
-    }
   }
 
   public void setAngle(double angle_deg) {
@@ -126,33 +90,40 @@ public class Arm extends SubsystemBase {
 
     setReverseLimit(true);
     double angle_rotation = angle_deg / 360.0;
-    mPeriodicIO.ctrlval.Position = angle_rotation;
-    mPeriodicIO.activeCtrlReq = mPeriodicIO.ctrlval;
+    mArmTalon.setControl(ArmMotionMagic.withPosition(angle_rotation)); // reused previously created ControlRequest Instance
   }
 
   public void stop() {
-    mPeriodicIO.ctrlval.Position = ArmConstants.ARM_REST_POSITION;
-    mPeriodicIO.activeCtrlReq = Constants.NEUTRAL;
+    mArmTalon.setControl(Constants.NEUTRAL);
     setReverseLimit(true);
   }
 
   public void setVoltage(double voltage) {
-    mPeriodicIO.voltval.Output = voltage;
-    mPeriodicIO.activeCtrlReq = mPeriodicIO.voltval;
+    mArmTalon.setControl(ArmVoltage.withOutput(voltage));
   }
 
-  public double getArmCurrent() {
-    return mPeriodicIO.armCurrent;
+  public double getRotation(){
+    return mArmTalon.getPosition().getValueAsDouble();
   }
 
-  public boolean shootErrorTolerated() {
-    return Math.abs(mPeriodicIO.ctrlval.Position - mPeriodicIO.armPosition) < ERR_TOL
-        || (mPeriodicIO.ctrlval.Position < LOW_SHOOT_TOLERANCE_ROTATION
-            && mPeriodicIO.armPosition < LOW_SHOOT_TOLERANCE_ROTATION);
+  public double getStatorCurrent() {
+    return mArmTalon.getStatorCurrent().getValueAsDouble();
+  }
+
+  public double getSupplyCurrent() {
+    return mArmTalon.getSupplyCurrent().getValueAsDouble();
+  }
+
+  public double getTargetAngleDeg(){
+    if(mArmTalon.getAppliedControl().getClass() == MotionMagicVoltage.class){
+      return ArmMotionMagic.Position; // last applied motion magic value
+    }else{
+      return Double.NaN;
+    }
   }
 
   public double getAngleDeg() {
-    return mPeriodicIO.armPosition * 360.0;
+    return getRotation() * 360.0;
   }
 
   public void setReverseLimit(boolean enable) {
@@ -166,10 +137,5 @@ public class Arm extends SubsystemBase {
     mArmTalon.setPosition(ArmConstants.ARM_REST_POSITION);
   }
 
-  private void outputTelemetry() {
-    SmartDashboard.putNumber("Arm Target Angle", mPeriodicIO.ctrlval.Position * 360);
-    SmartDashboard.putNumber("Arm Angle", getAngleDeg());
-    SmartDashboard.putNumber("Arm Current", mPeriodicIO.armCurrent);
-    SmartDashboard.putString("Arm Control Req", mArmTalon.getAppliedControl().toString());
-  }
+
 }
