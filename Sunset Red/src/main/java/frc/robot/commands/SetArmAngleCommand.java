@@ -32,16 +32,17 @@ public class SetArmAngleCommand extends Command {
   @Override
   public void execute() {
     // if going rest and almost reach, brake and let gravity do the job.
-    if(targetAngle < ArmConstants.ARM_REST_ANGLE + 3.0 && sArm.getAngleDeg() < ArmConstants.ARM_REST_ANGLE + 5.0){
+    if (targetAngle < ArmConstants.ARM_REST_ANGLE + 3.0
+        && sArm.getAngleDeg() < ArmConstants.ARM_REST_ANGLE + 5.0) {
       sArm.stop(); // Neutral Out
       isFinished = true;
       System.out.println("Arm Homed");
       return;
     }
-    
+
     // if going to shoot
     // TODO: amp & climb?
-    if(targetAngle > ArmConstants.ARM_REST_ANGLE + 3.0 && shootErrorTolerated()){
+    if (targetAngle > ArmConstants.ARM_REST_ANGLE + 3.0 && shootErrorTolerated()) {
       isFinished = true;
       System.out.println("Arm Target Reached");
 
@@ -49,10 +50,11 @@ public class SetArmAngleCommand extends Command {
     }
   }
 
-  public boolean shootErrorTolerated(){
-    boolean currently_in_position = Math.abs(targetAngle - sArm.getAngleDeg()) < ERR_TOL // 1度以内
-    || (targetAngle < LOW_SHOOT_TOLERANCE_ROTATION // ? 
-        && sArm.getAngleDeg() < LOW_SHOOT_TOLERANCE_ROTATION); // ?
+  public boolean shootErrorTolerated() {
+    boolean currently_in_position =
+        Math.abs(targetAngle - sArm.getAngleDeg()) < ERR_TOL // 1度以内
+            || (targetAngle < LOW_SHOOT_TOLERANCE_ROTATION // ?
+                && sArm.getAngleDeg() < LOW_SHOOT_TOLERANCE_ROTATION); // ?
     return mArmInPosition.update(Timer.getFPGATimestamp(), currently_in_position);
   }
 

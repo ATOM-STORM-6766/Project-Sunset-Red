@@ -16,7 +16,6 @@ import frc.robot.utils.Util;
 
 public class Shooter extends SubsystemBase {
 
-
   private final TalonFX mShooterTalon;
   private final TalonFX mShooterFollower;
 
@@ -81,7 +80,8 @@ public class Shooter extends SubsystemBase {
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
-    builder.addStringProperty(getName() + "Control Request", () -> mShooterTalon.getAppliedControl().toString(), null);
+    builder.addStringProperty(
+        getName() + "Control Request", () -> mShooterTalon.getAppliedControl().toString(), null);
     builder.addDoubleProperty("Shooter Velocity", () -> getAverageVelocity(), null);
     builder.addDoubleProperty("Shooter Target RPS", () -> shooterTargetVelocity.Velocity, null);
   }
@@ -113,19 +113,17 @@ public class Shooter extends SubsystemBase {
     mShooterFollower.setControl(shooterTargetVelocity);
   }
 
-  /**
-   * @brief set shooter motor to neutral output
-   */
+  /** @brief set shooter motor to neutral output */
   public void stop() {
     mShooterTalon.setControl(Constants.NEUTRAL);
     mShooterFollower.setControl(Constants.NEUTRAL);
   }
 
-  public double getMainMotorVelocity(){
+  public double getMainMotorVelocity() {
     return mShooterTalon.getVelocity().getValueAsDouble();
   }
 
-  public double getFollowerVelocity(){
+  public double getFollowerVelocity() {
     return mShooterFollower.getVelocity().getValueAsDouble();
   }
 

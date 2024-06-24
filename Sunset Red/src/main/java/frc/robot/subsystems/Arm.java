@@ -26,7 +26,8 @@ public class Arm extends SubsystemBase {
   // private boolean climbTargetReached = false;
   private final SoftwareLimitSwitchConfigs mSoftLimitConf = new SoftwareLimitSwitchConfigs();
 
-  private final MotionMagicVoltage ArmMotionMagic = new MotionMagicVoltage(ArmConstants.ARM_REST_POSITION);
+  private final MotionMagicVoltage ArmMotionMagic =
+      new MotionMagicVoltage(ArmConstants.ARM_REST_POSITION);
   private final VoltageOut ArmVoltage = new VoltageOut(0);
 
   public Arm() {
@@ -77,20 +78,22 @@ public class Arm extends SubsystemBase {
     super.initSendable(builder);
     builder.addDoubleProperty(getName() + "Target Angle Degree", () -> getTargetAngleDeg(), null);
     builder.addDoubleProperty(getName() + "Angle Degree", () -> getAngleDeg(), null);
-    builder.addDoubleProperty(getName() + "Current", ()->getStatorCurrent(), null);
-    builder.addStringProperty(getName() + "Active Control Request", ()->mArmTalon.getAppliedControl().toString(), null);
+    builder.addDoubleProperty(getName() + "Current", () -> getStatorCurrent(), null);
+    builder.addStringProperty(
+        getName() + "Active Control Request", () -> mArmTalon.getAppliedControl().toString(), null);
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 
   public void setAngle(double angle_deg) {
     if (angle_deg < ArmConstants.ARM_REST_ANGLE || angle_deg > ArmConstants.ARM_MAX_ANGLE) return;
 
     setReverseLimit(true);
     double angle_rotation = angle_deg / 360.0;
-    mArmTalon.setControl(ArmMotionMagic.withPosition(angle_rotation)); // reused previously created ControlRequest Instance
+    mArmTalon.setControl(
+        ArmMotionMagic.withPosition(
+            angle_rotation)); // reused previously created ControlRequest Instance
   }
 
   public void stop() {
@@ -102,7 +105,7 @@ public class Arm extends SubsystemBase {
     mArmTalon.setControl(ArmVoltage.withOutput(voltage));
   }
 
-  public double getRotation(){
+  public double getRotation() {
     return mArmTalon.getPosition().getValueAsDouble();
   }
 
@@ -114,10 +117,10 @@ public class Arm extends SubsystemBase {
     return mArmTalon.getSupplyCurrent().getValueAsDouble();
   }
 
-  public double getTargetAngleDeg(){
-    if(mArmTalon.getAppliedControl().getClass() == MotionMagicVoltage.class){
+  public double getTargetAngleDeg() {
+    if (mArmTalon.getAppliedControl().getClass() == MotionMagicVoltage.class) {
       return ArmMotionMagic.Position; // last applied motion magic value
-    }else{
+    } else {
       return Double.NaN;
     }
   }
@@ -136,6 +139,4 @@ public class Arm extends SubsystemBase {
   public void setTalonToInitPosition() {
     mArmTalon.setPosition(ArmConstants.ARM_REST_POSITION);
   }
-
-
 }

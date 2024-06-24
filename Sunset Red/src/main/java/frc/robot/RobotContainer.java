@@ -148,13 +148,16 @@ public class RobotContainer {
                         mArm,
                         ShootingParameters.BELOW_SPEAKER
                             .angle_deg)) // this command finished means arm reached target angle
-                .andThen(new FeedCommand(mTransfer))); // feed 
+                .andThen(new FeedCommand(mTransfer))); // feed
 
-    driverController.x().onFalse(new InstantCommand(()->{ // stop shooting, arm back
-                  mShooter.stop();
-                }).andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
-                
-            
+    driverController
+        .x()
+        .onFalse(
+            new InstantCommand(
+                    () -> { // stop shooting, arm back
+                      mShooter.stop();
+                    })
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
   }
 
   /**
