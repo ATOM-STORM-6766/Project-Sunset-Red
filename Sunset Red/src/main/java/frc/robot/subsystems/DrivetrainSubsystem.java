@@ -211,10 +211,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
    */
   public void drive(Translation2d translation, double rotation, boolean fieldCentric) {
     genSetpointAndApply(
-                fieldCentric
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                    translation.getX(), translation.getY(), rotation, getHeading())
-                : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
+        fieldCentric
+            ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                translation.getX(), translation.getY(), rotation, getHeading())
+            : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
   }
 
   public void driveWithChassisSpeed(ChassisSpeeds mChassisSpeeds) {

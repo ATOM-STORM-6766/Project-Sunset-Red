@@ -7,8 +7,9 @@ import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.subsystems.Arm;
 
 /**
- * @brief This command sets a single target (which must be determined at code initilization/before match) 
- * */ 
+ * @brief This command sets a single target (which must be determined at code initilization/before
+ *     match)
+ */
 public class SetArmAngleCommand extends Command {
   private final Arm sArm;
   private final Double targetAngle;
@@ -18,7 +19,8 @@ public class SetArmAngleCommand extends Command {
   private final double ERR_TOL = 1.0; // degree
 
   public SetArmAngleCommand(Arm arm, Double targetAngleDegree) {
-    assert targetAngleDegree > ArmConstants.ARM_REST_ANGLE && targetAngleDegree < ArmConstants.ARM_MAX_ANGLE;
+    assert targetAngleDegree > ArmConstants.ARM_REST_ANGLE
+        && targetAngleDegree < ArmConstants.ARM_MAX_ANGLE;
     sArm = arm;
     targetAngle = targetAngleDegree;
     addRequirements(sArm);
@@ -53,8 +55,7 @@ public class SetArmAngleCommand extends Command {
   }
 
   public boolean shootErrorTolerated() {
-    boolean currently_in_position =
-        Math.abs(targetAngle - sArm.getAngleDeg()) < ERR_TOL; // 1度以内
+    boolean currently_in_position = Math.abs(targetAngle - sArm.getAngleDeg()) < ERR_TOL; // 1度以内
     return mArmInPosition.update(Timer.getFPGATimestamp(), currently_in_position);
   }
 

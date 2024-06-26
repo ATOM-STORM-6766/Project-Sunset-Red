@@ -78,14 +78,18 @@ public class SnapToAngleCommand extends Command {
   public void execute() {
     // Running the lambda statements and getting the velocity values
 
-    Translation2d driveVector = driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
+    Translation2d driveVector =
+        driveVectorSupplier
+            .get()
+            .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
     goalHeading = goalHeadingSupplier.get();
     if (goalHeading.isPresent()) {
       snapToAnglePID.setGoal(goalHeading.get().getRadians());
     }
     mDrivetrainSubsystem.drive(
         driveVector,
-        snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians()), // output is in radians per second
+        snapToAnglePID.calculate(
+            mDrivetrainSubsystem.getHeading().getRadians()), // output is in radians per second
         !robotCentricSupplier.getAsBoolean());
   }
 

@@ -139,20 +139,18 @@ public class RobotContainer {
     buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
   }
 
-  
-
   private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
-    Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
-                               .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
-                               .andThen(new FeedCommand(mTransfer));
+    Command shootCommand =
+        new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+            .andThen(new FeedCommand(mTransfer));
 
-    Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                                  .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+    Command stopShootingCommand =
+        new InstantCommand(() -> mShooter.stop())
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
 
-    trigger.whileTrue(shootCommand)
-           .onFalse(stopShootingCommand);
-}
-
+    trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -173,7 +171,8 @@ public class RobotContainer {
     mChooser = new SendableChooser<>();
 
     // tested
-    mChooser.setDefaultOption("home4", new Home4AutoCommand(mIntake,mShooter,mArm,mTransfer,sDrivetrainSubsystem));
+    mChooser.setDefaultOption(
+        "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);

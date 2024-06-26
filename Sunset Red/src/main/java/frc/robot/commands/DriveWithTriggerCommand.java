@@ -42,8 +42,14 @@ public class DriveWithTriggerCommand extends Command {
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    angularVelocity = rawRotationRateSupplier.get() * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond; // -1~1 to radians per second
-    Translation2d driveVector = driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
+    angularVelocity =
+        rawRotationRateSupplier.get()
+            * DriveConstants
+                .kTeleDriveMaxAngularSpeedRadiansPerSecond; // -1~1 to radians per second
+    Translation2d driveVector =
+        driveVectorSupplier
+            .get()
+            .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
 
