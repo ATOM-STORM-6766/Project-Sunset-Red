@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.auto.modes.TestAutoCommand;
+import frc.robot.auto.modes.*;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
@@ -136,36 +136,23 @@ public class RobotContainer {
     // operatorController.y().onTrue(new SetArmAngleCommand(mArm, 50));
 
     // Below Speaker
-    driverController
-        .x()
-        .whileTrue( // use whileTrue because need to cancel feed if button released
-            new SetShooterTargetCommand(
-                    mShooter,
-                    () -> {
-                      return ShootingParameters.BELOW_SPEAKER.speed_rps;
-                    }) // this command finished means shooter reached target velocity
-                .alongWith(
-                    new SetArmAngleCommand(
-                        mArm,
-                        () -> {
-                          return ShootingParameters.BELOW_SPEAKER.angle_deg;
-                        })) // this command finished means arm reached target angle
-                .andThen(new FeedCommand(mTransfer))); // feed
-
-    driverController
-        .x()
-        .onFalse(
-            new InstantCommand(
-                    () -> { // stop shooting, arm back
-                      mShooter.stop();
-                    })
-                .andThen(
-                    new SetArmAngleCommand(
-                        mArm,
-                        () -> {
-                          return ArmConstants.ARM_REST_ANGLE;
-                        })));
+    buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
   }
+
+  
+
+  private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
+    Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+                               .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+                               .andThen(new FeedCommand(mTransfer));
+
+    Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
+                                  .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+
+    trigger.whileTrue(shootCommand)
+           .onFalse(stopShootingCommand);
+}
+
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -186,7 +173,8 @@ public class RobotContainer {
     mChooser = new SendableChooser<>();
 
     // tested
-    mChooser.setDefaultOption("example", new TestAutoCommand(sDrivetrainSubsystem));
+    mChooser.setDefaultOption("home4", new Home4AutoCommand(mIntake,mShooter,mArm,mTransfer,sDrivetrainSubsystem));
+    mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
   }

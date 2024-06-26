@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.subsystems.Shooter;
-import java.util.function.DoubleSupplier;
 
 /**
  * Set a single velocity target for the shooter subsystem, finishes when the target is reached.
@@ -26,9 +25,9 @@ public class SetShooterTargetCommand extends Command {
    * @brief sets the shooter to a target rps, finishes when target reached, do not interact with
    *     transfer subsystem
    */
-  public SetShooterTargetCommand(Shooter shooter, DoubleSupplier targetRPS) {
+  public SetShooterTargetCommand(Shooter shooter, double targetRPS) {
     mShooter = shooter;
-    this.shooterTargetRPS = targetRPS.getAsDouble();
+    this.shooterTargetRPS = targetRPS;
     addRequirements(mShooter);
   }
 

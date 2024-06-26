@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -41,8 +42,8 @@ public class DriveWithTriggerCommand extends Command {
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    angularVelocity = rawRotationRateSupplier.get();
-    Translation2d driveVector = driveVectorSupplier.get();
+    angularVelocity = rawRotationRateSupplier.get() * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond; // -1~1 to radians per second
+    Translation2d driveVector = driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
 

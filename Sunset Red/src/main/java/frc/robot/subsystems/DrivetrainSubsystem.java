@@ -204,19 +204,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * Drives the robot using the specified translation, rotation, and field-centric mode.
    *
    * @param translation the translation vector representing the robot's desired movement in the
-   *     field coordinate system
+   *     field coordinate system in meters per second
    * @param rotation the robot's desired rotation rate in radians per second
    * @param fieldCentric a boolean indicating whether the robot should drive in field-centric mode
    *     or not
    */
   public void drive(Translation2d translation, double rotation, boolean fieldCentric) {
-    SwerveModuleState[] swerveModuleStates =
-        mKinematics.toSwerveModuleStates(
-            fieldCentric
+    genSetpointAndApply(
+                fieldCentric
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(
                     translation.getX(), translation.getY(), rotation, getHeading())
                 : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
-    setModuleStates(swerveModuleStates);
   }
 
   public void driveWithChassisSpeed(ChassisSpeeds mChassisSpeeds) {

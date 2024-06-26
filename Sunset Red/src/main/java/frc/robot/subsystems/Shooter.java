@@ -108,7 +108,7 @@ public class Shooter extends SubsystemBase {
    * @param target_rps target velocity in rotations per second
    */
   public void setTargetVelocity(double target_rps) {
-    shooterTargetVelocity.withVelocity(target_rps);
+    shooterTargetVelocity.Velocity = target_rps;
     mShooterTalon.setControl(shooterTargetVelocity);
     mShooterFollower.setControl(shooterTargetVelocity);
   }

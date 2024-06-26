@@ -7,7 +7,7 @@ import frc.robot.subsystems.Transfer;
 public class FeedCommand extends Command {
   private final Transfer mTransfer;
 
-  private final double FEED_TIME = 1.0;
+  private final double FEED_TIME = 0.5;
   private double start_time = Double.NaN;
 
   public FeedCommand(Transfer transfer) {

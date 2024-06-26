@@ -8,7 +8,7 @@ import frc.robot.subsystems.Arm;
 
 public class InitializeArmCommand extends Command {
   private final Arm mArm;
-  private static final double ARM_CLIMB_VOLTS = -0.5;
+  private static final double ARM_INIT_VOLTS = -0.5;
   private static final double INIT_CURRENT_THRESHOLD = 10.0;
   private boolean isFinished = false;
 
@@ -24,7 +24,7 @@ public class InitializeArmCommand extends Command {
     mArmIsInPosition = new DelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME);
     isFinished = false;
     mArm.setReverseLimit(false);
-    mArm.setVoltage(ARM_CLIMB_VOLTS);
+    mArm.setVoltage(ARM_INIT_VOLTS);
   }
 
   @Override
@@ -38,7 +38,9 @@ public class InitializeArmCommand extends Command {
   }
 
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    mArm.stop();
+  }
 
   @Override
   public boolean isFinished() {

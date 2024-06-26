@@ -93,7 +93,7 @@ public class Arm extends SubsystemBase {
     double angle_rotation = angle_deg / 360.0;
     mArmTalon.setControl(
         ArmMotionMagic.withPosition(
-            angle_rotation)); // reused previously created ControlRequest Instance
+            angle_rotation)); // reuse previously created ControlRequest Instance
   }
 
   public void stop() {

@@ -7,6 +7,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -77,14 +78,14 @@ public class SnapToAngleCommand extends Command {
   public void execute() {
     // Running the lambda statements and getting the velocity values
 
-    Translation2d driveVector = driveVectorSupplier.get();
+    Translation2d driveVector = driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
     goalHeading = goalHeadingSupplier.get();
     if (goalHeading.isPresent()) {
       snapToAnglePID.setGoal(goalHeading.get().getRadians());
     }
     mDrivetrainSubsystem.drive(
         driveVector,
-        snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians()),
+        snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians()), // output is in radians per second
         !robotCentricSupplier.getAsBoolean());
   }
 

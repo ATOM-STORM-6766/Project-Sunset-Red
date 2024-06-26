@@ -9,6 +9,10 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -19,18 +23,19 @@ public class Intake extends SubsystemBase {
   private static final double INTAKE_CENTER_PERC = 0.3;
   private static final double OUTTAKE_VOLTS = -3.0;
   private static final double OUTTAKE_CENTER_PERC = -0.3;
+  private static final double EXTERIOR_PERC = 0.5;
 
   private final TalonFX mIntakeMotor;
   private final VictorSPX mCenterMotor;
-  // private final CANSparkMax mExteriorIntakeMotor;
+  private final CANSparkMax mExteriorIntakeMotor;
 
   private final VoltageOut intakeVoltage = new VoltageOut(0);
 
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);
     mCenterMotor = new VictorSPX(IntakeConstants.INTAKER_CENTER_ID);
-    // mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID,
-    // MotorType.kBrushless);
+    mExteriorIntakeMotor = new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID,
+    MotorType.kBrushless);
 
     TalonFXConfiguration intakeConfigs = new TalonFXConfiguration();
     intakeConfigs.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
@@ -57,12 +62,12 @@ public class Intake extends SubsystemBase {
     mCenterMotor.setNeutralMode(NeutralMode.Coast);
     mCenterMotor.set(ControlMode.PercentOutput, 0.0);
 
-    // mExteriorIntakeMotor.clearFaults();
-    // mExteriorIntakeMotor.setInverted(true);
-    // mExteriorIntakeMotor.setIdleMode(
-    //     IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
-    // mExteriorIntakeMotor.setVoltage(0);
-    // mExteriorIntakeMotor.burnFlash();
+    mExteriorIntakeMotor.clearFaults();
+    mExteriorIntakeMotor.setInverted(true);
+    mExteriorIntakeMotor.setIdleMode(
+        IdleMode.kCoast); // do not change to brake, otherwise there will be a lot of heat
+    mExteriorIntakeMotor.setVoltage(0);
+    mExteriorIntakeMotor.burnFlash();
 
     stop();
   }
@@ -70,7 +75,6 @@ public class Intake extends SubsystemBase {
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
-
     builder.addStringProperty(
         getName() + "Intake Motor Control Request",
         () -> mIntakeMotor.getAppliedControl().toString(),
@@ -86,18 +90,18 @@ public class Intake extends SubsystemBase {
   public synchronized void setIntake() {
     mIntakeMotor.setControl(intakeVoltage.withOutput(INTAKE_VOLTS));
     mCenterMotor.set(ControlMode.PercentOutput, INTAKE_CENTER_PERC);
-    // TODO: exterior motor
+    mExteriorIntakeMotor.set(EXTERIOR_PERC);
   }
 
   public synchronized void setOuttake() {
     mIntakeMotor.setControl(intakeVoltage.withOutput(OUTTAKE_VOLTS));
     mCenterMotor.set(ControlMode.PercentOutput, OUTTAKE_CENTER_PERC);
-    // TODO: exterior motor
+    mExteriorIntakeMotor.set(-EXTERIOR_PERC);
   }
 
   public synchronized void stop() {
     mIntakeMotor.setControl(Constants.NEUTRAL);
     mCenterMotor.set(ControlMode.PercentOutput, 0);
-    // TODO: exterior motor
+    mExteriorIntakeMotor.set(0.0);
   }
 }
