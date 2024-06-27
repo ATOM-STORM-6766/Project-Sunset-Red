@@ -150,7 +150,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     builder.addDoubleProperty("ChassisSpeed.vx", () -> mKinematicSpeed.vxMetersPerSecond, null);
     builder.addDoubleProperty("FilteredSpeed.vx", () -> mFilteredSpeed.vxMetersPerSecond, null);
     builder.addDoubleProperty("Photon latency", () -> photonLatency, null);
-    builder.addDoubleProperty("Last Vision Update TIme", ()->lastVisionOdomUpdateTime, null);
+    builder.addDoubleProperty("Last Vision Update TIme", () -> lastVisionOdomUpdateTime, null);
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
     mSwerveModules[2].initSendable(builder, getName());
@@ -357,7 +357,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // add logging infomation here
     updateLogEntry();
 
-    lastVisionOdomUpdateTime = updateOdomFromVision(); // does not change value if not update from vision.
+    lastVisionOdomUpdateTime =
+        updateOdomFromVision(); // does not change value if not update from vision.
     mPosePublisher.set(getPose());
   }
 
