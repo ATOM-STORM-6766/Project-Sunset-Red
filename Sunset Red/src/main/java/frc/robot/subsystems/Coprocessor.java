@@ -29,11 +29,12 @@ public class Coprocessor extends SubsystemBase {
       new Transform3d(0.25, 0.06, 0.25, new Rotation3d(0, 210.0 / 180 * Math.PI, Math.PI));
   private final AprilTagFieldLayout aprilTagFieldLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-  // private EstimatedRobotPose lastRobotPose = new EstimatedRobotPose(new Pose3d(), -1, null, null); // get Pose from odom
+  // private EstimatedRobotPose lastRobotPose = new EstimatedRobotPose(new Pose3d(), -1, null,
+  // null); // get Pose from odom
   PhotonPoseEstimator photonPoseEstimator =
       new PhotonPoseEstimator(
           aprilTagFieldLayout, PoseStrategy.AVERAGE_BEST_TARGETS, ov9281, kRobotToCamera);
-    
+
   private double lastEstimateTimestamp = 0.0;
   private Optional<EstimatedRobotPose> lastVisionEstimatedPose = Optional.empty();
 
@@ -50,13 +51,14 @@ public class Coprocessor extends SubsystemBase {
 
   /**
    * Should run this function as frequent as possible
+   *
    * @param prevEstimatedRobotPose latest estimated robot pose (ideally from odom)
    * @return vision estimated robot pose using Optional class to signal vision presence
    */
   public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
     photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
     var newEstimatedRobotPose = photonPoseEstimator.update();
-    if (newEstimatedRobotPose.isEmpty()){
+    if (newEstimatedRobotPose.isEmpty()) {
       // System.out.println("no new vision position estinate");
       return Optional.empty();
     } else {
@@ -65,15 +67,25 @@ public class Coprocessor extends SubsystemBase {
     // filter out if estimated translation change a lot since last vision update (if it's recent)
     double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
     lastEstimateTimestamp = newEstimatedRobotPose.get().timestampSeconds;
-    if(visionDeltaT < 0.1 && lastVisionEstimatedPose.isPresent() && lastVisionEstimatedPose.get().estimatedPose.minus(newEstimatedRobotPose.get().estimatedPose).getTranslation().getNorm() > 0.2){
+    if (visionDeltaT < 0.1
+        && lastVisionEstimatedPose.isPresent()
+        && lastVisionEstimatedPose
+                .get()
+                .estimatedPose
+                .minus(newEstimatedRobotPose.get().estimatedPose)
+                .getTranslation()
+                .getNorm()
+            > 0.2) {
       System.out.println("moving too quick");
       return Optional.empty();
-
     }
 
     // filter apriltag if close to camera edge
     PhotonTrackedTarget target = ov9281.getLatestResult().getBestTarget();
-    if (target.getYaw() > 30 || target.getYaw() < -30 || target.getPitch() > 20 || target.getPitch() < -20){ // assume signal target ?
+    if (target.getYaw() > 30
+        || target.getYaw() < -30
+        || target.getPitch() > 20
+        || target.getPitch() < -20) { // assume signal target ?
       System.out.println("target on camera edge");
       return Optional.empty();
     }
@@ -82,6 +94,5 @@ public class Coprocessor extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 }
