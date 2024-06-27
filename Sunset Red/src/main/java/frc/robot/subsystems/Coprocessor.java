@@ -57,27 +57,26 @@ public class Coprocessor extends SubsystemBase {
     photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
     var newEstimatedRobotPose = photonPoseEstimator.update();
     if (newEstimatedRobotPose.isEmpty()){
-      // System.out.println("no new vision position estinate");
+      // System.out.println("no new vision position estimate");
       return Optional.empty();
     } else {
       currRPpublisher.set(newEstimatedRobotPose.get().estimatedPose.toPose2d());
     }
     // filter out if estimated translation change a lot since last vision update (if it's recent)
     double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
-    lastEstimateTimestamp = newEstimatedRobotPose.get().timestampSeconds;
     if(visionDeltaT < 0.1 && lastVisionEstimatedPose.isPresent() && lastVisionEstimatedPose.get().estimatedPose.minus(newEstimatedRobotPose.get().estimatedPose).getTranslation().getNorm() > 0.2){
       System.out.println("moving too quick");
       return Optional.empty();
-
     }
 
     // filter apriltag if close to camera edge
     PhotonTrackedTarget target = ov9281.getLatestResult().getBestTarget();
-    if (target.getYaw() > 30 || target.getYaw() < -30 || target.getPitch() > 20 || target.getPitch() < -20){ // assume signal target ?
+    if (target == null || target.getYaw() > 30 || target.getYaw() < -30 || target.getPitch() > 20 || target.getPitch() < -20){ // assume signal target ?
       System.out.println("target on camera edge");
       return Optional.empty();
     }
     lastVisionEstimatedPose = newEstimatedRobotPose;
+    lastEstimateTimestamp = newEstimatedRobotPose.get().timestampSeconds;
     return lastVisionEstimatedPose;
   }
 

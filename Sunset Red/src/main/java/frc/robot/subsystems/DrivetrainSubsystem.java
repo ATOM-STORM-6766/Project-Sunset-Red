@@ -382,7 +382,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mEstimator.addVisionMeasurement(
             useIMUPose2d,
             photonTimestamp,
-            new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 1.0}));
+            new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 0.1}));
         return Timer.getFPGATimestamp();
         // }
       }
