@@ -72,6 +72,7 @@ public class SnapToAngleCommand extends Command {
     snapToAnglePID.reset(mDrivetrainSubsystem.getHeading().getRadians());
     snapToAnglePID.enableContinuousInput(-Math.PI, Math.PI);
     snapToAnglePID.setGoal(mDrivetrainSubsystem.getHeading().getRadians());
+    // snapToAnglePID.setTolerance(1.5/180*Math.PI); // 1.5 degree allowable error
   }
 
   @Override

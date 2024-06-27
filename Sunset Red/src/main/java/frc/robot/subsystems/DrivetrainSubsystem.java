@@ -65,6 +65,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private ChassisSpeeds mKinematicSpeed = new ChassisSpeeds();
   private ChassisSpeeds mFilteredSpeed = new ChassisSpeeds();
 
+  // photon vision
+  private double photonLatency = 0;
+
   // LogEntries
   private StructLogEntry<Pose2d> mPoseLog;
   private StructLogEntry<ChassisSpeeds> mChassisSpeedLog;
@@ -86,8 +89,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
           DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 0.3,
           100);
 
-  private double lastRotation = 0.0;
-  private double headingCorrection = 0.0;
   /*
    * Constructor for DrivetrainSubsystem
    */
@@ -148,6 +149,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         "FilteredSpeed.omega", () -> mFilteredSpeed.omegaRadiansPerSecond, null);
     builder.addDoubleProperty("ChassisSpeed.vx", () -> mKinematicSpeed.vxMetersPerSecond, null);
     builder.addDoubleProperty("FilteredSpeed.vx", () -> mFilteredSpeed.vxMetersPerSecond, null);
+    builder.addDoubleProperty("Photon latency", () -> photonLatency, null);
+    builder.addDoubleProperty("Last Vision Update TIme", ()->lastVisionOdomUpdateTime, null);
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
     mSwerveModules[2].initSendable(builder, getName());
@@ -354,10 +357,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // add logging infomation here
     updateLogEntry();
 
-    if (Timer.getFPGATimestamp() - lastVisionOdomUpdateTime > 1.0 && robotStationary()) {
-      lastVisionOdomUpdateTime =
-          updateOdomFromVision(); // does not change value if not update from vision.
-    }
+    lastVisionOdomUpdateTime = updateOdomFromVision(); // does not change value if not update from vision.
     mPosePublisher.set(getPose());
   }
 
@@ -372,14 +372,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
       Optional<EstimatedRobotPose> visionEstimatedPose =
           Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition());
       if (visionEstimatedPose.isPresent()) {
-        Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
-        Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), getHeading());
 
+        Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
+        double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
+        Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), getHeading());
+        photonLatency = Timer.getFPGATimestamp() - photonTimestamp;
         // if(estimatedPose2d.minus(mEstimator.getEstimatedPosition()).getTranslation().getNorm() <
         // 1.0){ // if vision measurement is in 1 meter of odom measurement
         mEstimator.addVisionMeasurement(
             useIMUPose2d,
-            Timer.getFPGATimestamp() - 0.03,
+            photonTimestamp,
             new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 1.0}));
         return Timer.getFPGATimestamp();
         // }
