@@ -2,8 +2,6 @@ package frc.robot.auto.modes;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-
-import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
@@ -35,7 +33,9 @@ public class Home4AutoCommand extends SequentialCommandGroup {
                 new InstantCommand(
                     () ->
                         drivetrainSubsystem.setPose(
-                            PathPlannerPath.fromPathFile("homeTo31").flipPath().getPreviewStartingHolonomicPose()))),
+                            PathPlannerPath.fromPathFile("homeTo31")
+                                .flipPath()
+                                .getPreviewStartingHolonomicPose()))),
             new SequentialCommandGroup(
                 new ParallelCommandGroup(
                     new SetArmAngleCommand(mArm, ShootingParameters.BELOW_SPEAKER.angle_deg),
@@ -68,8 +68,8 @@ public class Home4AutoCommand extends SequentialCommandGroup {
 
   private Command buildPath(String pathName, boolean red_alliance) {
     PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-    if (red_alliance){
-        path = path.flipPath();
+    if (red_alliance) {
+      path = path.flipPath();
     }
     return AutoBuilder.followPath(path);
   }
