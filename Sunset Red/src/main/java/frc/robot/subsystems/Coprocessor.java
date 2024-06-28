@@ -26,7 +26,7 @@ public class Coprocessor extends SubsystemBase {
 
   private PhotonCamera ov9281 = new PhotonCamera("OV9281");
   private Transform3d kRobotToCamera =
-      new Transform3d(0.25, 0.06, 0.25, new Rotation3d(0, 210.0 / 180 * Math.PI, Math.PI));
+      new Transform3d(0.25, 0.06, 0.25, new Rotation3d(0, 220.0 / 180 * Math.PI, Math.PI));
   private final AprilTagFieldLayout aprilTagFieldLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
   // private EstimatedRobotPose lastRobotPose = new EstimatedRobotPose(new Pose3d(), -1, null,
@@ -66,7 +66,6 @@ public class Coprocessor extends SubsystemBase {
     }
     // filter out if estimated translation change a lot since last vision update (if it's recent)
     double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
-    lastEstimateTimestamp = newEstimatedRobotPose.get().timestampSeconds;
     if (visionDeltaT < 0.1
         && lastVisionEstimatedPose.isPresent()
         && lastVisionEstimatedPose
@@ -82,7 +81,7 @@ public class Coprocessor extends SubsystemBase {
 
     // filter apriltag if close to camera edge
     PhotonTrackedTarget target = ov9281.getLatestResult().getBestTarget();
-    if (target.getYaw() > 30
+    if (target == null || target.getYaw() > 30
         || target.getYaw() < -30
         || target.getPitch() > 20
         || target.getPitch() < -20) { // assume signal target ?

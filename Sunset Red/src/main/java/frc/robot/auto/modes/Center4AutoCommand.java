@@ -12,14 +12,14 @@ import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 
-public class Home4AutoCommand extends SequentialCommandGroup {
+public class Center4AutoCommand extends SequentialCommandGroup {
 
   private Intake mIntake;
   private Shooter mShooter;
   private Arm mArm;
   private Transfer mTransfer;
 
-  public Home4AutoCommand(
+  public Center4AutoCommand(
       Intake intake,
       Shooter shooter,
       Arm arm,
@@ -35,10 +35,10 @@ public class Home4AutoCommand extends SequentialCommandGroup {
         new ParallelCommandGroup(
             new SequentialCommandGroup(
                 drivetrainSubsystem.runZeroingCommand(),
-                new InstantCommand(
+                new InstantCommand( // maybe don't need, will use vision to override
                     () -> {
                         Optional<Alliance> a = DriverStation.getAlliance();
-                        PathPlannerPath firstPath = PathPlannerPath.fromPathFile("homeTo31");
+                        PathPlannerPath firstPath = PathPlannerPath.fromPathFile("homeTo51");
                         if(a.isPresent() && a.get() == Alliance.Red){
                             firstPath = firstPath.flipPath();
                         }
@@ -51,27 +51,30 @@ public class Home4AutoCommand extends SequentialCommandGroup {
                         mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps)),
                 new FeedCommand(mTransfer),
                 new InstantCommand(() -> mShooter.stop()))),
-        // go 31 and back shoot
-        buildPath("homeTo31").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
-        buildPath("31ToHome")
+        // go 51 and back shoot
+        buildPath("homeTo51").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
+        buildPath("51ToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
             .andThen(new InstantCommand(() -> mShooter.stop())),
-        // go 32 and back shoot
-        buildPath("homeTo32").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
-        buildPath("32ToHome")
+        // go 52 and back shoot
+        buildPath("homeTo52").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
+        buildPath("52ToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
             .andThen(new InstantCommand(() -> mShooter.stop())),
-        // go 32 and back shoot
-        buildPath("homeTo33").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
-        buildPath("33ToHome")
+        // go 53 and back shoot
+        buildPath("homeTo53").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
+        buildPath("53ToStageTag"),
+        new WaitCommand(0.5),
+        buildPath("StageTagToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
-            .andThen(new InstantCommand(() -> mShooter.stop())));
+            .andThen(new InstantCommand(() -> mShooter.stop()))
+    );
   }
 
   private Command buildPath(String pathName) {

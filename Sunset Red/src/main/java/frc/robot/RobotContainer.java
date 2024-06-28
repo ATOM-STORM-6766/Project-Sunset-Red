@@ -171,9 +171,11 @@ public class RobotContainer {
     mChooser = new SendableChooser<>();
 
     // tested
-    mChooser.setDefaultOption(
+    mChooser.setDefaultOption("center4", new Center4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+    mChooser.addOption(
         "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
+
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
   }
