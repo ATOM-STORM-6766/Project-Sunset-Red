@@ -15,6 +15,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.interpolation.Interpolator;
+import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -49,9 +53,19 @@ import org.photonvision.EstimatedRobotPose;
 public class DrivetrainSubsystem extends SubsystemBase {
 
   private final PigeonIMU mPigeon;
+  private final InterpolatingTreeMap<Double, Rotation2d> mHeading = new InterpolatingTreeMap<Double, Rotation2d>(InverseInterpolator.forDouble(), new Interpolator<Rotation2d>() {
+
+    @Override
+    public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
+      return startValue.interpolate(endValue, t);
+    }
+    
+  });
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
+
+  Rotation2d a;
 
   StructPublisher<Pose2d> mPosePublisher =
       NetworkTableInstance.getDefault()
@@ -373,13 +387,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
       Optional<EstimatedRobotPose> visionEstimatedPose =
           Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition());
       if (visionEstimatedPose.isPresent()) {
-
         Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
-        Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), getHeading());
-        photonLatency = Timer.getFPGATimestamp() - photonTimestamp;
-        // if(estimatedPose2d.minus(mEstimator.getEstimatedPosition()).getTranslation().getNorm() <
-        // 1.0){ // if vision measurement is in 1 meter of odom measurement
+        double currentTimestamp = Timer.getFPGATimestamp();
+        photonLatency = currentTimestamp - photonTimestamp;
+        Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
         mEstimator.addVisionMeasurement(
             useIMUPose2d,
             photonTimestamp,
@@ -410,6 +422,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
+      mHeading.put(timestamp, getHeading());
     }
   }
 
