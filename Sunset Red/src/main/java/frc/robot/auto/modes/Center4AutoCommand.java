@@ -1,16 +1,14 @@
 package frc.robot.auto.modes;
 
-import java.util.Optional;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
-
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.*;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
+import java.util.Optional;
 
 public class Center4AutoCommand extends SequentialCommandGroup {
 
@@ -37,13 +35,13 @@ public class Center4AutoCommand extends SequentialCommandGroup {
                 drivetrainSubsystem.runZeroingCommand(),
                 new InstantCommand( // maybe don't need, will use vision to override
                     () -> {
-                        Optional<Alliance> a = DriverStation.getAlliance();
-                        PathPlannerPath firstPath = PathPlannerPath.fromPathFile("homeTo51");
-                        if(a.isPresent() && a.get() == Alliance.Red){
-                            firstPath = firstPath.flipPath();
-                        }
-                        drivetrainSubsystem.setPose(
-                            firstPath.getPreviewStartingHolonomicPose());})),
+                      Optional<Alliance> a = DriverStation.getAlliance();
+                      PathPlannerPath firstPath = PathPlannerPath.fromPathFile("homeTo51");
+                      if (a.isPresent() && a.get() == Alliance.Red) {
+                        firstPath = firstPath.flipPath();
+                      }
+                      drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
+                    })),
             new SequentialCommandGroup(
                 new ParallelCommandGroup(
                     new SetArmAngleCommand(mArm, ShootingParameters.BELOW_SPEAKER.angle_deg),
@@ -73,8 +71,7 @@ public class Center4AutoCommand extends SequentialCommandGroup {
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
-            .andThen(new InstantCommand(() -> mShooter.stop()))
-    );
+            .andThen(new InstantCommand(() -> mShooter.stop())));
   }
 
   private Command buildPath(String pathName) {

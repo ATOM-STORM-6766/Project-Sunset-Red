@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
@@ -53,14 +52,16 @@ import org.photonvision.EstimatedRobotPose;
 public class DrivetrainSubsystem extends SubsystemBase {
 
   private final PigeonIMU mPigeon;
-  private final InterpolatingTreeMap<Double, Rotation2d> mHeading = new InterpolatingTreeMap<Double, Rotation2d>(InverseInterpolator.forDouble(), new Interpolator<Rotation2d>() {
+  private final InterpolatingTreeMap<Double, Rotation2d> mHeading =
+      new InterpolatingTreeMap<Double, Rotation2d>(
+          InverseInterpolator.forDouble(),
+          new Interpolator<Rotation2d>() {
 
-    @Override
-    public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
-      return startValue.interpolate(endValue, t);
-    }
-    
-  });
+            @Override
+            public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
+              return startValue.interpolate(endValue, t);
+            }
+          });
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
@@ -370,10 +371,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
     // add logging infomation here
     updateLogEntry();
-    
+
     // if(robotStationary()){
-      lastVisionOdomUpdateTime =
-          updateOdomFromVision(); // does not change value if not update from vision.
+    lastVisionOdomUpdateTime =
+        updateOdomFromVision(); // does not change value if not update from vision.
     // }
     mPosePublisher.set(getPose());
   }
@@ -393,7 +394,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
         double currentTimestamp = Timer.getFPGATimestamp();
         photonLatency = currentTimestamp - photonTimestamp;
-        Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
+        Pose2d useIMUPose2d =
+            new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
         mEstimator.addVisionMeasurement(
             useIMUPose2d,
             photonTimestamp,
