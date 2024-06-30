@@ -84,7 +84,7 @@ public class Coprocessor extends SubsystemBase {
     if (target == null || target.getYaw() > 30
         || target.getYaw() < -30
         || target.getPitch() > 20
-        || target.getPitch() < -20) { // assume signal target ?
+        || target.getPitch() < -20 || target.getArea() < 0.11) { // assume signal target ?
       System.out.println("target on camera edge");
       return Optional.empty();
     }

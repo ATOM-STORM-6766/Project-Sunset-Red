@@ -370,16 +370,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
     // add logging infomation here
     updateLogEntry();
-
-    lastVisionOdomUpdateTime =
-        updateOdomFromVision(); // does not change value if not update from vision.
+    
+    // if(robotStationary()){
+      lastVisionOdomUpdateTime =
+          updateOdomFromVision(); // does not change value if not update from vision.
+    // }
     mPosePublisher.set(getPose());
   }
 
   public boolean robotStationary() {
-    return Math.abs(mFilteredSpeed.vxMetersPerSecond) < 0.1
-        && Math.abs(mFilteredSpeed.vyMetersPerSecond) < 0.1
-        && Math.abs(mFilteredSpeed.omegaRadiansPerSecond) < 0.1;
+    return Math.abs(mFilteredSpeed.vxMetersPerSecond) < 0.2
+        && Math.abs(mFilteredSpeed.vyMetersPerSecond) < 0.2
+        && Math.abs(mFilteredSpeed.omegaRadiansPerSecond) < 0.2;
   }
 
   private double updateOdomFromVision() {
