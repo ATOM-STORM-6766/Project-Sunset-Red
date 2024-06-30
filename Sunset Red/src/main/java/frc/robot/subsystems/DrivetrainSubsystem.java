@@ -53,7 +53,10 @@ import org.photonvision.EstimatedRobotPose;
 public class DrivetrainSubsystem extends SubsystemBase {
 
   private final PigeonIMU mPigeon;
-  private final InterpolatingTreeMap<Double, Rotation2d> mHeading = new InterpolatingTreeMap<Double, Rotation2d>(InverseInterpolator.forDouble(), new Interpolator<Rotation2d>() {
+  private final InterpolatingTreeMap<Double, Rotation2d> mHeading =
+      new InterpolatingTreeMap<Double, Rotation2d>(
+          InverseInterpolator.forDouble(),
+          new Interpolator<Rotation2d>() {
 
     @Override
     public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
@@ -377,10 +380,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     mFilteredSpeed = mSpeedFilter.correctAndPredict(mKinematicSpeed);
     // add logging infomation here
     updateLogEntry();
-    
+
     // if(robotStationary()){
-      lastVisionOdomUpdateTime =
-          updateOdomFromVision(); // does not change value if not update from vision.
+    lastVisionOdomUpdateTime =
+        updateOdomFromVision(); // does not change value if not update from vision.
     // }
     mPosePublisher.set(getPose());
   }
@@ -400,7 +403,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
         double currentTimestamp = Timer.getFPGATimestamp();
         photonLatency = currentTimestamp - photonTimestamp;
-        Pose2d useIMUPose2d = new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
+        Pose2d useIMUPose2d =
+            new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
         mEstimator.addVisionMeasurement(
             useIMUPose2d,
             photonTimestamp,
