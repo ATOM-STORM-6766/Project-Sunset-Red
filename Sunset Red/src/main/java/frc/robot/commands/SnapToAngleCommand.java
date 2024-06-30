@@ -72,7 +72,7 @@ public class SnapToAngleCommand extends Command {
     snapToAnglePID.reset(mDrivetrainSubsystem.getHeading().getRadians());
     snapToAnglePID.enableContinuousInput(-Math.PI, Math.PI);
     snapToAnglePID.setGoal(mDrivetrainSubsystem.getHeading().getRadians());
-    // snapToAnglePID.setTolerance(1.5/180*Math.PI); // 1.5 degree allowable error
+    snapToAnglePID.setTolerance(0.5/Math.PI *180);
   }
 
   @Override
@@ -89,7 +89,7 @@ public class SnapToAngleCommand extends Command {
     }
     mDrivetrainSubsystem.drive(
         driveVector,
-        snapToAnglePID.calculate(
+        snapToAnglePID.atGoal()?0:snapToAnglePID.calculate(
             mDrivetrainSubsystem.getHeading().getRadians()), // output is in radians per second
         !robotCentricSupplier.getAsBoolean());
   }
@@ -108,6 +108,7 @@ public class SnapToAngleCommand extends Command {
   public void initSendable(SendableBuilder builder) {
     // TODO Auto-generated method stub
     super.initSendable(builder);
+    builder.addDoubleProperty("target heading error", () -> snapToAnglePID.getPositionError(), null);
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
   }
 }

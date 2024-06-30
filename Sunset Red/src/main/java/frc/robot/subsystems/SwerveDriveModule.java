@@ -162,6 +162,7 @@ public class SwerveDriveModule {
         null);
     builder.addDoubleProperty(
         name + "/AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
+    builder.addDoubleProperty(name + "/AzimuthTargetAngleDeg", () -> (azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360, null);
     builder.addDoubleProperty(name + "/AzimuthErrorDeg", () -> azimuthErr(), null);
   }
 
@@ -181,15 +182,15 @@ public class SwerveDriveModule {
    * @param desiredState The desired state of the swerve drive module.
    */
   public void setDesiredState(SwerveModuleState desiredState) {
-    SwerveModuleState optimizedState = SwerveModuleState.optimize(desiredState, getState().angle);
-    setAzimuthDegree(optimizedState.angle);
-    setDriveVelocity(optimizedState.speedMetersPerSecond);
+    // setpoint generator already considered if we need to flip azimuth
+    setAzimuthDegree(desiredState.angle);
+    setDriveVelocity(desiredState.speedMetersPerSecond);
   }
 
   /**
    * Sets the azimuth degree of the swerve drive module.
    *
-   * @param goal The desired rotation angle in degrees.
+   * @param goal The desired rotation angle in Rotation2d.
    */
   public void setAzimuthDegree(Rotation2d goal) {
     double setpointRotations = goal.getRotations() + mConfig.azimuthEncoderOffsetRotation;

@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
@@ -24,6 +23,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.StructLogEntry;
@@ -59,8 +59,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
     public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
       return startValue.interpolate(endValue, t);
     }
-    
   });
+
+  StructArrayPublisher<SwerveModuleState> swerve_publisher = NetworkTableInstance.getDefault()
+    .getTable("SmartDashboard")
+    .getStructArrayTopic("MyStates", SwerveModuleState.struct).publish();
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
@@ -76,6 +79,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveDriveKinematics mKinematics;
   private final ChassisSpeedKalmanFilterSimplified mSpeedFilter;
 
+  private ChassisSpeeds mTargetSpeeds = new ChassisSpeeds();
   private ChassisSpeeds mKinematicSpeed = new ChassisSpeeds();
   private ChassisSpeeds mFilteredSpeed = new ChassisSpeeds();
 
@@ -165,6 +169,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     builder.addDoubleProperty("FilteredSpeed.vx", () -> mFilteredSpeed.vxMetersPerSecond, null);
     builder.addDoubleProperty("Photon latency", () -> photonLatency, null);
     builder.addDoubleProperty("Last Vision Update TIme", () -> lastVisionOdomUpdateTime, null);
+    builder.addDoubleArrayProperty("target chassis speeds x y omega", () -> new double[]{mTargetSpeeds.vxMetersPerSecond, mTargetSpeeds.vyMetersPerSecond, mTargetSpeeds.omegaRadiansPerSecond}, null);
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
     mSwerveModules[2].initSendable(builder, getName());
@@ -210,10 +215,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     ChassisSpeeds updated_chassis_speeds =
         new ChassisSpeeds(
             twist_vel.dx * kLooperFreq, twist_vel.dy * kLooperFreq, twist_vel.dtheta * kLooperFreq);
+    mTargetSpeeds = updated_chassis_speeds;
     mSetpoint =
         mSetpointGenerator.generateSetpoint(
             mKinematicLimits, mSetpoint, updated_chassis_speeds, Constants.kPeriodicDt, this);
-
     setModuleStates(mSetpoint.mModuleStates);
   }
 
@@ -235,8 +240,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   }
 
   public void driveWithChassisSpeed(ChassisSpeeds mChassisSpeeds) {
-    SwerveModuleState[] swerveModuleStates = mKinematics.toSwerveModuleStates(mChassisSpeeds);
-    setModuleStates(swerveModuleStates);
+    genSetpointAndApply(mChassisSpeeds);
   }
 
   /**
@@ -248,8 +252,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
    *     each swerve module
    */
   private void setModuleStates(SwerveModuleState[] desiredStates) {
+
     SwerveDriveKinematics.desaturateWheelSpeeds(
         desiredStates, DriveConstants.kPhysicalMaxSpeedMetersPerSecond);
+    swerve_publisher.set(desiredStates);
+
     for (int i = 0; i < mSwerveModules.length; i++) {
       mSwerveModules[i].setDesiredState(desiredStates[i]);
     }
@@ -424,7 +431,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
-      mHeading.put(timestamp, getHeading());
+      // mHeading.put(timestamp, getHeading());
     }
   }
 
