@@ -64,9 +64,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
   });
 
-  StructArrayPublisher<SwerveModuleState> swerve_publisher = NetworkTableInstance.getDefault()
-    .getTable("SmartDashboard")
-    .getStructArrayTopic("MyStates", SwerveModuleState.struct).publish();
+  StructArrayPublisher<SwerveModuleState> swerve_publisher =
+      NetworkTableInstance.getDefault()
+          .getTable("SmartDashboard")
+          .getStructArrayTopic("MyStates", SwerveModuleState.struct)
+          .publish();
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
@@ -172,7 +174,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
     builder.addDoubleProperty("FilteredSpeed.vx", () -> mFilteredSpeed.vxMetersPerSecond, null);
     builder.addDoubleProperty("Photon latency", () -> photonLatency, null);
     builder.addDoubleProperty("Last Vision Update TIme", () -> lastVisionOdomUpdateTime, null);
-    builder.addDoubleArrayProperty("target chassis speeds x y omega", () -> new double[]{mTargetSpeeds.vxMetersPerSecond, mTargetSpeeds.vyMetersPerSecond, mTargetSpeeds.omegaRadiansPerSecond}, null);
+    builder.addDoubleArrayProperty(
+        "target chassis speeds x y omega",
+        () ->
+            new double[] {
+              mTargetSpeeds.vxMetersPerSecond,
+              mTargetSpeeds.vyMetersPerSecond,
+              mTargetSpeeds.omegaRadiansPerSecond
+            },
+        null);
     mSwerveModules[0].initSendable(builder, getName());
     mSwerveModules[1].initSendable(builder, getName());
     mSwerveModules[2].initSendable(builder, getName());

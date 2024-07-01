@@ -162,7 +162,10 @@ public class SwerveDriveModule {
         null);
     builder.addDoubleProperty(
         name + "/AzimuthAngleDeg", () -> getAzimuthAngleRotations() * 360.0, null);
-    builder.addDoubleProperty(name + "/AzimuthTargetAngleDeg", () -> (azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360, null);
+    builder.addDoubleProperty(
+        name + "/AzimuthTargetAngleDeg",
+        () -> (azimuthPosition.Position - mConfig.azimuthEncoderOffsetRotation) * 360,
+        null);
     builder.addDoubleProperty(name + "/AzimuthErrorDeg", () -> azimuthErr(), null);
   }
 
