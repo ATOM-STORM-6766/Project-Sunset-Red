@@ -57,7 +57,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
       new InterpolatingTreeMap<Double, Rotation2d>(
           InverseInterpolator.forDouble(),
           new Interpolator<Rotation2d>() {
-
+        
     @Override
     public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
       return startValue.interpolate(endValue, t);
@@ -397,7 +397,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
       Optional<EstimatedRobotPose> visionEstimatedPose =
-          Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition());
+          Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition(), new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
       if (visionEstimatedPose.isPresent()) {
         Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
@@ -405,13 +405,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         photonLatency = currentTimestamp - photonTimestamp;
         Pose2d useIMUPose2d =
             new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
-        mEstimator.addVisionMeasurement(
-            useIMUPose2d,
-            photonTimestamp,
-            new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 0.1}));
-        return Timer.getFPGATimestamp();
+        if(useIMUPose2d.getRotation() != null){
+          mEstimator.addVisionMeasurement(
+              useIMUPose2d,
+              photonTimestamp,
+              new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 0.1}));
+          return Timer.getFPGATimestamp();
+        }
         // }
-      }
+      } 
+
+      mHeading.clear();
       return lastVisionOdomUpdateTime;
     }
   }
@@ -435,7 +439,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
-      // mHeading.put(timestamp, getHeading());
+      mHeading.put(timestamp, getHeading());
     }
   }
 

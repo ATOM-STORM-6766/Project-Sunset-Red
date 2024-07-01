@@ -5,6 +5,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -55,17 +56,20 @@ public class Coprocessor extends SubsystemBase {
    * @param prevEstimatedRobotPose latest estimated robot pose (ideally from odom)
    * @return vision estimated robot pose using Optional class to signal vision presence
    */
-  public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+  public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
     photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
     var newEstimatedRobotPose = photonPoseEstimator.update();
     if (newEstimatedRobotPose.isEmpty()) {
-      // System.out.println("no new vision position estinate");
       return Optional.empty();
     } else {
       currRPpublisher.set(newEstimatedRobotPose.get().estimatedPose.toPose2d());
     }
-    // filter out if estimated translation change a lot since last vision update (if it's recent)
     double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
+    // if(lastVisionEstimatedPose.isPresent()) {
+    //   Translation2d visionVelMS = newEstimatedRobotPose.get().estimatedPose.getTranslation().minus(lastVisionEstimatedPose.get().estimatedPose.getTranslation()).toTranslation2d().div(visionDeltaT);
+    //   if (visionVelMS.minus(chassisVelMS).getNorm() > 0.5) { // TODO: test
+    //     return Optional.empty();
+    //   }
     if (visionDeltaT < 0.1
         && lastVisionEstimatedPose.isPresent()
         && lastVisionEstimatedPose
