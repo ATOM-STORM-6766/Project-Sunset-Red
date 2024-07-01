@@ -57,12 +57,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
       new InterpolatingTreeMap<Double, Rotation2d>(
           InverseInterpolator.forDouble(),
           new Interpolator<Rotation2d>() {
-        
-    @Override
-    public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
-      return startValue.interpolate(endValue, t);
-    }
-  });
+
+            @Override
+            public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
+              return startValue.interpolate(endValue, t);
+            }
+          });
 
   StructArrayPublisher<SwerveModuleState> swerve_publisher =
       NetworkTableInstance.getDefault()
@@ -407,7 +407,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
       Optional<EstimatedRobotPose> visionEstimatedPose =
-          Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition(), new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
+          Coprocessor.getInstance()
+              .getEstimatedGlobalPose(
+                  mEstimator.getEstimatedPosition(),
+                  new Translation2d(
+                      mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
       if (visionEstimatedPose.isPresent()) {
         Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
@@ -415,7 +419,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         photonLatency = currentTimestamp - photonTimestamp;
         Pose2d useIMUPose2d =
             new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
-        if(useIMUPose2d.getRotation() != null){
+        if (useIMUPose2d.getRotation() != null) {
           mEstimator.addVisionMeasurement(
               useIMUPose2d,
               photonTimestamp,
@@ -423,7 +427,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
           return Timer.getFPGATimestamp();
         }
         // }
-      } 
+      }
 
       mHeading.clear();
       return lastVisionOdomUpdateTime;
