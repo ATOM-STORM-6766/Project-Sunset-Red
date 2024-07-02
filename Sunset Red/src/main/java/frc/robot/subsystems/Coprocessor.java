@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -13,16 +12,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonPipelineResult;
 
 public class Coprocessor extends SubsystemBase {
   private static Coprocessor mCoprocessor = new Coprocessor();
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.2;
+
   public static Coprocessor getInstance() {
     return mCoprocessor;
   }
@@ -62,124 +60,128 @@ public class Coprocessor extends SubsystemBase {
    * @param prevEstimatedRobotPose latest estimated robot pose (ideally from odom)
    * @return vision estimated robot pose using Optional class to signal vision presence
    */
- public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(
-        Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
-        photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
+  public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(
+      Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
+    photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
 
-        var result = ov9281.getLatestResult();
-        if (!result.hasTargets()) {
-            SmartDashboard.putString("Vision Estimation Mode", "No Targets");
-            return Optional.empty();
-        }
-
-        Optional<EstimatedRobotPose> newEstimatedRobotPose = Optional.empty();
-    
-      
-        // Filter targets with acceptable ambiguity
-        /*
-        var acceptableTargets = result.getTargets().stream()
-        .filter(target -> target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD)
-        .collect(Collectors.toList());
-        */
-        var acceptableTargets = result.getTargets().stream()
-        .filter(target -> target.getArea() > 0.11 && target.getYaw() < 30
-        && target.getYaw() > -30
-        && target.getPitch() < 20
-        && target.getPitch() > -20)
-        .collect(Collectors.toList());
-
-        // Logging original tags
-        String[] originalTagsInfo = new String[result.getTargets().size()];
-        for (int i = 0; i < result.getTargets().size(); i++) {
-        var target = result.getTargets().get(i);
-        originalTagsInfo[i] = String.format("ID: %d, Ambiguity: %.3f", target.getFiducialId(), target.getPoseAmbiguity());
-        }
-        SmartDashboard.putStringArray("Original Tags", originalTagsInfo);
-
-
-        // Logging accepted tags
-        String[] acceptedTagsInfo = new String[acceptableTargets.size()];
-        for (int i = 0; i < acceptableTargets.size(); i++) {
-        var target = acceptableTargets.get(i);
-        acceptedTagsInfo[i] = String.format("ID: %d, Ambiguity: %.3f", target.getFiducialId(), target.getPoseAmbiguity());
-        }
-        SmartDashboard.putStringArray("Accepted Tags", acceptedTagsInfo);
-
-        if (!acceptableTargets.isEmpty()) {
-        // Create a new PhotonPipelineResult with only acceptable targets
-        //var filteredResult = new PhotonPipelineResult(result.getLatencyMillis(), acceptableTargets);
-        //filteredResult.setTimestampSeconds(result.getTimestampSeconds());
-        result.targets.clear();
-        result.targets.addAll(acceptableTargets);
-        newEstimatedRobotPose = photonPoseEstimator.update(result);
-        SmartDashboard.putString("Vision Estimation Mode", newEstimatedRobotPose.get().strategy.toString());
-
-        // Logging updated results
-        if (newEstimatedRobotPose.isPresent()) {
-        var pose = newEstimatedRobotPose.get().estimatedPose;
-        String[] poseInfo = {
-            String.format("X: %.2f", pose.getX()),
-            String.format("Y: %.2f", pose.getY()),
-            String.format("Z: %.2f", pose.getZ()),
-            String.format("Yaw: %.2f", pose.getRotation().getZ()),
-            String.format("Timestamp: %.3f", newEstimatedRobotPose.get().timestampSeconds)
-        };
-        SmartDashboard.putStringArray("Estimated Pose", poseInfo);
-        } else {
-        SmartDashboard.putStringArray("Estimated Pose", new String[]{"Failed to estimate pose"});
-        }
-        } else {
-        SmartDashboard.putString("Vision Estimation Mode", "No Acceptable Targets");
-        SmartDashboard.putStringArray("Estimated Pose", new String[]{"No pose estimated"});
-        return Optional.empty();
-        }
-
-        newEstimatedRobotPose.ifPresent(pose -> currRPpublisher.set(pose.estimatedPose.toPose2d()));
-        
-        // Additional logging
-        SmartDashboard.putNumber("Number of Targets", result.getTargets().size());
-
-        return newEstimatedRobotPose;
+    var result = ov9281.getLatestResult();
+    if (!result.hasTargets()) {
+      SmartDashboard.putString("Vision Estimation Mode", "No Targets");
+      return Optional.empty();
     }
 
+    Optional<EstimatedRobotPose> newEstimatedRobotPose = Optional.empty();
+
+    // Filter targets with acceptable ambiguity
+    /*
+    var acceptableTargets = result.getTargets().stream()
+    .filter(target -> target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD)
+    .collect(Collectors.toList());
+    */
+    var acceptableTargets =
+        result.getTargets().stream()
+            .filter(
+                target ->
+                    target.getArea() > 0.11
+                        && target.getYaw() < 30
+                        && target.getYaw() > -30
+                        && target.getPitch() < 20
+                        && target.getPitch() > -20)
+            .collect(Collectors.toList());
+
+    // Logging original tags
+    String[] originalTagsInfo = new String[result.getTargets().size()];
+    for (int i = 0; i < result.getTargets().size(); i++) {
+      var target = result.getTargets().get(i);
+      originalTagsInfo[i] =
+          String.format(
+              "ID: %d, Ambiguity: %.3f", target.getFiducialId(), target.getPoseAmbiguity());
+    }
+    SmartDashboard.putStringArray("Original Tags", originalTagsInfo);
+
+    // Logging accepted tags
+    String[] acceptedTagsInfo = new String[acceptableTargets.size()];
+    for (int i = 0; i < acceptableTargets.size(); i++) {
+      var target = acceptableTargets.get(i);
+      acceptedTagsInfo[i] =
+          String.format(
+              "ID: %d, Ambiguity: %.3f", target.getFiducialId(), target.getPoseAmbiguity());
+    }
+    SmartDashboard.putStringArray("Accepted Tags", acceptedTagsInfo);
+
+    if (!acceptableTargets.isEmpty()) {
+      // Create a new PhotonPipelineResult with only acceptable targets
+      // var filteredResult = new PhotonPipelineResult(result.getLatencyMillis(),
+      // acceptableTargets);
+      // filteredResult.setTimestampSeconds(result.getTimestampSeconds());
+      result.targets.clear();
+      result.targets.addAll(acceptableTargets);
+      newEstimatedRobotPose = photonPoseEstimator.update(result);
+      SmartDashboard.putString(
+          "Vision Estimation Mode", newEstimatedRobotPose.get().strategy.toString());
+
+      // Logging updated results
+      if (newEstimatedRobotPose.isPresent()) {
+        var pose = newEstimatedRobotPose.get().estimatedPose;
+        String[] poseInfo = {
+          String.format("X: %.2f", pose.getX()),
+          String.format("Y: %.2f", pose.getY()),
+          String.format("Z: %.2f", pose.getZ()),
+          String.format("Yaw: %.2f", pose.getRotation().getZ()),
+          String.format("Timestamp: %.3f", newEstimatedRobotPose.get().timestampSeconds)
+        };
+        SmartDashboard.putStringArray("Estimated Pose", poseInfo);
+      } else {
+        SmartDashboard.putStringArray("Estimated Pose", new String[] {"Failed to estimate pose"});
+      }
+    } else {
+      SmartDashboard.putString("Vision Estimation Mode", "No Acceptable Targets");
+      SmartDashboard.putStringArray("Estimated Pose", new String[] {"No pose estimated"});
+      return Optional.empty();
+    }
+
+    newEstimatedRobotPose.ifPresent(pose -> currRPpublisher.set(pose.estimatedPose.toPose2d()));
+
+    // Additional logging
+    SmartDashboard.putNumber("Number of Targets", result.getTargets().size());
+
+    return newEstimatedRobotPose;
+  }
 
   @Override
   public void periodic() {}
 }
 
+/*
+var newEstimatedRobotPose = photonPoseEstimator.update();
 
+if (newEstimatedRobotPose.isEmpty()) {
+  return Optional.empty();
+} else {
+  currRPpublisher.set(newEstimatedRobotPose.get().estimatedPose.toPose2d());
+}
 
+boolean all_trustworthy = true;
+double[] target_ambiguities =
+    newEstimatedRobotPose.get().targetsUsed.stream()
+        .mapToDouble(x -> x.getPoseAmbiguity())
+        .toArray();
+for (var target : newEstimatedRobotPose.get().targetsUsed) {
+  if (target.getPoseAmbiguity() != -1 || target.getPoseAmbiguity() > 0.2) {
+    all_trustworthy = false;
+  }
+}
 
-/* 
-    var newEstimatedRobotPose = photonPoseEstimator.update();
+SmartDashboard.putNumberArray("ambiguities", target_ambiguities);
 
-    if (newEstimatedRobotPose.isEmpty()) {
-      return Optional.empty();
-    } else {
-      currRPpublisher.set(newEstimatedRobotPose.get().estimatedPose.toPose2d());
-    }
+if (all_trustworthy) {
+  return newEstimatedRobotPose;
+}
+return Optional.empty();
 
-    boolean all_trustworthy = true;
-    double[] target_ambiguities =
-        newEstimatedRobotPose.get().targetsUsed.stream()
-            .mapToDouble(x -> x.getPoseAmbiguity())
-            .toArray();
-    for (var target : newEstimatedRobotPose.get().targetsUsed) {
-      if (target.getPoseAmbiguity() != -1 || target.getPoseAmbiguity() > 0.2) {
-        all_trustworthy = false;
-      }
-    }
-
-    SmartDashboard.putNumberArray("ambiguities", target_ambiguities);
-
-    if (all_trustworthy) {
-      return newEstimatedRobotPose;
-    }
-    return Optional.empty();
-
-    /*
-     * Old processing logic, subed by using multi tag strategy and ambiguouty check
-     */
+/*
+ * Old processing logic, subed by using multi tag strategy and ambiguouty check
+ */
     // double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
     // if(lastVisionEstimatedPose.isPresent()) {
     //   Translation2d visionVelMS =
@@ -215,4 +217,3 @@ public class Coprocessor extends SubsystemBase {
     // lastVisionEstimatedPose = newEstimatedRobotPose;
     // lastEstimateTimestamp = newEstimatedRobotPose.get().timestampSeconds;
     // return lastVisionEstimatedPose;
-  
