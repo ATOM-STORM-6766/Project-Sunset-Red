@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -104,11 +103,11 @@ public class Coprocessor extends SubsystemBase {
       if (newEstimatedRobotPose.isPresent()) {
         var pose = newEstimatedRobotPose.get().estimatedPose;
         String[] poseInfo = {
-            String.format("X: %.2f", pose.getX()),
-            String.format("Y: %.2f", pose.getY()),
-            String.format("Z: %.2f", pose.getZ()),
-            String.format("Yaw: %.2f", pose.getRotation().getZ()),
-            String.format("Timestamp: %.3f", newEstimatedRobotPose.get().timestampSeconds)
+          String.format("X: %.2f", pose.getX()),
+          String.format("Y: %.2f", pose.getY()),
+          String.format("Z: %.2f", pose.getZ()),
+          String.format("Yaw: %.2f", pose.getRotation().getZ()),
+          String.format("Timestamp: %.3f", newEstimatedRobotPose.get().timestampSeconds)
         };
         SmartDashboard.putStringArray("Estimated Pose", poseInfo);
       } else {
