@@ -4,7 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
@@ -19,6 +21,9 @@ import frc.robot.config.SwerveModuleConfig.ModuleCorner;
  */
 public final class Constants {
   public static final double kPeriodicDt = TimedRobot.kDefaultPeriod; // seconds
+  public static final NeutralOut NEUTRAL = new NeutralOut();
+  public static final double kLongCANTimeoutSec = 0.1; // use for constructors
+  public static final int kLongCANTimeoutMs = 100; // use for constructors
 
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
@@ -103,6 +108,7 @@ public final class Constants {
   }
 
   public static final class DriveConstants {
+
     // driver constants
     public static final double kDeadband = 0.1;
 
@@ -121,9 +127,9 @@ public final class Constants {
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 10.0;
 
     public static final double kTeleDriveMaxSpeedMetersPerSecond =
-        kPhysicalMaxSpeedMetersPerSecond * 0.4;
+        kPhysicalMaxSpeedMetersPerSecond * 0.7;
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond =
-        kPhysicalMaxAngularSpeedRadiansPerSecond * 0.4;
+        kPhysicalMaxAngularSpeedRadiansPerSecond * 0.8;
     public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
   }
@@ -133,5 +139,54 @@ public final class Constants {
     // Update Freq (Hz): minimum 4Hz, maximum 1000Hz
     public static final int kOdomUpdateFreq = 100; // signal for odometry
     public static final int kDefaultUpdateFreq = 50;
+  }
+
+  public static final class IntakeConstants {
+    // INTAKER
+    public static final int INTAKER_ID = 11;
+    public static final int INTAKER_CENTER_ID = 13;
+    // used for LED to tell note entered state
+    public static final int INTAKER_ENTER_OMRON_ID = 5;
+    public static final int INTAKE_EXTERIOR_ID = 30;
+  }
+
+  public static final class TransferConstants {
+    // TRANSFER
+    public static final int TRANSFER_ID = 27;
+    public static final int TRANSFER_OMRON_PORT = 5;
+  }
+
+  public static final class ArmConstants {
+    // ARM
+    public static final int ARM_ID = 10;
+    // arm pitch when resting in degrees
+    public static final double ARM_REST_ANGLE = 22.0;
+    // arm pitch when resting in rotations
+    public static final double ARM_REST_POSITION = ARM_REST_ANGLE / 360.0;
+    // arm pitch when in max pitch in degrees
+    public static final double ARM_MAX_ANGLE = 120.0;
+    // arm pitch when in max pitch in rotations
+    public static final double ARM_MAX_POSITION = ARM_MAX_ANGLE / 360.0;
+
+    public static final double STABILIZE_TIME = 0.1;
+  }
+
+  public static final class ShooterConstants {
+    public static final int SHOOTER_ID = 12;
+    public static final int SHOOTER_FOLLOWER = 15;
+  }
+
+  public static final class VisionShootConstants {
+    public static final InterpolatingDoubleTreeMap kSpeakerAngleMap =
+        new InterpolatingDoubleTreeMap();
+
+    static {
+      // TODO : TUNE
+      // distance meters <-> arm angle degrees
+      kSpeakerAngleMap.put(1.30, 59.5);
+      kSpeakerAngleMap.put(2.00, 51.0);
+      kSpeakerAngleMap.put(2.80, 45.0);
+      kSpeakerAngleMap.put(4.00, 38.0);
+    }
   }
 }

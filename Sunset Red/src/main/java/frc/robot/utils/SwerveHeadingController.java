@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SwerveHeadingController {
   private static final double DISABLE_TIME_LENGTH = 0.2; // Unit: seconds
@@ -89,12 +90,12 @@ public class SwerveHeadingController {
         break;
     }
 
-    // SmartDashboard.putNumber("Heading stabilization position setpoint",
-    // swerveHeadingPID.getSetpoint().position);
+    SmartDashboard.putNumber(
+        "Heading stabilization position setpoint", swerveHeadingPID.getSetpoint().position);
     // SmartDashboard.putNumber("Heading stabilization velocity setpoint",
     // swerveHeadingPID.getSetpoint().velocity);
-    // SmartDashboard.putNumber("Heading stabilization position error",
-    // swerveHeadingPID.getPositionError());
+    SmartDashboard.putNumber(
+        "Heading stabilization position error", swerveHeadingPID.getPositionError());
 
     // SmartDashboard.putString("Heading State", currentState.toString());
     // SmartDashboard.putNumber("Heading Correction", correction);
