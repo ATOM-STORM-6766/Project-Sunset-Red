@@ -131,6 +131,10 @@ public class Shooter extends SubsystemBase {
     return (getMainMotorVelocity() + getFollowerVelocity()) / 2.0;
   }
 
+  public double getTargetVelocity() {
+    return shooterTargetVelocity.Velocity;
+  }
+
   @Override
   public void periodic() {
     updateLogEntry();

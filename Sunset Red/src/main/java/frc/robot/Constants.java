@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
@@ -188,5 +190,8 @@ public final class Constants {
       kSpeakerAngleMap.put(2.80, 45.0);
       kSpeakerAngleMap.put(4.00, 38.0);
     }
+
+    public static final Translation2d kRedSpeaker = new Translation2d(16.32, 5.55);
+    public static final Translation2d kBlueSpeaker = new Translation2d(0.26, 5.54);
   }
 }
