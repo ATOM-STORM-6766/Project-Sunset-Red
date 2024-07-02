@@ -7,8 +7,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -414,31 +412,33 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
       Optional<EstimatedRobotPose> visionEstimatedPose =
-          Coprocessor.getInstance().updateEstimatedGlobalPose(mEstimator.getEstimatedPosition(), new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
-      
+          Coprocessor.getInstance()
+              .updateEstimatedGlobalPose(
+                  mEstimator.getEstimatedPosition(),
+                  new Translation2d(
+                      mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
+
       if (visionEstimatedPose.isPresent()) {
         Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
         double currentTimestamp = Timer.getFPGATimestamp();
         photonLatency = currentTimestamp - photonTimestamp;
         Pose2d useIMUPose2d =
-            new Pose2d(estimatedPose2d.getTranslation(), getHeading()/*mHeading.get(photonTimestamp) == null ?*/);
+            new Pose2d(
+                estimatedPose2d.getTranslation(),
+                getHeading() /*mHeading.get(photonTimestamp) == null ?*/);
         // TODO: circular buffer
-        if(useIMUPose2d.getRotation() != null){
-          if(visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR){
+        if (useIMUPose2d.getRotation() != null) {
+          if (visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
             mEstimator.addVisionMeasurement(
-              useIMUPose2d,
-              photonTimestamp,
-              VecBuilder.fill(0.1, 0.1, 0.1));
-          }else{
+                useIMUPose2d, photonTimestamp, VecBuilder.fill(0.1, 0.1, 0.1));
+          } else {
             mEstimator.addVisionMeasurement(
-              useIMUPose2d,
-              photonTimestamp,
-              VecBuilder.fill(0.1, 0.1, 0.1));
+                useIMUPose2d, photonTimestamp, VecBuilder.fill(0.1, 0.1, 0.1));
           }
           return Timer.getFPGATimestamp();
         }
-      } 
+      }
 
       mHeading.clear();
       return lastVisionOdomUpdateTime;

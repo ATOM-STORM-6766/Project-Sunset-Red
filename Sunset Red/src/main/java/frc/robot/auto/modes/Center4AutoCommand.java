@@ -32,7 +32,6 @@ public class Center4AutoCommand extends SequentialCommandGroup {
         // zeroing and shoot preload
         new ParallelCommandGroup(
             new SequentialCommandGroup(
-                
                 drivetrainSubsystem.runZeroingCommand(),
                 new InstantCommand( // maybe don't need, will use vision to override
                     () -> {

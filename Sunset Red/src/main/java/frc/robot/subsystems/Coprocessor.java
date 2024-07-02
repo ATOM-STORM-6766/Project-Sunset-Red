@@ -10,18 +10,11 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Coprocessor extends SubsystemBase {
   private static Coprocessor mCoprocessor = new Coprocessor();
@@ -65,10 +58,11 @@ public class Coprocessor extends SubsystemBase {
    * @param prevEstimatedRobotPose latest estimated robot pose (ideally from odom)
    * @return vision estimated robot pose using Optional class to signal vision presence
    */
-  public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
+  public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(
+      Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
     photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
     var newEstimatedRobotPose = photonPoseEstimator.update();
-    
+
     if (newEstimatedRobotPose.isEmpty()) {
       return Optional.empty();
     } else {
@@ -76,24 +70,25 @@ public class Coprocessor extends SubsystemBase {
     }
 
     boolean all_trustworthy = true;
-    double[] target_ambiguities = newEstimatedRobotPose.get().targetsUsed.stream().mapToDouble(x -> x.getPoseAmbiguity()).toArray();
-    for(var target : newEstimatedRobotPose.get().targetsUsed){
-      if(target.getPoseAmbiguity() != -1 || target.getPoseAmbiguity() > 0.2){
+    double[] target_ambiguities =
+        newEstimatedRobotPose.get().targetsUsed.stream()
+            .mapToDouble(x -> x.getPoseAmbiguity())
+            .toArray();
+    for (var target : newEstimatedRobotPose.get().targetsUsed) {
+      if (target.getPoseAmbiguity() != -1 || target.getPoseAmbiguity() > 0.2) {
         all_trustworthy = false;
       }
     }
 
     SmartDashboard.putNumberArray("ambiguities", target_ambiguities);
 
-
-
-    if(all_trustworthy){
+    if (all_trustworthy) {
       return newEstimatedRobotPose;
     }
     return Optional.empty();
-    
+
     /*
-     * Old processing logic, subed by using multi tag strategy and ambiguouty check 
+     * Old processing logic, subed by using multi tag strategy and ambiguouty check
      */
     // double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
     // if(lastVisionEstimatedPose.isPresent()) {
@@ -126,9 +121,6 @@ public class Coprocessor extends SubsystemBase {
     //   System.out.println("target on camera edge");
     //   return Optional.empty();
     // }
-
-    
-    
 
     // lastVisionEstimatedPose = newEstimatedRobotPose;
     // lastEstimateTimestamp = newEstimatedRobotPose.get().timestampSeconds;
