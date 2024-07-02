@@ -49,6 +49,7 @@ import frc.robot.lib6907.swerve.SwerveSetpointGenerator;
 import frc.robot.utils.ChassisSpeedKalmanFilterSimplified;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
@@ -68,6 +69,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
       NetworkTableInstance.getDefault()
           .getTable("SmartDashboard")
           .getStructArrayTopic("MyStates", SwerveModuleState.struct)
+          .publish();
+
+  StructArrayPublisher<SwerveModuleState> vision_pose_publisher =
+      NetworkTableInstance.getDefault()
+          .getTable("SmartDashboard")
+          .getStructArrayTopic("vision pose", SwerveModuleState.struct)
           .publish();
   private final SwerveDriveModule[] mSwerveModules;
   private final SwerveDrivePoseEstimator mEstimator;
@@ -407,22 +414,30 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
       Optional<EstimatedRobotPose> visionEstimatedPose =
-          Coprocessor.getInstance().getEstimatedGlobalPose(mEstimator.getEstimatedPosition(), new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
+          Coprocessor.getInstance().updateEstimatedGlobalPose(mEstimator.getEstimatedPosition(), new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
+      
       if (visionEstimatedPose.isPresent()) {
         Pose2d estimatedPose2d = visionEstimatedPose.get().estimatedPose.toPose2d();
         double photonTimestamp = visionEstimatedPose.get().timestampSeconds;
         double currentTimestamp = Timer.getFPGATimestamp();
         photonLatency = currentTimestamp - photonTimestamp;
         Pose2d useIMUPose2d =
-            new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
+            new Pose2d(estimatedPose2d.getTranslation(), getHeading()/*mHeading.get(photonTimestamp) == null ?*/);
+        // TODO: circular buffer
         if(useIMUPose2d.getRotation() != null){
-          mEstimator.addVisionMeasurement(
+          if(visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR){
+            mEstimator.addVisionMeasurement(
               useIMUPose2d,
               photonTimestamp,
-              new Matrix<>(Nat.N3(), Nat.N1(), new double[] {0.1, 0.1, 0.1}));
+              VecBuilder.fill(0.1, 0.1, 0.1));
+          }else{
+            mEstimator.addVisionMeasurement(
+              useIMUPose2d,
+              photonTimestamp,
+              VecBuilder.fill(0.1, 0.1, 0.1));
+          }
           return Timer.getFPGATimestamp();
         }
-        // }
       } 
 
       mHeading.clear();

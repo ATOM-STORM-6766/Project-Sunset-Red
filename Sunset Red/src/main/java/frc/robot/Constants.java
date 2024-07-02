@@ -6,6 +6,9 @@ package frc.robot;
 
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
@@ -173,5 +176,18 @@ public final class Constants {
   public static final class ShooterConstants {
     public static final int SHOOTER_ID = 12;
     public static final int SHOOTER_FOLLOWER = 15;
+  }
+
+  public static final class VisionShootConstants {
+    public static final InterpolatingDoubleTreeMap kSpeakerAngleMap = new InterpolatingDoubleTreeMap();
+    static {
+        // TODO : TUNE
+        // distance meters <-> arm angle degrees
+        kSpeakerAngleMap.put(1.30, 59.5);
+        kSpeakerAngleMap.put(2.00, 51.0);
+        kSpeakerAngleMap.put(2.80, 45.0);
+        kSpeakerAngleMap.put(4.00, 38.0);
+    }
+
   }
 }

@@ -32,6 +32,7 @@ public class Center4AutoCommand extends SequentialCommandGroup {
         // zeroing and shoot preload
         new ParallelCommandGroup(
             new SequentialCommandGroup(
+                
                 drivetrainSubsystem.runZeroingCommand(),
                 new InstantCommand( // maybe don't need, will use vision to override
                     () -> {
@@ -65,9 +66,7 @@ public class Center4AutoCommand extends SequentialCommandGroup {
             .andThen(new InstantCommand(() -> mShooter.stop())),
         // go 53 and back shoot
         buildPath("homeTo53").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
-        buildPath("53ToStageTag"),
-        new WaitCommand(0.5),
-        buildPath("StageTagToHome")
+        buildPath("53ToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
