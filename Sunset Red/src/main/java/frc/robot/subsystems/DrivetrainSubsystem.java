@@ -58,12 +58,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
       new InterpolatingTreeMap<Double, Rotation2d>(
           InverseInterpolator.forDouble(),
           new Interpolator<Rotation2d>() {
-        
-    @Override
-    public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
-      return startValue.interpolate(endValue, t);
-    }
-  });
+
+            @Override
+            public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
+              return startValue.interpolate(endValue, t);
+            }
+          });
 
   StructArrayPublisher<SwerveModuleState> swerve_publisher =
       NetworkTableInstance.getDefault()

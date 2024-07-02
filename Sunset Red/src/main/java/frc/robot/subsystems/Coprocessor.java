@@ -97,7 +97,8 @@ public class Coprocessor extends SubsystemBase {
      */
     // double visionDeltaT = newEstimatedRobotPose.get().timestampSeconds - lastEstimateTimestamp;
     // if(lastVisionEstimatedPose.isPresent()) {
-    //   Translation2d visionVelMS = newEstimatedRobotPose.get().estimatedPose.getTranslation().minus(lastVisionEstimatedPose.get().estimatedPose.getTranslation()).toTranslation2d().div(visionDeltaT);
+    //   Translation2d visionVelMS =
+    // newEstimatedRobotPose.get().estimatedPose.getTranslation().minus(lastVisionEstimatedPose.get().estimatedPose.getTranslation()).toTranslation2d().div(visionDeltaT);
     //   if (visionVelMS.minus(chassisVelMS).getNorm() > 0.5) { // TODO: test
     //     return Optional.empty();
     //   }
