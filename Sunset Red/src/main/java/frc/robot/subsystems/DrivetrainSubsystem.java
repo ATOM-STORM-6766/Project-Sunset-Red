@@ -428,10 +428,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
         if (useIMUPose2d.getRotation() != null) {
           if (visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
             mEstimator.addVisionMeasurement(
-                useIMUPose2d, photonTimestamp, VecBuilder.fill(0.1, 0.1, 0.1));
+                estimatedPose2d, photonTimestamp, VecBuilder.fill(0.1, 0.1, 0.1));
           } else {
             mEstimator.addVisionMeasurement(
-                useIMUPose2d, photonTimestamp, VecBuilder.fill(0.1, 0.1, 0.1));
+                useIMUPose2d, photonTimestamp, VecBuilder.fill(0.25, 0.25, 0.25));
           }
           return Timer.getFPGATimestamp();
         }
