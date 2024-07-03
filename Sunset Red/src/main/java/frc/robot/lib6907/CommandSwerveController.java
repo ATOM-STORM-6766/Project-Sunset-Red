@@ -69,6 +69,10 @@ public class CommandSwerveController extends CommandXboxController {
       translation = new Translation2d(translation.getNorm(), nearestPole);
     }
 
+    if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red){
+      translation.times(-1);
+    }
+
     return translation;
   }
 
