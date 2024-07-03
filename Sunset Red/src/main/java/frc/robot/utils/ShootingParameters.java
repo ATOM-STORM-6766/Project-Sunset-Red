@@ -13,12 +13,13 @@ public class ShootingParameters {
 
   /**
    * constructs a shooting paramter object, make sure speed_rps and angle_deg are legal
+   *
    * @param speed_rps
    * @param angle_deg
    */
   public ShootingParameters(double speed_rps, double angle_deg) {
     this.speed_rps = Math.max(Math.min(speed_rps, 110), 0);
-    this.angle_deg = Math.max(Math.min(angle_deg,70.0), 26.0);
+    this.angle_deg = Math.max(Math.min(angle_deg, 70.0), 26.0);
   }
 
   @Override

@@ -4,16 +4,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.VisionShootConstants;
-import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Coprocessor;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
@@ -28,67 +25,82 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private final DrivetrainSubsystem mDrivetrain;
 
   public VisionShootCommand(
-      Shooter shooter, Arm arm, Transfer transfer, DrivetrainSubsystem drivetrain,  Supplier<Translation2d> driveVectorSupplier) {
+      Shooter shooter,
+      Arm arm,
+      Transfer transfer,
+      DrivetrainSubsystem drivetrain,
+      Supplier<Translation2d> driveVectorSupplier) {
     mShooter = shooter;
     mArm = arm;
     mTransfer = transfer;
     mDrivetrain = drivetrain;
     addCommands(
 
-      // drivetrain
-      new SnapToAngleCommand(drivetrain, driveVectorSupplier, () -> getRotationTarget(mDrivetrain), () -> false), // drivetrain always aim towards speaker, always field relative
+        // drivetrain
+        new SnapToAngleCommand(
+            drivetrain,
+            driveVectorSupplier,
+            () -> getRotationTarget(mDrivetrain),
+            () -> false), // drivetrain always aim towards speaker, always field relative
 
-      // shooter and arm
-      new RepeatCommand(new InstantCommand( // repeatedly change shooter and arm targets
-        ()->{
-          Optional<ShootingParameters> sp = getShootingParameters(mDrivetrain);
-          if(sp.isPresent()){
-            mShooter.setTargetVelocity(sp.get().speed_rps);
-            mArm.setAngle(sp.get().angle_deg);
-          }else{ //usually should not enter here
-            mShooter.stop();
-            // soft home
-            if(mArm.getAngleDeg() < ArmConstants.ARM_REST_ANGLE + 3.0){
-              mArm.stop();
-            }else{
-              mArm.setAngle(ArmConstants.ARM_REST_ANGLE);
-            }
-          }
-        }
-      )),
+        // shooter and arm
+        new RepeatCommand(
+            new InstantCommand( // repeatedly change shooter and arm targets
+                () -> {
+                  Optional<ShootingParameters> sp = getShootingParameters(mDrivetrain);
+                  if (sp.isPresent()) {
+                    mShooter.setTargetVelocity(sp.get().speed_rps);
+                    mArm.setAngle(sp.get().angle_deg);
+                  } else { // usually should not enter here
+                    mShooter.stop();
+                    // soft home
+                    if (mArm.getAngleDeg() < ArmConstants.ARM_REST_ANGLE + 3.0) {
+                      mArm.stop();
+                    } else {
+                      mArm.setAngle(ArmConstants.ARM_REST_ANGLE);
+                    }
+                  }
+                })),
 
-      // feeder
-      new ConditionalCommand(
-        new InstantCommand(() -> {mTransfer.setVoltage(Transfer.FEED_VOLTS);}),
-        new InstantCommand(()->{mTransfer.stop();}),
-        ()->readyToShoot())
-      
-    );
+        // feeder
+        new ConditionalCommand(
+            new InstantCommand(
+                () -> {
+                  mTransfer.setVoltage(Transfer.FEED_VOLTS);
+                }),
+            new InstantCommand(
+                () -> {
+                  mTransfer.stop();
+                }),
+            () -> readyToShoot()));
   }
 
   // no delayed boolean for filter yet, need to verify whether needed
-  private boolean readyToShoot(){ 
-    return Math.abs(mShooter.getFollowerVelocity() - mShooter.getTargetVelocity()) < 2.0 
-    && Math.abs(mShooter.getMainMotorVelocity() - mShooter.getTargetVelocity()) < 2.0
-    && Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 1.0;
+  private boolean readyToShoot() {
+    return Math.abs(mShooter.getFollowerVelocity() - mShooter.getTargetVelocity()) < 2.0
+        && Math.abs(mShooter.getMainMotorVelocity() - mShooter.getTargetVelocity()) < 2.0
+        && Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 1.0;
   }
-  
+
   // return goal position relative to robot, but in field's coordinate system
-  private Optional<Translation2d> getGoalToRobot(DrivetrainSubsystem drivetrainSubsystem){
+  private Optional<Translation2d> getGoalToRobot(DrivetrainSubsystem drivetrainSubsystem) {
     Translation2d robotToField = drivetrainSubsystem.getPose().getTranslation();
     Optional<Alliance> a = DriverStation.getAlliance();
-    if(a.isEmpty()){
+    if (a.isEmpty()) {
       return Optional.empty();
     }
 
-    Translation2d goalToField =a.get() == Alliance.Red ? VisionShootConstants.kRedSpeaker : VisionShootConstants.kBlueSpeaker;
+    Translation2d goalToField =
+        a.get() == Alliance.Red
+            ? VisionShootConstants.kRedSpeaker
+            : VisionShootConstants.kBlueSpeaker;
     return Optional.of(goalToField.minus(robotToField));
   }
 
   // return the angle that makes the robot points to the goal
-  private Optional<Rotation2d> getRotationTarget(DrivetrainSubsystem drivetrainSubsystem){
+  private Optional<Rotation2d> getRotationTarget(DrivetrainSubsystem drivetrainSubsystem) {
     var goalToRobot = getGoalToRobot(drivetrainSubsystem);
-    if(goalToRobot.isEmpty()){
+    if (goalToRobot.isEmpty()) {
       return Optional.empty();
     }
 
@@ -97,21 +109,23 @@ public class VisionShootCommand extends ParallelCommandGroup {
 
   /**
    * calculate shooting parameters from robot pose.
+   *
    * @param drivetrainSubsystem
    * @return shooting parameter that is used to set shooter and arm target.
    */
-  private Optional<ShootingParameters> getShootingParameters(DrivetrainSubsystem drivetrainSubsystem) {
+  private Optional<ShootingParameters> getShootingParameters(
+      DrivetrainSubsystem drivetrainSubsystem) {
     var goalToRobot = getGoalToRobot(drivetrainSubsystem);
-    if(goalToRobot.isEmpty()){
+    if (goalToRobot.isEmpty()) {
       return Optional.empty();
     }
-    return Optional.of(new ShootingParameters(100, VisionShootConstants.kSpeakerAngleMap.get(goalToRobot.get().getNorm())));
+    return Optional.of(
+        new ShootingParameters(
+            100, VisionShootConstants.kSpeakerAngleMap.get(goalToRobot.get().getNorm())));
   }
 
   @Override
-  public InterruptionBehavior getInterruptionBehavior(){
+  public InterruptionBehavior getInterruptionBehavior() {
     return InterruptionBehavior.kCancelIncoming;
   }
-
-  
 }
