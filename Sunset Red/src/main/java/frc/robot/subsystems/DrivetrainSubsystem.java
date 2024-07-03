@@ -53,16 +53,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   private final PigeonIMU mPigeon;
   private final CircularInterpolatingTreeMap<Double, Rotation2d> mHeading =
-    new CircularInterpolatingTreeMap<>(
-        100, // Adjust this size as needed
-        InverseInterpolator.forDouble(),
-        new Interpolator<Rotation2d>() {
+      new CircularInterpolatingTreeMap<>(
+          100, // Adjust this size as needed
+          InverseInterpolator.forDouble(),
+          new Interpolator<Rotation2d>() {
             @Override
             public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
-                return startValue.interpolate(endValue, t);
+              return startValue.interpolate(endValue, t);
             }
-        }
-    );
+          });
 
   StructArrayPublisher<SwerveModuleState> swerve_publisher =
       NetworkTableInstance.getDefault()
@@ -425,9 +424,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         double currentTimestamp = Timer.getFPGATimestamp();
         photonLatency = currentTimestamp - photonTimestamp;
         Pose2d useIMUPose2d =
-            new Pose2d(
-                estimatedPose2d.getTranslation(),
-                mHeading.get(photonTimestamp));
+            new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
         if (useIMUPose2d.getRotation() != null) {
           if (visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
             mEstimator.addVisionMeasurement(
