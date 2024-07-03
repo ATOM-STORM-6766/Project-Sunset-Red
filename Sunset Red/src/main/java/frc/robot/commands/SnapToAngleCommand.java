@@ -116,11 +116,14 @@ public class SnapToAngleCommand extends Command {
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
   }
 
-  public boolean isAligned(){ 
-    if(goalHeading.isEmpty()){
+  public boolean isAligned() {
+    if (goalHeading.isEmpty()) {
       return false;
     }
-    double headingError = Rotation2d.fromRadians(snapToAnglePID.getGoal().position).minus(goalHeading.get()).getDegrees();
+    double headingError =
+        Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+            .minus(goalHeading.get())
+            .getDegrees();
     SmartDashboard.putNumber("heading error", headingError);
     return headingError < 2.0;
   }
