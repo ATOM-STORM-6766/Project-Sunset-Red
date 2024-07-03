@@ -427,7 +427,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Pose2d useIMUPose2d =
             new Pose2d(
                 estimatedPose2d.getTranslation(),
-                getHeading() /*mHeading.get(photonTimestamp) == null ?*/);
+                mHeading.get(photonTimestamp));
         if (useIMUPose2d.getRotation() != null) {
           if (visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
             mEstimator.addVisionMeasurement(
