@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -41,6 +40,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OdometryConstants;
 import frc.robot.Constants.SwerveModuleConstants;
+import frc.robot.lib6907.CircularInterpolatingTreeMap;
 import frc.robot.lib6907.swerve.SwerveKinematicLimits;
 import frc.robot.lib6907.swerve.SwerveSetpoint;
 import frc.robot.lib6907.swerve.SwerveSetpointGenerator;
@@ -52,11 +52,11 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 public class DrivetrainSubsystem extends SubsystemBase {
 
   private final PigeonIMU mPigeon;
-  private final InterpolatingTreeMap<Double, Rotation2d> mHeading =
-      new InterpolatingTreeMap<Double, Rotation2d>(
+  private final CircularInterpolatingTreeMap<Double, Rotation2d> mHeading =
+      new CircularInterpolatingTreeMap<>(
+          100, // Adjust this size as needed
           InverseInterpolator.forDouble(),
           new Interpolator<Rotation2d>() {
-
             @Override
             public Rotation2d interpolate(Rotation2d startValue, Rotation2d endValue, double t) {
               return startValue.interpolate(endValue, t);
@@ -424,10 +424,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         double currentTimestamp = Timer.getFPGATimestamp();
         photonLatency = currentTimestamp - photonTimestamp;
         Pose2d useIMUPose2d =
-            new Pose2d(
-                estimatedPose2d.getTranslation(),
-                getHeading() /*mHeading.get(photonTimestamp) == null ?*/);
-        // TODO: circular buffer
+            new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
         if (useIMUPose2d.getRotation() != null) {
           if (visionEstimatedPose.get().strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
             mEstimator.addVisionMeasurement(
@@ -440,7 +437,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         }
       }
 
-      mHeading.clear();
+      // mHeading.clear(); no longer needs to clear as it is circular buffer
       return lastVisionOdomUpdateTime;
     }
   }
