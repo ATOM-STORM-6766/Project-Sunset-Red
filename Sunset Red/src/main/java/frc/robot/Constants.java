@@ -184,10 +184,10 @@ public final class Constants {
     static {
       // TODO : TUNE
       // distance meters <-> arm angle degrees
-      kSpeakerAngleMap.put(1.30, 59.5);
-      kSpeakerAngleMap.put(2.00, 51.0);
-      kSpeakerAngleMap.put(2.80, 45.0);
-      kSpeakerAngleMap.put(4.00, 38.0);
+      kSpeakerAngleMap.put(1.30, 55.5);
+      kSpeakerAngleMap.put(2.00, 46.0);
+      kSpeakerAngleMap.put(2.80, 44.0);
+      kSpeakerAngleMap.put(4.00, 40.0);
     }
 
     public static final Translation2d kRedSpeaker = new Translation2d(16.32, 5.55);

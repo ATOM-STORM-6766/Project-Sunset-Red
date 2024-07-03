@@ -147,8 +147,16 @@ public class RobotContainer {
                     mArm,
                     mTransfer,
                     sDrivetrainSubsystem,
+                    mIntake,
                     () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
-                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming));
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(
+                  new InstantCommand(()->{
+                    mShooter.stop();
+                    mArm.stop();
+                    mTransfer.stop();
+                    mIntake.stop();
+                  })
+                );
 
     // intake system bindings
     driverController.y().whileTrue(new IntakeCommand(mIntake, mTransfer));

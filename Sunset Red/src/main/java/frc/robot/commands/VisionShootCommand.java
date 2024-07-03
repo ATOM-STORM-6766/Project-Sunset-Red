@@ -3,15 +3,21 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.VisionShootConstants;
+import frc.robot.lib6907.DelayedBoolean;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
 import frc.robot.utils.ShootingParameters;
@@ -23,25 +29,34 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private final Arm mArm;
   private final Transfer mTransfer;
   private final DrivetrainSubsystem mDrivetrain;
+  private final Intake mIntake;
+
+  private DelayedBoolean goShoot = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
+
+  private SnapToAngleCommand driveCommand;
 
   public VisionShootCommand(
       Shooter shooter,
       Arm arm,
       Transfer transfer,
-      DrivetrainSubsystem drivetrain,
+      DrivetrainSubsystem drivetrain, Intake intake,
       Supplier<Translation2d> driveVectorSupplier) {
     mShooter = shooter;
     mArm = arm;
     mTransfer = transfer;
     mDrivetrain = drivetrain;
-    addCommands(
-
-        // drivetrain
-        new SnapToAngleCommand(
+    mIntake = intake;
+    driveCommand = new SnapToAngleCommand(
             drivetrain,
             driveVectorSupplier,
             () -> getRotationTarget(mDrivetrain),
-            () -> false), // drivetrain always aim towards speaker, always field relative
+            () -> false); // drivetrain always aim towards speaker, always field relative
+    
+
+    addCommands(
+
+        // drivetrain
+        driveCommand,
 
         // shooter and arm
         new RepeatCommand(
@@ -63,23 +78,48 @@ public class VisionShootCommand extends ParallelCommandGroup {
                 })),
 
         // feeder
-        new ConditionalCommand(
+        new WaitCommand(1.0).andThen(new RepeatCommand(
             new InstantCommand(
                 () -> {
-                  mTransfer.setVoltage(Transfer.FEED_VOLTS);
-                }),
-            new InstantCommand(
-                () -> {
-                  mTransfer.stop();
-                }),
-            () -> readyToShoot()));
+                  if(readyToShoot()){
+                    mTransfer.setVoltage(Transfer.FEED_VOLTS);
+                  }else{
+                    mTransfer.stop();
+                  }
+                }, mTransfer))),
+
+        // intake
+        new RepeatCommand(
+          new InstantCommand(
+            () -> {
+              if(!mTransfer.isOmronDetected()){
+                mIntake.setIntake();
+              }else{
+                mIntake.stop();
+              }
+            }
+          )
+        ),
+
+        // log
+        new RepeatCommand(new InstantCommand(
+          ()->
+        {
+          var goalToRobot = getGoalToRobot(mDrivetrain);
+          if(goalToRobot.isPresent()){
+            SmartDashboard.putNumber("distance to goal", goalToRobot.get().getNorm());
+          }
+          SmartDashboard.putBoolean("ready to shoot", readyToShoot());
+        }))
+    );
   }
 
   // no delayed boolean for filter yet, need to verify whether needed
   private boolean readyToShoot() {
-    return Math.abs(mShooter.getFollowerVelocity() - mShooter.getTargetVelocity()) < 2.0
+    return goShoot.update(Timer.getFPGATimestamp(), /* Math.abs(mShooter.getFollowerVelocity() - mShooter.getTargetVelocity()) < 2.0
         && Math.abs(mShooter.getMainMotorVelocity() - mShooter.getTargetVelocity()) < 2.0
-        && Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 1.0;
+        && Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 1.0
+        && */ driveCommand.isAligned()); 
   }
 
   // return goal position relative to robot, but in field's coordinate system
@@ -104,7 +144,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
       return Optional.empty();
     }
 
-    return Optional.of(goalToRobot.get().getAngle());
+    return Optional.of(goalToRobot.get().getAngle().rotateBy(Rotation2d.fromDegrees(180)));
   }
 
   /**
