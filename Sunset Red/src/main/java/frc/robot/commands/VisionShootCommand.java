@@ -107,4 +107,11 @@ public class VisionShootCommand extends ParallelCommandGroup {
     }
     return Optional.of(new ShootingParameters(100, VisionShootConstants.kSpeakerAngleMap.get(goalToRobot.get().getNorm())));
   }
+
+  @Override
+  public InterruptionBehavior getInterruptionBehavior(){
+    return InterruptionBehavior.kCancelIncoming;
+  }
+
+  
 }
