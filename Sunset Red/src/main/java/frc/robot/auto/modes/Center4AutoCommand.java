@@ -48,28 +48,38 @@ public class Center4AutoCommand extends SequentialCommandGroup {
                     new SetShooterTargetCommand(
                         mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps)),
                 new FeedCommand(mTransfer),
-                new InstantCommand(() -> mShooter.stop()))),
+                new InstantCommand(() -> {
+                    mShooter.stop();
+                }))),
         // go 51 and back shoot
         buildPath("homeTo51").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
         buildPath("51ToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
-            .andThen(new InstantCommand(() -> mShooter.stop())),
+            .andThen(new InstantCommand(() -> {
+                    mShooter.stop();
+                })),
         // go 52 and back shoot
         buildPath("homeTo52").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
         buildPath("52ToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
-            .andThen(new InstantCommand(() -> mShooter.stop())),
+            .andThen(new InstantCommand(() -> {
+                    mShooter.stop();
+                })),
         // go 53 and back shoot
         buildPath("homeTo53").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
         buildPath("53ToHome")
             .alongWith(
                 new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
-            .andThen(new InstantCommand(() -> mShooter.stop())));
+            .andThen(new InstantCommand(() -> {
+                    mShooter.stop();
+                    mArm.stop();
+                }))
+    );
   }
 
   private Command buildPath(String pathName) {

@@ -22,7 +22,7 @@ public class Intake extends SubsystemBase {
   private static final double INTAKE_CENTER_PERC = 0.3;
   private static final double OUTTAKE_VOLTS = -3.0;
   private static final double OUTTAKE_CENTER_PERC = -0.3;
-  private static final double EXTERIOR_PERC = 0.5;
+  private static final double EXTERIOR_PERC = 0.4;
 
   private final TalonFX mIntakeMotor;
   private final VictorSPX mCenterMotor;
