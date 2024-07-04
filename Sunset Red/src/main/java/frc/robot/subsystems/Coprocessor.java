@@ -176,7 +176,7 @@ public class Coprocessor extends SubsystemBase {
         .filter(
             target -> {
               boolean isAcceptable =
-                  target.getArea() > 0.11
+                  target.getArea() > 0.07
                       && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
                       && Math.abs(target.getYaw()) < 30
                       && Math.abs(target.getPitch()) < 25;

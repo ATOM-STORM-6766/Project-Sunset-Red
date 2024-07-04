@@ -205,8 +205,10 @@ public class RobotContainer {
 
     // tested
     mChooser.setDefaultOption(
-        "center4",
-        new Center4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+        "nearAmp2Plus3",
+        new NearAmp2Plus3Command(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+    mChooser.addOption(
+        "center4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption(
         "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));

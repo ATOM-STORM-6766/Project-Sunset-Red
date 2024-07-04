@@ -185,8 +185,8 @@ public final class Constants {
       // distance meters <-> arm angle degrees
       kSpeakerAngleMap.put(1.00, 59.0);
       kSpeakerAngleMap.put(1.30, 56.5);
-      kSpeakerAngleMap.put(1.40, 49.0);
-      kSpeakerAngleMap.put(1.65, 47.5);
+      kSpeakerAngleMap.put(1.40, 52.0);
+      kSpeakerAngleMap.put(1.65, 48.5);
       kSpeakerAngleMap.put(2.00, 45.0);
       kSpeakerAngleMap.put(2.25, 45.0);
       kSpeakerAngleMap.put(2.50, 46.0);
