@@ -128,7 +128,7 @@ public final class Constants {
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 10.0;
 
     public static final double kTeleDriveMaxSpeedMetersPerSecond =
-        kPhysicalMaxSpeedMetersPerSecond * 0.7;
+        kPhysicalMaxSpeedMetersPerSecond;
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond =
         kPhysicalMaxAngularSpeedRadiansPerSecond * 0.8;
     public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
@@ -185,9 +185,9 @@ public final class Constants {
       // TODO : TUNE
       // distance meters <-> arm angle degrees
       kSpeakerAngleMap.put(1.30, 55.5);
-      kSpeakerAngleMap.put(2.00, 46.0);
-      kSpeakerAngleMap.put(2.80, 44.0);
-      kSpeakerAngleMap.put(4.00, 40.0);
+      kSpeakerAngleMap.put(2.00, 44.0);
+      kSpeakerAngleMap.put(2.80, 41.0);
+      kSpeakerAngleMap.put(4.00, 38.0);
     }
 
     public static final Translation2d kRedSpeaker = new Translation2d(16.32, 5.55);
