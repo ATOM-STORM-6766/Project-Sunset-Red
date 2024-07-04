@@ -27,6 +27,7 @@ import edu.wpi.first.util.datalog.StructLogEntry;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -368,7 +369,11 @@ public class DrivetrainSubsystem extends SubsystemBase {
       mEstimator.resetPosition(
           getGyroYaw(),
           getModulePositions(),
-          new Pose2d(getPose().getTranslation(), new Rotation2d()));
+          new Pose2d(
+              getPose().getTranslation(),
+              DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                  ? new Rotation2d()
+                  : Rotation2d.fromDegrees(180)));
     }
   }
 
