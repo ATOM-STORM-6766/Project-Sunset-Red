@@ -26,7 +26,7 @@ public class CommandSwerveController extends CommandXboxController {
   private final SlewRateLimiter rotationRateLimiter =
       new SlewRateLimiter(5); // (1 / seconds_from_neutral_to_full)
 
-  private double translationDirectionMultiplier = -1.0; // -1.0 for blue, 1.0 for red
+  private double translationDirectionMultiplier = 1.0; // 1.0 for blue, -1.0 for red
 
   /**
    * Constructs a new CommandSwerveController with the given port.
@@ -67,11 +67,6 @@ public class CommandSwerveController extends CommandXboxController {
 
     if (Math.abs(translationAngle.minus(nearestPole).getDegrees()) < NEAR_POLE_DRIVE_DEGREES) {
       translation = new Translation2d(translation.getNorm(), nearestPole);
-    }
-
-    if (DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Red) {
-      translation.times(-1);
     }
 
     return translation;

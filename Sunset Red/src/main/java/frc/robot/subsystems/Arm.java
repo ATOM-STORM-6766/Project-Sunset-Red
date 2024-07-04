@@ -119,7 +119,7 @@ public class Arm extends SubsystemBase {
 
   public double getTargetAngleDeg() {
     if (mArmTalon.getAppliedControl().getClass() == MotionMagicVoltage.class) {
-      return ArmMotionMagic.Position; // last applied motion magic value
+      return ArmMotionMagic.Position * 360.0; // last applied motion magic value
     } else {
       return Double.NaN;
     }

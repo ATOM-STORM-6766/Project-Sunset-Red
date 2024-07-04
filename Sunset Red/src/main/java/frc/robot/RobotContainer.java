@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -20,7 +21,9 @@ import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.commands.SnapToAngleCommand;
+import frc.robot.commands.VisionShootCommand;
 import frc.robot.lib6907.CommandSwerveController;
+import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Coprocessor;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -99,6 +102,13 @@ public class RobotContainer {
      * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
 
+    /*
+     * Swerve
+     */
+
+    // Default Command: Drive with right stick
+
+    // reset heading
     Command resetHeadingCommand =
         new InstantCommand(
             () -> {
@@ -108,6 +118,7 @@ public class RobotContainer {
     resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
     driverController.start().onTrue(resetHeadingCommand);
 
+    // Snap to Amp Angle
     new Trigger(
             () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
         .onTrue(
@@ -118,6 +129,7 @@ public class RobotContainer {
                 () -> driverController.robotCentric(),
                 () -> driverController.getDriveRotationAngle().isPresent()));
 
+    // Trigger Rotate
     new Trigger(() -> driverController.getRawRotationRate() != 0.0)
         .onTrue(
             new DriveWithTriggerCommand(
@@ -125,6 +137,27 @@ public class RobotContainer {
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> driverController.getRawRotationRate(), // amp heading
                 () -> driverController.robotCentric()));
+
+    // Vision Shoot
+    driverController
+        .b()
+        .whileTrue(
+            new VisionShootCommand(
+                    mShooter,
+                    mArm,
+                    mTransfer,
+                    sDrivetrainSubsystem,
+                    mIntake,
+                    () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+        .onFalse(
+            new InstantCommand(
+                () -> {
+                  mShooter.stop();
+                  mArm.stop();
+                  mTransfer.stop();
+                  mIntake.stop();
+                }));
 
     // intake system bindings
     driverController.y().whileTrue(new IntakeCommand(mIntake, mTransfer));
@@ -172,8 +205,10 @@ public class RobotContainer {
 
     // tested
     mChooser.setDefaultOption(
-        "center4",
-        new Center4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+        "nearAmp2Plus3",
+        new NearAmp2Plus3Command(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+    mChooser.addOption(
+        "center4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption(
         "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));

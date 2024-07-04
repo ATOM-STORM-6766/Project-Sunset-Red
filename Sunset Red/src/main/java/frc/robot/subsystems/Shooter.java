@@ -82,7 +82,8 @@ public class Shooter extends SubsystemBase {
     super.initSendable(builder);
     builder.addStringProperty(
         getName() + "Control Request", () -> mShooterTalon.getAppliedControl().toString(), null);
-    builder.addDoubleProperty("Shooter Velocity", () -> getAverageVelocity(), null);
+    builder.addDoubleProperty("Shooter Main Velocity", () -> getMainMotorVelocity(), null);
+    builder.addDoubleProperty("Shooter Follower Velocity", () -> getFollowerVelocity(), null);
     builder.addDoubleProperty("Shooter Target RPS", () -> shooterTargetVelocity.Velocity, null);
   }
 
@@ -129,6 +130,10 @@ public class Shooter extends SubsystemBase {
 
   public double getAverageVelocity() {
     return (getMainMotorVelocity() + getFollowerVelocity()) / 2.0;
+  }
+
+  public double getTargetVelocity() {
+    return shooterTargetVelocity.Velocity;
   }
 
   @Override

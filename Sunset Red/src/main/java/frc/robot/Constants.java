@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
@@ -126,8 +127,7 @@ public final class Constants {
     public static final double kPhysicalMaxSpeedMetersPerSecond = 4.2;
     public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 5.0;
 
-    public static final double kTeleDriveMaxSpeedMetersPerSecond =
-        kPhysicalMaxSpeedMetersPerSecond * 0.7;
+    public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond;
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond =
         kPhysicalMaxAngularSpeedRadiansPerSecond * 0.8;
     public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
@@ -183,10 +183,18 @@ public final class Constants {
     static {
       // TODO : TUNE
       // distance meters <-> arm angle degrees
-      kSpeakerAngleMap.put(1.30, 59.5);
-      kSpeakerAngleMap.put(2.00, 51.0);
-      kSpeakerAngleMap.put(2.80, 45.0);
-      kSpeakerAngleMap.put(4.00, 38.0);
+      kSpeakerAngleMap.put(1.00, 59.0);
+      kSpeakerAngleMap.put(1.30, 56.5);
+      kSpeakerAngleMap.put(1.40, 52.0);
+      kSpeakerAngleMap.put(1.65, 48.5);
+      kSpeakerAngleMap.put(2.00, 45.0);
+      kSpeakerAngleMap.put(2.25, 45.0);
+      kSpeakerAngleMap.put(2.50, 46.0);
+      // kSpeakerAngleMap.put(3.00, 49.0);
+      // kSpeakerAngleMap.put(4.00, 38.0);
     }
+
+    public static final Translation2d kRedSpeaker = new Translation2d(16.32, 5.55);
+    public static final Translation2d kBlueSpeaker = new Translation2d(0.26, 5.54);
   }
 }

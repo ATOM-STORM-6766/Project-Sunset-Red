@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
@@ -113,5 +114,17 @@ public class SnapToAngleCommand extends Command {
     builder.addDoubleProperty(
         "target heading error", () -> snapToAnglePID.getPositionError(), null);
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
+  }
+
+  public boolean isAligned() {
+    if (goalHeading.isEmpty()) {
+      return false;
+    }
+    double headingError =
+        Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+            .minus(goalHeading.get())
+            .getDegrees();
+    SmartDashboard.putNumber("heading error", headingError);
+    return headingError < 2.0;
   }
 }
