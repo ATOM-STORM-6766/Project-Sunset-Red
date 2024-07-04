@@ -12,13 +12,9 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib6907.DelayedBoolean;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import javax.swing.text.html.Option;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -44,20 +40,24 @@ public class Coprocessor extends SubsystemBase {
 
   private PhotonCamera ov9281 = new PhotonCamera("OV9281");
   // original 0.28
-  private Transform3d kRobotToCamera = new Transform3d(-0.28, -0.06, 0.25,
-      new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
-  private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-  PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(
-      aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, ov9281, kRobotToCamera);
+  private Transform3d kRobotToCamera =
+      new Transform3d(-0.28, -0.06, 0.25, new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
+  private final AprilTagFieldLayout aprilTagFieldLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+  PhotonPoseEstimator photonPoseEstimator =
+      new PhotonPoseEstimator(
+          aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, ov9281, kRobotToCamera);
 
-  StructPublisher<Pose2d> lastRPpublisher = NetworkTableInstance.getDefault()
-      .getTable("SmartDashboard")
-      .getStructTopic("lastRobotPose", Pose2d.struct)
-      .publish();
-  StructPublisher<Pose2d> currRPpublisher = NetworkTableInstance.getDefault()
-      .getTable("SmartDashboard")
-      .getStructTopic("currRobotPose", Pose2d.struct)
-      .publish();
+  StructPublisher<Pose2d> lastRPpublisher =
+      NetworkTableInstance.getDefault()
+          .getTable("SmartDashboard")
+          .getStructTopic("lastRobotPose", Pose2d.struct)
+          .publish();
+  StructPublisher<Pose2d> currRPpublisher =
+      NetworkTableInstance.getDefault()
+          .getTable("SmartDashboard")
+          .getStructTopic("currRobotPose", Pose2d.struct)
+          .publish();
 
   private Translation2d lastVisionEstimatedPose = null;
   private double lastVisionEstimatedPoseTimestamp = 0;
@@ -66,8 +66,7 @@ public class Coprocessor extends SubsystemBase {
    * Should run this function as frequent as possible
    *
    * @param prevEstimatedRobotPose latest estimated robot pose (ideally from odom)
-   * @return vision estimated robot pose using Optional class to signal vision
-   *         presence
+   * @return vision estimated robot pose using Optional class to signal vision presence
    */
   public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(
       Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
@@ -104,21 +103,28 @@ public class Coprocessor extends SubsystemBase {
     Optional<EstimatedRobotPose> newEstimatedRobotPose = photonPoseEstimator.update(result);
 
     if (newEstimatedRobotPose.isPresent()) {
-      SmartDashboard.putString("Vision Estimation Mode", newEstimatedRobotPose.get().strategy.toString());
+      SmartDashboard.putString(
+          "Vision Estimation Mode", newEstimatedRobotPose.get().strategy.toString());
       logEstimatedPose(newEstimatedRobotPose.get());
       currRPpublisher.set(newEstimatedRobotPose.get().estimatedPose.toPose2d());
     } else {
-      SmartDashboard.putStringArray("Estimated Pose", new String[] { "Failed to estimate pose" });
+      SmartDashboard.putStringArray("Estimated Pose", new String[] {"Failed to estimate pose"});
     }
 
     var return_pose = newEstimatedRobotPose;
 
     // // velocity filter
-    if (lastVisionEstimatedPose != null && newEstimatedRobotPose.isPresent()
+    if (lastVisionEstimatedPose != null
+        && newEstimatedRobotPose.isPresent()
         && lastVisionEstimatedPoseTimestamp != newEstimatedRobotPose.get().timestampSeconds) {
-      Translation2d visionVelMS = newEstimatedRobotPose.get().estimatedPose.getTranslation().toTranslation2d()
-          .minus(lastVisionEstimatedPose)
-          .div(newEstimatedRobotPose.get().timestampSeconds - lastVisionEstimatedPoseTimestamp);
+      Translation2d visionVelMS =
+          newEstimatedRobotPose
+              .get()
+              .estimatedPose
+              .getTranslation()
+              .toTranslation2d()
+              .minus(lastVisionEstimatedPose)
+              .div(newEstimatedRobotPose.get().timestampSeconds - lastVisionEstimatedPoseTimestamp);
       SmartDashboard.putString("vision vel ms", visionVelMS.toString());
       SmartDashboard.putNumber("velocity delta v", visionVelMS.minus(chassisVelMS).getNorm());
       if (visionVelMS.minus(chassisVelMS).getNorm() > 0.5) {
@@ -127,7 +133,8 @@ public class Coprocessor extends SubsystemBase {
     }
 
     if (newEstimatedRobotPose.isPresent()) {
-      lastVisionEstimatedPose = newEstimatedRobotPose.get().estimatedPose.getTranslation().toTranslation2d();
+      lastVisionEstimatedPose =
+          newEstimatedRobotPose.get().estimatedPose.getTranslation().toTranslation2d();
       lastVisionEstimatedPoseTimestamp = newEstimatedRobotPose.get().timestampSeconds;
     }
 
@@ -141,8 +148,8 @@ public class Coprocessor extends SubsystemBase {
     boolean useMultiTag = multiTagDelayedBoolean.update(currentTime, isMultiTag);
 
     if (useMultiTag) {
-       return PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-      //return PoseStrategy.AVERAGE_BEST_TARGETS;
+      return PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
+      // return PoseStrategy.AVERAGE_BEST_TARGETS;
     } else {
       return PoseStrategy.AVERAGE_BEST_TARGETS;
     }
@@ -152,30 +159,43 @@ public class Coprocessor extends SubsystemBase {
     String[] originalTagsInfo = new String[result.getTargets().size()];
     for (int i = 0; i < result.getTargets().size(); i++) {
       var target = result.getTargets().get(i);
-      originalTagsInfo[i] = String.format(
-          "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
-          target.getFiducialId(), target.getArea(), target.getYaw(), target.getPitch(), target.getPoseAmbiguity());
+      originalTagsInfo[i] =
+          String.format(
+              "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
+              target.getFiducialId(),
+              target.getArea(),
+              target.getYaw(),
+              target.getPitch(),
+              target.getPoseAmbiguity());
     }
     SmartDashboard.putStringArray("Original Tags", originalTagsInfo);
   }
 
   private List<PhotonTrackedTarget> filterAcceptableTargets(PhotonPipelineResult result) {
     return result.getTargets().stream()
-        .filter(target -> {
-          boolean isAcceptable = target.getArea() > 0.11
-              && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
-              && Math.abs(target.getYaw()) < 30
-              && Math.abs(target.getPitch()) < 25;
-/*
- * && Math.abs(target.getYaw()) < 30
-              && Math.abs(target.getPitch()) < 20
- */
-          SmartDashboard.putString("Filtering Log", String.format(
-              "ID: %d, Acceptable: %b, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
-              target.getFiducialId(), isAcceptable, target.getArea(), target.getYaw(), target.getPitch(),
-              target.getPoseAmbiguity()));
-          return isAcceptable;
-        })
+        .filter(
+            target -> {
+              boolean isAcceptable =
+                  target.getArea() > 0.11
+                      && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
+                      && Math.abs(target.getYaw()) < 30
+                      && Math.abs(target.getPitch()) < 25;
+              /*
+              * && Math.abs(target.getYaw()) < 30
+                           && Math.abs(target.getPitch()) < 20
+              */
+              SmartDashboard.putString(
+                  "Filtering Log",
+                  String.format(
+                      "ID: %d, Acceptable: %b, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
+                      target.getFiducialId(),
+                      isAcceptable,
+                      target.getArea(),
+                      target.getYaw(),
+                      target.getPitch(),
+                      target.getPoseAmbiguity()));
+              return isAcceptable;
+            })
         .collect(Collectors.toList());
   }
 
@@ -183,9 +203,14 @@ public class Coprocessor extends SubsystemBase {
     String[] acceptedTagsInfo = new String[acceptableTargets.size()];
     for (int i = 0; i < acceptableTargets.size(); i++) {
       var target = acceptableTargets.get(i);
-      acceptedTagsInfo[i] = String.format(
-          "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
-          target.getFiducialId(), target.getArea(), target.getYaw(), target.getPitch(), target.getPoseAmbiguity());
+      acceptedTagsInfo[i] =
+          String.format(
+              "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
+              target.getFiducialId(),
+              target.getArea(),
+              target.getYaw(),
+              target.getPitch(),
+              target.getPoseAmbiguity());
     }
     SmartDashboard.putStringArray("Accepted Tags", acceptedTagsInfo);
   }
@@ -193,11 +218,11 @@ public class Coprocessor extends SubsystemBase {
   private void logEstimatedPose(EstimatedRobotPose estimatedPose) {
     var pose = estimatedPose.estimatedPose;
     String[] poseInfo = {
-        String.format("X: %.2f", pose.getX()),
-        String.format("Y: %.2f", pose.getY()),
-        String.format("Z: %.2f", pose.getZ()),
-        String.format("Yaw: %.2f", pose.getRotation().getZ()),
-        String.format("Timestamp: %.3f", estimatedPose.timestampSeconds)
+      String.format("X: %.2f", pose.getX()),
+      String.format("Y: %.2f", pose.getY()),
+      String.format("Z: %.2f", pose.getZ()),
+      String.format("Yaw: %.2f", pose.getRotation().getZ()),
+      String.format("Timestamp: %.3f", estimatedPose.timestampSeconds)
     };
     SmartDashboard.putStringArray("Estimated Pose", poseInfo);
   }
