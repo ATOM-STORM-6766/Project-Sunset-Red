@@ -132,9 +132,9 @@ public class CommandSwerveController extends CommandXboxController {
    */
   public void setTranslationDirection(boolean useAllianceColor) {
     if (useAllianceColor && DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-      translationDirectionMultiplier = -1.0;
-    } else {
       translationDirectionMultiplier = 1.0;
+    } else {
+      translationDirectionMultiplier = -1.0;
     }
   }
 
