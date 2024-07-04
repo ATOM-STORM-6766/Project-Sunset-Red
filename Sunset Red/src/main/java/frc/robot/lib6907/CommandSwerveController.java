@@ -53,7 +53,8 @@ public class CommandSwerveController extends CommandXboxController {
             ? -getLeftX()
             : translationDirectionMultiplier * getLeftX();
 
-    // this prevents the target velocity increase to fast, but should be included in setpoint generator already
+    // this prevents the target velocity increase to fast, but should be included in setpoint
+    // generator already
     double speedMultiplier = slowMode() ? 0.4 : 1.0;
     xSpeed = translationXRateLimiter.calculate(xSpeed * speedMultiplier);
     ySpeed = translationYRateLimiter.calculate(ySpeed * speedMultiplier);
@@ -132,7 +133,7 @@ public class CommandSwerveController extends CommandXboxController {
    *
    * @return True if the swerve drive should be in slow mode, false otherwise.
    */
-  public boolean slowMode(){
+  public boolean slowMode() {
     return getHID().getRightBumper();
   }
 
