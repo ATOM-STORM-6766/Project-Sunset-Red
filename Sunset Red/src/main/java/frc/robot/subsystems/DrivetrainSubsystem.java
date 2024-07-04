@@ -328,6 +328,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
   }
 
+  /***
+   * Returns the filtered velocity of the drivetrain in m/s
+   * @param pose the filtered velocity of the drivetrain
+   */
+  public Translation2d getVelocity(){
+    return new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond);
+  }
+
   /**
    * Sets the pose of the drivetrain subsystem.
    *

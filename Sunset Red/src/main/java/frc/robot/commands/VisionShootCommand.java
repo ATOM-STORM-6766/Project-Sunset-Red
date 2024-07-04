@@ -33,6 +33,9 @@ public class VisionShootCommand extends ParallelCommandGroup {
 
   private SnapToAngleCommand driveCommand;
 
+  // 100 rotations/s * 0.021PI m/rotation * 45degree shoot angle
+  public static final double kNoteFlySpeed = 100.0 * Math.PI * 0.021 * Math.cos(Math.PI/4); 
+
   public VisionShootCommand(
       Shooter shooter,
       Arm arm,
@@ -52,6 +55,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
             () -> getRotationTarget(mDrivetrain),
             () -> false); // drivetrain always aim towards speaker, always field relative
 
+      
     addCommands(
 
         // drivetrain
@@ -124,7 +128,9 @@ public class VisionShootCommand extends ParallelCommandGroup {
         driveCommand.isAligned());
   }
 
-  // return goal position relative to robot, but in field's coordinate system
+  /** Calculates the Goal Position relative to robot, in field's coordinate system. If drivetrain is moving, then we need to offset the goal position by a position vector which is time of note fly times the robot's velocity
+   * @return goal position relative to robot, in field's coordinate system, unit is meter.
+  */
   private Optional<Translation2d> getGoalToRobot(DrivetrainSubsystem drivetrainSubsystem) {
     Translation2d robotToField = drivetrainSubsystem.getPose().getTranslation();
     Optional<Alliance> a = DriverStation.getAlliance();
@@ -136,17 +142,33 @@ public class VisionShootCommand extends ParallelCommandGroup {
         a.get() == Alliance.Red
             ? VisionShootConstants.kRedSpeaker
             : VisionShootConstants.kBlueSpeaker;
-    return Optional.of(goalToField.minus(robotToField));
+
+    Translation2d goalToRobot = goalToField.minus(robotToField);
+    double timeOfFly = getTimeOfFly(goalToRobot);
+    Translation2d offsetDueToMove = mDrivetrain.getVelocity().times(timeOfFly); // delta x = v * t
+    
+    return Optional.of(goalToRobot.minus(offsetDueToMove)); 
   }
 
-  // return the angle that makes the robot points to the goal
+  /**
+   * Estimate the time that the game piece flies. Use to compensate robot velocity if shoot while moving.
+   * @param goalToRobot
+   * @return
+   */
+  private double getTimeOfFly(Translation2d goalToRobot){
+    return goalToRobot.getNorm() / kNoteFlySpeed; // TODO: assumed note fly speed projection on the xy-plane is constant, verify accuracy
+  }
+
+  /** Return the angle that makes the robot points to the goal
+   * @return the angle that the robot should rotate to in order to aim to goal.
+   * */
   private Optional<Rotation2d> getRotationTarget(DrivetrainSubsystem drivetrainSubsystem) {
     var goalToRobot = getGoalToRobot(drivetrainSubsystem);
     if (goalToRobot.isEmpty()) {
       return Optional.empty();
     }
-
-    return Optional.of(goalToRobot.get().getAngle().rotateBy(Rotation2d.fromDegrees(180)));
+    // rotate by 180 degrees because shooter is on the back side of the robot, intake is front
+    return Optional.of(goalToRobot.get().getAngle().rotateBy(Rotation2d.fromDegrees(180))); 
   }
 
   /**
