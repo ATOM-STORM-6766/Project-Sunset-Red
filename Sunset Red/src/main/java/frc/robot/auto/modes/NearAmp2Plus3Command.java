@@ -65,13 +65,12 @@ public class NearAmp2Plus3Command extends SequentialCommandGroup {
             .andThen(new InstantCommand(() -> mShooter.stop())),
         // go 32 and back shoot
         buildPath("Wing1To52").deadlineWith(new IntakeCommand(mIntake, mTransfer)),
-        buildPath("52To53")
+        buildPath("52To53"));
 
-    );
-            // .alongWith(
-            //     new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
-            // .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
-            // .andThen(new InstantCommand(() -> mShooter.stop())));
+    // .alongWith(
+    //     new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
+    // .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
+    // .andThen(new InstantCommand(() -> mShooter.stop())));
   }
 
   private Command buildPath(String pathName) {
