@@ -1,7 +1,10 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -32,6 +35,9 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private DelayedBoolean goShoot = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
 
   private SnapToAngleCommand driveCommand;
+
+  private StructPublisher<Translation2d> aimingTargetPublisher = NetworkTableInstance.getDefault().getTable("SmartDashboard")
+    .getStructTopic("Goal", Translation2d.struct).publish();
 
   // 100 rotations/s * 0.021PI m/rotation * 45degree shoot angle
   public static final double kNoteFlySpeed = 100.0 * Math.PI * 0.021 * Math.cos(Math.PI / 4);
@@ -149,8 +155,9 @@ public class VisionShootCommand extends ParallelCommandGroup {
     Translation2d goalToRobot = goalToField.minus(robotToField);
     double timeOfFly = getTimeOfFly(goalToRobot);
     Translation2d offsetDueToMove = mDrivetrain.getVelocity().times(timeOfFly); // delta x = v * t
-
-    return Optional.of(goalToRobot.minus(offsetDueToMove));
+    Translation2d aimTargetToRobot = goalToRobot.minus(offsetDueToMove); // goal position plus offset due to robot motion
+    aimingTargetPublisher.set(aimTargetToRobot);
+    return Optional.of(aimTargetToRobot);
   }
 
   /**
