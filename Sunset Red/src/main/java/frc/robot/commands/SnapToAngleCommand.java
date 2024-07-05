@@ -20,7 +20,7 @@ public class SnapToAngleCommand extends Command {
       new TrapezoidProfile.Constraints(Units.degreesToRadians(360), Units.degreesToRadians(540));
   private final ProfiledPIDController snapToAnglePID =
       new ProfiledPIDController(0.5, 0, 0.0, swerveRotateConstraints);
-      // new ProfiledPIDController(4.0, 0, 0.2, swerveRotateConstraints);
+  // new ProfiledPIDController(4.0, 0, 0.2, swerveRotateConstraints);
 
   private final DrivetrainSubsystem mDrivetrainSubsystem;
   private final Supplier<Translation2d> driveVectorSupplier;
@@ -93,8 +93,8 @@ public class SnapToAngleCommand extends Command {
         driveVector,
         snapToAnglePID.atGoal()
             ? 0
-            : snapToAnglePID.calculate(
-                mDrivetrainSubsystem.getHeading().getRadians()) + snapToAnglePID.getSetpoint().velocity, // output is in radians per second
+            : snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
+                + snapToAnglePID.getSetpoint().velocity, // output is in radians per second
         !robotCentricSupplier.getAsBoolean());
   }
 
