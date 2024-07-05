@@ -120,15 +120,6 @@ public class CommandSwerveController extends CommandXboxController {
   }
 
   /**
-   * Returns whether the swerve drive should be in robot centric mode.
-   *
-   * @return True if the swerve drive should be in robot centric mode, false otherwise.
-   */
-  public boolean robotCentric() {
-    return getHID().getLeftBumper();
-  }
-
-  /**
    * Returns whether the swerve drive should be in slow mode.
    *
    * @return True if the swerve drive should be in slow mode, false otherwise.
@@ -195,7 +186,7 @@ public class CommandSwerveController extends CommandXboxController {
    * @return True if the swerve drive should be in robot-relative mode, false otherwise.
    */
   public DriveMode isRobotRelative() {
-    return getHID().getBButton() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
+    return getHID().getLeftBumper() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
   }
 
   public Boolean snapToAmpAngle() {

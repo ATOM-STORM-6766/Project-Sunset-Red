@@ -125,6 +125,6 @@ public class SnapToAngleCommand extends Command {
             .minus(goalHeading.get())
             .getDegrees();
     SmartDashboard.putNumber("heading error", headingError);
-    return headingError < 2.0;
+    return Math.abs(headingError) < 2.0;
   }
 }

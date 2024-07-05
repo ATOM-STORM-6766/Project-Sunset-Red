@@ -55,7 +55,7 @@ public class RobotContainer {
   private final Arm mArm = new Arm();
   private final Coprocessor mCoprocessor = Coprocessor.getInstance();
 
-  private static final boolean kDualController = false;
+  private static final boolean kDualController = true;
 
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
@@ -65,7 +65,7 @@ public class RobotContainer {
           sDrivetrainSubsystem,
           () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
           () -> driverController.getDriveRotationAngle(), // amp heading
-          () -> driverController.robotCentric());
+          () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -128,7 +128,7 @@ public class RobotContainer {
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp heading
-                () -> driverController.robotCentric(),
+                () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED,
                 () -> driverController.getDriveRotationAngle().isPresent()));
 
     // Trigger Rotate
@@ -138,7 +138,7 @@ public class RobotContainer {
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> driverController.getRawRotationRate(), // amp heading
-                () -> driverController.robotCentric()));
+                () -> driverController.isRobotRelative()== DriveMode.ROBOT_ORIENTED));
 
     // Vision Shoot
     Trigger visionShootTrigger = driverController.y();
