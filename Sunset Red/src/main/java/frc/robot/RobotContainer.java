@@ -55,6 +55,8 @@ public class RobotContainer {
   private final Arm mArm = new Arm();
   private final Coprocessor mCoprocessor = Coprocessor.getInstance();
 
+  private static final boolean kDualController = false;
+
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
@@ -139,8 +141,13 @@ public class RobotContainer {
                 () -> driverController.robotCentric()));
 
     // Vision Shoot
-    driverController
-        .b()
+    Trigger visionShootTrigger = driverController.y();
+
+    if(kDualController){
+      visionShootTrigger = operatorController.y();
+    } 
+
+    visionShootTrigger
         .whileTrue(
             new VisionShootCommand(
                     mShooter,
@@ -160,16 +167,20 @@ public class RobotContainer {
                 }));
 
     // intake system bindings
-    driverController.y().whileTrue(new IntakeCommand(mIntake, mTransfer));
-    driverController.back().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-    // operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-
-    // operatorController.povLeft().onTrue(new SetArmAngleCommand(mArm, 22.5));
-    // operatorController.x().onTrue(new InitializeArmCommand(mArm));
-    // operatorController.y().onTrue(new SetArmAngleCommand(mArm, 50));
+    if(kDualController){
+      operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+      operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+    }else{
+      driverController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+      driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+    }
 
     // Below Speaker
-    buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+    if(kDualController){
+      buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
+    } else {
+      buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+    }
   }
 
   private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {

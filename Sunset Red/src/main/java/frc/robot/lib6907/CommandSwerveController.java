@@ -199,6 +199,6 @@ public class CommandSwerveController extends CommandXboxController {
   }
 
   public Boolean snapToAmpAngle() {
-    return getHID().getAButton();
+    return getHID().getBackButton();
   }
 }
