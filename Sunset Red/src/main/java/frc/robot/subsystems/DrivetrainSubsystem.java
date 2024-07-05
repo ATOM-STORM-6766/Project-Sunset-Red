@@ -79,8 +79,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
 
-  Rotation2d a;
-
   StructPublisher<Pose2d> mPosePublisher =
       NetworkTableInstance.getDefault()
           .getTable("SmartDashboard")
