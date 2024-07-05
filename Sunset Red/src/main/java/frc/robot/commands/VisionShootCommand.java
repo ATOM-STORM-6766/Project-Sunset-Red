@@ -42,7 +42,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
           .publish();
 
   // 100 rotations/s * 0.021PI m/rotation * 45degree shoot angle
-  public static final double kNoteFlySpeed = 100.0 * Math.PI * 0.021 * Math.cos(Math.PI / 4);
+  public static final double kNoteFlySpeed = 80.0 * Math.PI * 0.021 * Math.cos(Math.PI / 4);
 
   public VisionShootCommand(
       Shooter shooter,
