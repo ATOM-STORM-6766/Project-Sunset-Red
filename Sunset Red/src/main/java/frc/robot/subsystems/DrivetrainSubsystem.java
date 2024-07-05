@@ -485,15 +485,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
         .unless(module::getIsZeroed);
   }
 
-  private static final SwerveModuleState[] kNeutralStates = new SwerveModuleState[] {
-    new SwerveModuleState(),
-    new SwerveModuleState(),
-    new SwerveModuleState(),
-    new SwerveModuleState(),
-  };
+  private static final SwerveModuleState[] kNeutralStates =
+      new SwerveModuleState[] {
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+        new SwerveModuleState(),
+      };
 
-  public void stop()
-  {
+  public void stop() {
     setModuleStates(kNeutralStates);
   }
 
