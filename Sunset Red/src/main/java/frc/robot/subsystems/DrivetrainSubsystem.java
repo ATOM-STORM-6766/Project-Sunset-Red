@@ -79,8 +79,6 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private final SwerveDrivePoseEstimator mEstimator;
   private final Notifier mNotifier;
 
-  Rotation2d a;
-
   StructPublisher<Pose2d> mPosePublisher =
       NetworkTableInstance.getDefault()
           .getTable("SmartDashboard")
@@ -328,6 +326,14 @@ public class DrivetrainSubsystem extends SubsystemBase {
     }
   }
 
+  /***
+   * Returns the filtered velocity of the drivetrain in m/s
+   * @param pose the filtered velocity of the drivetrain
+   */
+  public Translation2d getVelocity() {
+    return new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond);
+  }
+
   /**
    * Sets the pose of the drivetrain subsystem.
    *
@@ -417,7 +423,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
       Optional<EstimatedRobotPose> visionEstimatedPose =
-          Coprocessor.getInstance()
+          ApriltagCoprocessor.getInstance()
               .updateEstimatedGlobalPose(
                   mEstimator.getEstimatedPosition(),
                   new Translation2d(
@@ -477,6 +483,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
             new WaitUntilCommand(module::checkLightGate),
             Commands.runOnce(module::stopAndCalibrate))
         .unless(module::getIsZeroed);
+  }
+
+  private static final SwerveModuleState[] kNeutralStates = new SwerveModuleState[] {
+    new SwerveModuleState(),
+    new SwerveModuleState(),
+    new SwerveModuleState(),
+    new SwerveModuleState(),
+  };
+
+  public void stop()
+  {
+    setModuleStates(kNeutralStates);
   }
 
   public Command runZeroingCommand() {

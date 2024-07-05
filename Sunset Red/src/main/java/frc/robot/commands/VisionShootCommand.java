@@ -2,6 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -32,6 +34,15 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private DelayedBoolean goShoot = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
 
   private SnapToAngleCommand driveCommand;
+
+  private StructPublisher<Translation2d> aimingTargetPublisher =
+      NetworkTableInstance.getDefault()
+          .getTable("SmartDashboard")
+          .getStructTopic("Goal", Translation2d.struct)
+          .publish();
+
+  // 100 rotations/s * 0.021PI m/rotation * 45degree shoot angle
+  public static final double kNoteFlySpeed = 100.0 * Math.PI * 0.021 * Math.cos(Math.PI / 4);
 
   public VisionShootCommand(
       Shooter shooter,
@@ -124,7 +135,13 @@ public class VisionShootCommand extends ParallelCommandGroup {
         driveCommand.isAligned());
   }
 
-  // return goal position relative to robot, but in field's coordinate system
+  /**
+   * Calculates the Goal Position relative to robot, in field's coordinate system. If drivetrain is
+   * moving, then we need to offset the goal position by a position vector which is time of note fly
+   * times the robot's velocity
+   *
+   * @return goal position relative to robot, in field's coordinate system, unit is meter.
+   */
   private Optional<Translation2d> getGoalToRobot(DrivetrainSubsystem drivetrainSubsystem) {
     Translation2d robotToField = drivetrainSubsystem.getPose().getTranslation();
     Optional<Alliance> a = DriverStation.getAlliance();
@@ -136,16 +153,40 @@ public class VisionShootCommand extends ParallelCommandGroup {
         a.get() == Alliance.Red
             ? VisionShootConstants.kRedSpeaker
             : VisionShootConstants.kBlueSpeaker;
-    return Optional.of(goalToField.minus(robotToField));
+
+    Translation2d goalToRobot = goalToField.minus(robotToField);
+    double timeOfFly = getTimeOfFly(goalToRobot);
+    Translation2d offsetDueToMove = mDrivetrain.getVelocity().times(timeOfFly); // delta x = v * t
+    Translation2d aimTargetToRobot =
+        goalToRobot.plus(offsetDueToMove); // goal position plus offset due to robot motion
+    aimingTargetPublisher.set(aimTargetToRobot.plus(robotToField));
+    return Optional.of(aimTargetToRobot);
   }
 
-  // return the angle that makes the robot points to the goal
+  /**
+   * Estimate the time that the game piece flies. Use to compensate robot velocity if shoot while
+   * moving.
+   *
+   * @param goalToRobot
+   * @return
+   */
+  private double getTimeOfFly(Translation2d goalToRobot) {
+    return goalToRobot.getNorm()
+        / kNoteFlySpeed; // TODO: assumed note fly speed projection on the xy-plane is constant,
+    // verify accuracy
+  }
+
+  /**
+   * Return the angle that makes the robot points to the goal
+   *
+   * @return the angle that the robot should rotate to in order to aim to goal.
+   */
   private Optional<Rotation2d> getRotationTarget(DrivetrainSubsystem drivetrainSubsystem) {
     var goalToRobot = getGoalToRobot(drivetrainSubsystem);
     if (goalToRobot.isEmpty()) {
       return Optional.empty();
     }
-
+    // rotate by 180 degrees because shooter is on the back side of the robot, intake is front
     return Optional.of(goalToRobot.get().getAngle().rotateBy(Rotation2d.fromDegrees(180)));
   }
 

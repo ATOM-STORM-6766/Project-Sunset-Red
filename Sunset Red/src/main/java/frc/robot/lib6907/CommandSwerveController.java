@@ -53,8 +53,11 @@ public class CommandSwerveController extends CommandXboxController {
             ? -getLeftX()
             : translationDirectionMultiplier * getLeftX();
 
-    xSpeed = translationXRateLimiter.calculate(xSpeed);
-    ySpeed = translationYRateLimiter.calculate(ySpeed);
+    // this prevents the target velocity increase to fast, but should be included in setpoint
+    // generator already
+    double speedMultiplier = slowMode() ? 0.4 : 1.0;
+    xSpeed = translationXRateLimiter.calculate(xSpeed * speedMultiplier);
+    ySpeed = translationYRateLimiter.calculate(ySpeed * speedMultiplier);
 
     Translation2d translation = new Translation2d(xSpeed, ySpeed);
 
@@ -121,7 +124,7 @@ public class CommandSwerveController extends CommandXboxController {
    *
    * @return True if the swerve drive should be in slow mode, false otherwise.
    */
-  public boolean robotCentric() {
+  public boolean slowMode() {
     return getHID().getRightBumper();
   }
 
@@ -183,10 +186,10 @@ public class CommandSwerveController extends CommandXboxController {
    * @return True if the swerve drive should be in robot-relative mode, false otherwise.
    */
   public DriveMode isRobotRelative() {
-    return getHID().getBButton() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
+    return getHID().getLeftBumper() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
   }
 
   public Boolean snapToAmpAngle() {
-    return getHID().getAButton();
+    return getHID().getBackButton();
   }
 }
