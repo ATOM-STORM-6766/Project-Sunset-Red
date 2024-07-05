@@ -485,6 +485,18 @@ public class DrivetrainSubsystem extends SubsystemBase {
         .unless(module::getIsZeroed);
   }
 
+  private static final SwerveModuleState[] kNeutralStates = new SwerveModuleState[] {
+    new SwerveModuleState(),
+    new SwerveModuleState(),
+    new SwerveModuleState(),
+    new SwerveModuleState(),
+  };
+
+  public void stop()
+  {
+    setModuleStates(kNeutralStates);
+  }
+
   public Command runZeroingCommand() {
     Command ret =
         // zeroing process: run parallel for 4 modules

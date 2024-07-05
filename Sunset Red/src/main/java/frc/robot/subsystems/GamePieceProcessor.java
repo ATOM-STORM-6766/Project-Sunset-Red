@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class GamePieceProcessor extends SubsystemBase {
     
     private static GamePieceProcessor mCoprocessor = new GamePieceProcessor();
-    private PhotonCamera mUSBCamera = new PhotonCamera("USBCamera");
+    private PhotonCamera mUSBCamera = new PhotonCamera("rmoncam_720P");
     
 
     public static GamePieceProcessor getInstance() {

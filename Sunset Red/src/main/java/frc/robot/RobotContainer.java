@@ -8,12 +8,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.auto.modes.*;
+import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
@@ -27,6 +29,7 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.ApriltagCoprocessor;
 import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.GamePieceProcessor;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
@@ -55,7 +58,7 @@ public class RobotContainer {
   private final Arm mArm = new Arm();
   private final ApriltagCoprocessor mCoprocessor = ApriltagCoprocessor.getInstance();
 
-  private static final boolean kDualController = true;
+  private static final boolean kDualController = false;
 
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
@@ -171,7 +174,11 @@ public class RobotContainer {
       operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
       operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     } else {
-      driverController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+      driverController.a().whileTrue(
+        new ConditionalCommand(
+          new ChaseNoteCommand(sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer), 
+          new IntakeCommand(mIntake, mTransfer),
+          () -> GamePieceProcessor.getInstance().getClosestGamePieceInfo().isPresent()));
       driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     }
 
@@ -220,6 +227,7 @@ public class RobotContainer {
         new NearAmp2Plus3Command(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption(
         "center4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+    mChooser.addOption("home2chase1", new Home2ChaseMid1AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption(
         "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
