@@ -138,14 +138,14 @@ public class RobotContainer {
                 sDrivetrainSubsystem,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> driverController.getRawRotationRate(), // amp heading
-                () -> driverController.isRobotRelative()== DriveMode.ROBOT_ORIENTED));
+                () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED));
 
     // Vision Shoot
     Trigger visionShootTrigger = driverController.y();
 
-    if(kDualController){
+    if (kDualController) {
       visionShootTrigger = operatorController.y();
-    } 
+    }
 
     visionShootTrigger
         .whileTrue(
@@ -167,16 +167,16 @@ public class RobotContainer {
                 }));
 
     // intake system bindings
-    if(kDualController){
+    if (kDualController) {
       operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
       operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-    }else{
+    } else {
       driverController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
       driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     }
 
     // Below Speaker
-    if(kDualController){
+    if (kDualController) {
       buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
     } else {
       buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
