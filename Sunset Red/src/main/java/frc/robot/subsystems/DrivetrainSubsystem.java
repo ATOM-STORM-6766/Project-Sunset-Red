@@ -425,7 +425,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
       Optional<EstimatedRobotPose> visionEstimatedPose =
-          Coprocessor.getInstance()
+          ApriltagCoprocessor.getInstance()
               .updateEstimatedGlobalPose(
                   mEstimator.getEstimatedPosition(),
                   new Translation2d(

@@ -22,17 +22,17 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-public class Coprocessor extends SubsystemBase {
-  private static Coprocessor mCoprocessor = new Coprocessor();
+public class ApriltagCoprocessor extends SubsystemBase {
+  private static ApriltagCoprocessor mCoprocessor = new ApriltagCoprocessor();
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.15;
   private DelayedBoolean multiTagDelayedBoolean;
   private static final double MULTI_TAG_DELAY = 0.5;
 
-  public static Coprocessor getInstance() {
+  public static ApriltagCoprocessor getInstance() {
     return mCoprocessor;
   }
 
-  private Coprocessor() {
+  private ApriltagCoprocessor() {
     photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     double currentTime = Timer.getFPGATimestamp();
     multiTagDelayedBoolean = new DelayedBoolean(currentTime, MULTI_TAG_DELAY);

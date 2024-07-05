@@ -25,7 +25,7 @@ import frc.robot.commands.VisionShootCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Coprocessor;
+import frc.robot.subsystems.ApriltagCoprocessor;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
@@ -53,7 +53,7 @@ public class RobotContainer {
   private final Transfer mTransfer = new Transfer();
   private final Shooter mShooter = new Shooter();
   private final Arm mArm = new Arm();
-  private final Coprocessor mCoprocessor = Coprocessor.getInstance();
+  private final ApriltagCoprocessor mCoprocessor = ApriltagCoprocessor.getInstance();
 
   private static final boolean kDualController = true;
 
