@@ -28,6 +28,9 @@ public class CenterLineSectionBasedAuto extends SequentialCommandGroup {
     private final Shooter sShooter;
     private final Arm sArm;
 
+    private Boolean isNoteAAcquired = false;
+    private Boolean isNoteBAcquired = false;
+
     private Command buildPath(String pathName) {
         PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
         return AutoBuilder.followPath(path);
@@ -70,34 +73,45 @@ public class CenterLineSectionBasedAuto extends SequentialCommandGroup {
                                 new InstantCommand(() -> sShooter.stop()))),
                 // Note A
                 new SequentialCommandGroup(
-                        // 1. Move from home to ObserveA
-                        buildPath("homeToObserveA"),
+                        // 1. Move from home to ObserveA only if Note A is not acquired
+                        new ConditionalCommand(buildPath("homeToObserveA"), new InstantCommand(),
+                                () -> !isNoteAAcquired)),
 
-                        // 2. Check if Note A is visible at ObserveA
-                        new ConditionalCommand(
-                                // 2a. If Note A is visible, chase and intake it
+                // 2. Check if Note A is visible at ObserveA
+                new ConditionalCommand(
+                        // 2a. If Note A is visible, chase and intake it, 
+                        new SequentialCommandGroup(
                                 new ChaseNoteCommand(sDrivetrainSubsystem, sGamePieceProcessor, sIntake, sTransfer),
-                                // 2b. If Note A is not visible, move to ObserveB
+                                new InstantCommand(() -> isNoteAAcquired = true)),
+                        // 2b. If Note A is not visible, move to ObserveB only if Note B is not acquired
+                        new ConditionalCommand(
                                 buildPath("observeAToObserveB"),
-                                () -> sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
+                                new InstantCommand(),
+                                () -> !isNoteBAcquired),
+                        () -> sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
 
-                        // 3. Move from the Note A area back to home, shoot the acquired Note A
-                        buildPath("noteAAreaToHome")
-                                .alongWith(
-                                        new SetShooterTargetCommand(sShooter,
-                                                ShootingParameters.BELOW_SPEAKER.speed_rps))
-                                .andThen(new FeedCommand(sTransfer).onlyIf(() -> sTransfer.isOmronDetected()))
-                                .andThen(new InstantCommand(() -> sShooter.stop()))),
+                // 3. Move from the Note A area back to home, shoot the acquired Note A
+                buildPath("noteAAreaToHome")
+                        .alongWith(
+                                new SetShooterTargetCommand(sShooter,
+                                        ShootingParameters.BELOW_SPEAKER.speed_rps))
+                        .andThen(new FeedCommand(sTransfer).onlyIf(() -> sTransfer.isOmronDetected()))
+                        .andThen(new InstantCommand(() -> sShooter.stop())),
 
                 // Note B
                 new SequentialCommandGroup(
-                        // 4. Move from home to ObserveB
-                        buildPath("homeToObserveB"),
-
+                        // 4. Move from home to ObserveB only if Note B is not acquired
+                        new ConditionalCommand(
+                                buildPath("homeToObserveB"),
+                                new InstantCommand(),
+                                () -> !isNoteBAcquired),
                         // 5. Check if Note B is visible at ObserveB
                         new ConditionalCommand(
                                 // 5a. If Note B is visible, chase and intake it
-                                new ChaseNoteCommand(sDrivetrainSubsystem, sGamePieceProcessor, sIntake, sTransfer),
+                                new SequentialCommandGroup(
+                                        new ChaseNoteCommand(sDrivetrainSubsystem, sGamePieceProcessor, sIntake, sTransfer),
+                                        new InstantCommand(() -> isNoteBAcquired = true)
+                                ),
                                 // 5b. If Note B is not visible, move back home
                                 buildPath("observeBToHome"),
                                 () -> sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
