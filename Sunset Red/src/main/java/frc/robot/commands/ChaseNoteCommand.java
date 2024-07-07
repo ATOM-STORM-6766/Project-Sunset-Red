@@ -22,8 +22,7 @@ public class ChaseNoteCommand extends Command {
     private final PIDController xController;
     private final PIDController yController;
     private final PIDController rotationController;
-    private final Timer lostTargetTimer = new Timer();
-    private boolean isIntaking = false;
+    private double lowestSeenPitch = Integer.MAX_VALUE;
 
     public ChaseNoteCommand(
             DrivetrainSubsystem drivetrainSubsystem,
@@ -47,36 +46,17 @@ public class ChaseNoteCommand extends Command {
         xController.reset();
         yController.reset();
         rotationController.reset();
-        lostTargetTimer.reset();
-        lostTargetTimer.start();
+        lowestSeenPitch = Integer.MAX_VALUE;
     }
 
     @Override
     public void execute() {
         Optional<PhotonTrackedTarget> targetOptional = sGamePieceProcessor.getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
-        if(!isTargetPresent){
-            cancel();
-        }
-
-        if (sIntake.isOmronDetected()) {
-            isIntaking = true;
-            sIntake.setIntake();
-            sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
-            sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
-            return;
-        }
-        if (isIntaking) {
-            // Continue intaking without chasing new targets
-            sIntake.setIntake();
-            sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
-            return;
-        }
 
         if (isTargetPresent) {
-            lostTargetTimer.reset();
             PhotonTrackedTarget target = targetOptional.get();
-
+            lowestSeenPitch = Math.min(lowestSeenPitch, target.getPitch());
             double yawMeasure = target.getYaw();
             double pitchMeasure = target.getPitch();
 
@@ -95,19 +75,13 @@ public class ChaseNoteCommand extends Command {
             /*
              * Target not present, two cases
              * 1. target is acquired by competitor, we should cancel command immediately
-             * 2. target is too close to the robot, we should continue to drive some time
+             * 2. target is too close to the robot, we should continue to drive some time,
              * so that the intake omron can detect the note
-             * 
-             * either way, we should continue drive for a small amount of time because
-             * intake omron is on the edge of the robot, not on the edge of camera fov
              */
-            lostTargetTimer.start();
-            if (lostTargetTimer.get() < 0.5 || sIntake.isOmronDetected()) { // Continue for 1 second after losing target
-                Translation2d continueDriveVector = new Translation2d(1, 0);
-                sDrivetrainSubsystem.drive(continueDriveVector, 0, false);
-                
+            if (lowestSeenPitch < -15 || sIntake.isOmronDetected()) {
                 sIntake.setIntake();
                 sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
+                sDrivetrainSubsystem.drive(new Translation2d(1, 0), 0, false);
             } else {
                 // Stop after the time limit
                 sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
@@ -117,10 +91,8 @@ public class ChaseNoteCommand extends Command {
 
     @Override
     public void end(boolean interrupted) {
-        //sIntake.setIntake();
-        //sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
-        sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
-        isIntaking = false;
+        sIntake.stop();
+        sTransfer.stop();
     }
 
     @Override
@@ -130,7 +102,7 @@ public class ChaseNoteCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return sTransfer.isOmronDetected() && !isIntaking;
+        return sTransfer.isOmronDetected();
     }
 
 }
