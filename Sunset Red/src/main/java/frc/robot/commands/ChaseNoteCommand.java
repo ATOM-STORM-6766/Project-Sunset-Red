@@ -55,6 +55,9 @@ public class ChaseNoteCommand extends Command {
     public void execute() {
         Optional<PhotonTrackedTarget> targetOptional = sGamePieceProcessor.getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
+        if(!isTargetPresent){
+            cancel();
+        }
 
         if (sIntake.isOmronDetected()) {
             isIntaking = true;
