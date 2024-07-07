@@ -3,7 +3,8 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.lib6907.DelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
 import frc.robot.subsystems.Arm;
 
 public class InitializeArmCommand extends Command {
@@ -12,7 +13,7 @@ public class InitializeArmCommand extends Command {
   private static final double INIT_CURRENT_THRESHOLD = 10.0;
   private boolean isFinished = false;
 
-  private DelayedBoolean mArmIsInPosition;
+  private DualEdgeDelayedBoolean mArmIsInPosition;
 
   public InitializeArmCommand(Arm arm) {
     mArm = arm;
@@ -21,7 +22,7 @@ public class InitializeArmCommand extends Command {
 
   @Override
   public void initialize() {
-    mArmIsInPosition = new DelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME);
+    mArmIsInPosition = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME,EdgeType.RISING);
     isFinished = false;
     mArm.setReverseLimit(false);
     mArm.setVoltage(ARM_INIT_VOLTS);

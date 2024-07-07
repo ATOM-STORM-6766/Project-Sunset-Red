@@ -13,6 +13,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
@@ -27,12 +28,14 @@ public class Intake extends SubsystemBase {
   private final TalonFX mIntakeMotor;
   private final VictorSPX mCenterMotor;
   private final CANSparkMax mExteriorIntakeMotor;
+  private final DigitalInput mIntakeOmron;
 
   private final VoltageOut intakeVoltage = new VoltageOut(0);
 
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);
     mCenterMotor = new VictorSPX(IntakeConstants.INTAKER_CENTER_ID);
+    mIntakeOmron = new DigitalInput(IntakeConstants.INTAKER_ENTER_OMRON_ID);
     mExteriorIntakeMotor =
         new CANSparkMax(IntakeConstants.INTAKE_EXTERIOR_ID, MotorType.kBrushless);
 
@@ -102,5 +105,9 @@ public class Intake extends SubsystemBase {
     mIntakeMotor.setControl(Constants.NEUTRAL);
     mCenterMotor.set(ControlMode.PercentOutput, 0);
     mExteriorIntakeMotor.set(0.0);
+  }
+
+  public boolean isOmronDetected() {
+    return !mIntakeOmron.get();
   }
 }

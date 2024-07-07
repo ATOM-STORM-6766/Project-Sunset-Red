@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
-import frc.robot.commands.ChaseNoteCommand;
+import frc.robot.commands.OldChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
@@ -85,7 +85,7 @@ public class Home2ChaseMid1AutoCommand extends SequentialCommandGroup {
         buildPathFromPoint(
                 new GoalEndState(1.5, Rotation2d.fromDegrees(0)), kNearHome, kWingWaypoint)
             .deadlineWith(new IntakeCommand(intake, transfer)),
-        new ChaseNoteCommand(
+        new OldChaseNoteCommand(
             drivetrainSubsystem, GamePieceProcessor.getInstance(), intake, transfer),
 
         // go from between 5152 to waypoint

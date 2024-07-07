@@ -14,7 +14,8 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.VisionShootConstants;
-import frc.robot.lib6907.DelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Intake;
@@ -31,7 +32,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private final DrivetrainSubsystem mDrivetrain;
   private final Intake mIntake;
 
-  private DelayedBoolean goShoot = new DelayedBoolean(Timer.getFPGATimestamp(), 0.1);
+  private DualEdgeDelayedBoolean goShoot = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1,EdgeType.RISING);
 
   private SnapToAngleCommand driveCommand;
 

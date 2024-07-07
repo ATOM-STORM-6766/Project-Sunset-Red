@@ -11,7 +11,9 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.lib6907.DelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,7 +27,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class ApriltagCoprocessor extends SubsystemBase {
   private static ApriltagCoprocessor mCoprocessor = new ApriltagCoprocessor();
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.15;
-  private DelayedBoolean multiTagDelayedBoolean;
+  private DualEdgeDelayedBoolean multiTagDelayedBoolean;
   private static final double MULTI_TAG_DELAY = 0.5;
 
   public static ApriltagCoprocessor getInstance() {
@@ -35,7 +37,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private ApriltagCoprocessor() {
     photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     double currentTime = Timer.getFPGATimestamp();
-    multiTagDelayedBoolean = new DelayedBoolean(currentTime, MULTI_TAG_DELAY);
+    multiTagDelayedBoolean = new DualEdgeDelayedBoolean(currentTime, MULTI_TAG_DELAY,EdgeType.RISING);
   }
 
   private PhotonCamera ov9281 = new PhotonCamera("OV9281");

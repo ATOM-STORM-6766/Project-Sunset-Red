@@ -2,7 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.lib6907.DelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
 import frc.robot.subsystems.Shooter;
 
 /**
@@ -15,8 +16,8 @@ public class SetShooterTargetCommand extends Command {
   private boolean isFinished;
 
   private static final double STABLIZE_TIME = 0.1;
-  private DelayedBoolean spinStablized =
-      new DelayedBoolean(Timer.getFPGATimestamp(), STABLIZE_TIME);
+  private DualEdgeDelayedBoolean spinStablized =
+      new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), STABLIZE_TIME,EdgeType.RISING);
   private static final double SHOOT_THRESHOLD_RPS =
       20.0; // lower than this velocity, game piece will get stuck
   private static final double ERR_TOL = 2.0; // spin velocity error tolerance (rps)
