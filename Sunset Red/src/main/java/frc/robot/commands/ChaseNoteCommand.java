@@ -83,8 +83,8 @@ public class ChaseNoteCommand extends Command {
                 sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
                 sDrivetrainSubsystem.drive(new Translation2d(1, 0), 0, false);
             } else {
-                // Stop after the time limit
                 sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
+                end(true);
             }
         }
     }
