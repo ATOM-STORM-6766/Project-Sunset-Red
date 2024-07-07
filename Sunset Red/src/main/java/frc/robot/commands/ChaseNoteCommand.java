@@ -22,6 +22,7 @@ public class ChaseNoteCommand extends Command {
     private final PIDController xController;
     private final PIDController yController;
     private final PIDController rotationController;
+    private boolean interruptSelf = false;
     private double lowestSeenPitch = Integer.MAX_VALUE;
 
     public ChaseNoteCommand(
@@ -47,6 +48,7 @@ public class ChaseNoteCommand extends Command {
         yController.reset();
         rotationController.reset();
         lowestSeenPitch = Integer.MAX_VALUE;
+        interruptSelf = false;
     }
 
     @Override
@@ -84,7 +86,7 @@ public class ChaseNoteCommand extends Command {
                 sDrivetrainSubsystem.drive(new Translation2d(1, 0), 0, false);
             } else {
                 sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
-                end(true);
+                interruptSelf = true;
             }
         }
     }
@@ -102,7 +104,7 @@ public class ChaseNoteCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return sTransfer.isOmronDetected();
+        return interruptSelf || sTransfer.isOmronDetected();
     }
 
 }
