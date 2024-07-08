@@ -31,7 +31,9 @@ public class SetArmAngleCommand extends Command {
   public void initialize() {
     sArm.setAngle(targetAngle);
     isFinished = false;
-    mArmInPosition = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME,EdgeType.RISING);
+    mArmInPosition =
+        new DualEdgeDelayedBoolean(
+            Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME, EdgeType.RISING);
   }
 
   @Override

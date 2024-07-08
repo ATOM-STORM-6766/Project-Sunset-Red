@@ -22,7 +22,9 @@ public class InitializeArmCommand extends Command {
 
   @Override
   public void initialize() {
-    mArmIsInPosition = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME,EdgeType.RISING);
+    mArmIsInPosition =
+        new DualEdgeDelayedBoolean(
+            Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME, EdgeType.RISING);
     isFinished = false;
     mArm.setReverseLimit(false);
     mArm.setVoltage(ARM_INIT_VOLTS);

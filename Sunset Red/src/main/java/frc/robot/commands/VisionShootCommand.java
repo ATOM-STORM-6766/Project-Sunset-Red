@@ -32,7 +32,8 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private final DrivetrainSubsystem mDrivetrain;
   private final Intake mIntake;
 
-  private DualEdgeDelayedBoolean goShoot = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1,EdgeType.RISING);
+  private DualEdgeDelayedBoolean goShoot =
+      new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1, EdgeType.RISING);
 
   private SnapToAngleCommand driveCommand;
 

@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib6907.DualEdgeDelayedBoolean;
 import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,7 +36,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private ApriltagCoprocessor() {
     photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     double currentTime = Timer.getFPGATimestamp();
-    multiTagDelayedBoolean = new DualEdgeDelayedBoolean(currentTime, MULTI_TAG_DELAY,EdgeType.RISING);
+    multiTagDelayedBoolean =
+        new DualEdgeDelayedBoolean(currentTime, MULTI_TAG_DELAY, EdgeType.RISING);
   }
 
   private PhotonCamera ov9281 = new PhotonCamera("OV9281");

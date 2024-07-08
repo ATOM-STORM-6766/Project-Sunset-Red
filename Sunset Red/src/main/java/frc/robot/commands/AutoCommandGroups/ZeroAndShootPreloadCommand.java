@@ -1,9 +1,6 @@
 package frc.robot.commands.AutoCommandGroups;
 
-import java.util.Optional;
-
 import com.pathplanner.lib.util.GeometryUtil;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -19,36 +16,42 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
 import frc.robot.utils.ShootingParameters;
+import java.util.Optional;
 
-public class ZeroAndShootPreloadCommand extends ParallelCommandGroup{
+public class ZeroAndShootPreloadCommand extends ParallelCommandGroup {
 
-    private Pose2d startPose;
-    private ShootingParameters preloadShootingParameters;
-    public ZeroAndShootPreloadCommand(DrivetrainSubsystem drivetrainSubsystem, Arm arm, Transfer transfer, Shooter shooter, Pose2d startPose2d, ShootingParameters preloadShootingParameters){
-        startPose = startPose2d;
-        this.preloadShootingParameters = preloadShootingParameters;
-        addCommands(
-            new SequentialCommandGroup(
-                drivetrainSubsystem.runZeroingCommand(),
-                new InstantCommand( // maybe don't need, will use vision to override
-                    () -> {
-                      Optional<Alliance> a = DriverStation.getAlliance();
-                      if (a.isPresent() && a.get() == Alliance.Red) {
-                        startPose = GeometryUtil.flipFieldPose(startPose);
-                      }
-                      drivetrainSubsystem.setPose(startPose);
-                    })),
-            new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, this.preloadShootingParameters.angle_deg),
-                    new SetShooterTargetCommand(
-                        shooter, this.preloadShootingParameters.speed_rps)),
-                new FeedCommand(transfer),
-                new InstantCommand(
-                    () -> {
-                      shooter.stop();
-                    }),
-                new SetArmAngleCommand(arm, Constants.ArmConstants.ARM_REST_ANGLE))
-        );
-    }
+  private Pose2d startPose;
+  private ShootingParameters preloadShootingParameters;
+
+  public ZeroAndShootPreloadCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Transfer transfer,
+      Shooter shooter,
+      Pose2d startPose2d,
+      ShootingParameters preloadShootingParameters) {
+    startPose = startPose2d;
+    this.preloadShootingParameters = preloadShootingParameters;
+    addCommands(
+        new SequentialCommandGroup(
+            drivetrainSubsystem.runZeroingCommand(),
+            new InstantCommand( // maybe don't need, will use vision to override
+                () -> {
+                  Optional<Alliance> a = DriverStation.getAlliance();
+                  if (a.isPresent() && a.get() == Alliance.Red) {
+                    startPose = GeometryUtil.flipFieldPose(startPose);
+                  }
+                  drivetrainSubsystem.setPose(startPose);
+                })),
+        new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new SetArmAngleCommand(arm, this.preloadShootingParameters.angle_deg),
+                new SetShooterTargetCommand(shooter, this.preloadShootingParameters.speed_rps)),
+            new FeedCommand(transfer),
+            new InstantCommand(
+                () -> {
+                  shooter.stop();
+                }),
+            new SetArmAngleCommand(arm, Constants.ArmConstants.ARM_REST_ANGLE)));
+  }
 }
