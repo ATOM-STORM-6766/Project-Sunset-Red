@@ -239,9 +239,6 @@ public class RobotContainer {
         new Home2ChaseMid1AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption(
         "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
-    mChooser.addOption(
-        "SectionBased",
-        new SectionBasedAutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
