@@ -3,7 +3,8 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.lib6907.DelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean;
+import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
 import frc.robot.subsystems.Arm;
 
 /**
@@ -13,7 +14,7 @@ import frc.robot.subsystems.Arm;
 public class SetArmAngleCommand extends Command {
   private final Arm sArm;
   private final Double targetAngle;
-  private DelayedBoolean mArmInPosition;
+  private DualEdgeDelayedBoolean mArmInPosition;
   private boolean isFinished;
 
   private final double ERR_TOL = 1.0; // degree
@@ -30,7 +31,7 @@ public class SetArmAngleCommand extends Command {
   public void initialize() {
     sArm.setAngle(targetAngle);
     isFinished = false;
-    mArmInPosition = new DelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME);
+    mArmInPosition = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME,EdgeType.RISING);
   }
 
   @Override

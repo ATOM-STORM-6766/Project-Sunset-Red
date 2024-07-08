@@ -9,13 +9,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.auto.modes.*;
 import frc.robot.commands.ChaseNoteCommand;
+import frc.robot.commands.ChaseNoteStateMachineCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
@@ -174,14 +174,16 @@ public class RobotContainer {
       operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
       operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     } else {
-      driverController
-          .a()
+       // chase note inake
+      driverController.a().and(driverController.rightBumper().negate()).
+        whileTrue(
+                  new ChaseNoteStateMachineCommand(
+                      sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer));
+      // manual intake
+      driverController.a().and(driverController.rightBumper()) 
           .whileTrue(
-              new ConditionalCommand(
-                  new ChaseNoteCommand(
-                      sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer),
-                  new IntakeCommand(mIntake, mTransfer),
-                  () -> GamePieceProcessor.getInstance().getClosestGamePieceInfo().isPresent()));
+                  new IntakeCommand(mIntake, mTransfer));
+      
       driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     }
 
@@ -235,6 +237,8 @@ public class RobotContainer {
         new Home2ChaseMid1AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
     mChooser.addOption(
         "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+      mChooser.addOption(
+        "SectionBased", new SectionBasedAutoCommand(mIntake,mShooter,mArm,mTransfer,sDrivetrainSubsystem));
     mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
