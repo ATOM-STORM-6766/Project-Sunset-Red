@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.auto.modes.*;
 import frc.robot.commands.ChaseNoteCommand;
+import frc.robot.commands.ChaseNoteStateMachineCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
@@ -176,7 +177,7 @@ public class RobotContainer {
        // chase note inake
       driverController.a().and(driverController.rightBumper().negate()).
         whileTrue(
-                  new ChaseNoteCommand(
+                  new ChaseNoteStateMachineCommand(
                       sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer));
       // manual intake
       driverController.a().and(driverController.rightBumper()) 
