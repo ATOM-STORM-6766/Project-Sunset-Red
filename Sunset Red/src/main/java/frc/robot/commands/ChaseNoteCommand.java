@@ -23,6 +23,7 @@ public class ChaseNoteCommand extends Command {
     private final PIDController yController;
     private final PIDController rotationController;
     private boolean interruptSelf = false;
+    private boolean isIntaking = false;
     private double lowestSeenPitch = Integer.MAX_VALUE;
 
     public ChaseNoteCommand(
@@ -49,6 +50,7 @@ public class ChaseNoteCommand extends Command {
         rotationController.reset();
         lowestSeenPitch = Integer.MAX_VALUE;
         interruptSelf = false;
+        isIntaking =false;
     }
 
     @Override
@@ -56,7 +58,9 @@ public class ChaseNoteCommand extends Command {
         Optional<PhotonTrackedTarget> targetOptional = sGamePieceProcessor.getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
 
-        if (isTargetPresent) {
+        if (isTargetPresent && !isIntaking) {
+            if(sIntake.isOmronDetected())
+                isIntaking = true;
             PhotonTrackedTarget target = targetOptional.get();
             lowestSeenPitch = Math.min(lowestSeenPitch, target.getPitch());
             double yawMeasure = target.getYaw();
@@ -80,11 +84,13 @@ public class ChaseNoteCommand extends Command {
              * 2. target is too close to the robot, we should continue to drive some time,
              * so that the intake omron can detect the note
              */
-            if (lowestSeenPitch < -15 || sIntake.isOmronDetected()) {
+            if (lowestSeenPitch < -15 || sIntake.isOmronDetected()||isIntaking) {
+                isIntaking = true;
                 sIntake.setIntake();
                 sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
                 sDrivetrainSubsystem.drive(new Translation2d(1, 0), 0, false);
             } else {
+                isIntaking = false;
                 sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
                 interruptSelf = true;
             }
@@ -95,6 +101,7 @@ public class ChaseNoteCommand extends Command {
     public void end(boolean interrupted) {
         sIntake.stop();
         sTransfer.stop();
+        isIntaking = false;
     }
 
     @Override
