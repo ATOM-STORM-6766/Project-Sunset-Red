@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
-import frc.robot.commands.ChaseNoteCommand;
+import frc.robot.commands.ChaseNoteStateMachineCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
@@ -32,11 +32,11 @@ import java.util.Optional;
 
 public class Home2ChaseMid1AutoCommand extends SequentialCommandGroup {
 
-  private Intake mIntake;
-  private Shooter mShooter;
-  private Arm mArm;
-  private Transfer mTransfer;
-  private DrivetrainSubsystem mDrivetrainSubsystem;
+  private Intake sIntake;
+  private Shooter sShooter;
+  private Arm sArm;
+  private Transfer sTransfer;
+  private DrivetrainSubsystem sDrivetrainSubsystem;
 
   private static final Pose2d kNearHome = new Pose2d(0.68, 6.68, Rotation2d.fromDegrees(59.0));
   private static final Pose2d kWingWaypoint = new Pose2d(5.85, 7.10, Rotation2d.fromDegrees(0.0));
@@ -50,11 +50,11 @@ public class Home2ChaseMid1AutoCommand extends SequentialCommandGroup {
       Arm arm,
       Transfer transfer,
       DrivetrainSubsystem drivetrainSubsystem) {
-    mIntake = intake;
-    mShooter = shooter;
-    mArm = arm;
-    mTransfer = transfer;
-    mDrivetrainSubsystem = drivetrainSubsystem;
+    sIntake = intake;
+    sShooter = shooter;
+    sArm = arm;
+    sTransfer = transfer;
+    sDrivetrainSubsystem = drivetrainSubsystem;
 
     addCommands(
         // zeroing and shoot preload
@@ -72,21 +72,21 @@ public class Home2ChaseMid1AutoCommand extends SequentialCommandGroup {
                     })),
             new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                    new SetArmAngleCommand(mArm, ShootingParameters.BELOW_SPEAKER.angle_deg),
+                    new SetArmAngleCommand(sArm, ShootingParameters.BELOW_SPEAKER.angle_deg),
                     new SetShooterTargetCommand(
-                        mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps)),
-                new FeedCommand(mTransfer),
+                        sShooter, ShootingParameters.BELOW_SPEAKER.speed_rps)),
+                new FeedCommand(sTransfer),
                 new InstantCommand(
                     () -> {
-                      mShooter.stop();
+                      sShooter.stop();
                     }),
                 new SetArmAngleCommand(arm, Constants.ArmConstants.ARM_REST_ANGLE))),
         // go to wing and then chase
         buildPathFromPoint(
                 new GoalEndState(1.5, Rotation2d.fromDegrees(0)), kNearHome, kWingWaypoint)
             .deadlineWith(new IntakeCommand(intake, transfer)),
-        new ChaseNoteCommand(
-            drivetrainSubsystem, GamePieceProcessor.getInstance(), intake, transfer),
+        new ChaseNoteStateMachineCommand(
+            sDrivetrainSubsystem, GamePieceProcessor.getInstance(), sIntake, sTransfer),
 
         // go from between 5152 to waypoint
         buildPathFromPoint(
@@ -99,13 +99,13 @@ public class Home2ChaseMid1AutoCommand extends SequentialCommandGroup {
                 new Pose2d(kWingWaypoint.getTranslation(), Rotation2d.fromDegrees(-180.0)),
                 new Pose2d(kCenterHome.getTranslation(), Rotation2d.fromDegrees(-180.0)))
             .alongWith(
-                new SetShooterTargetCommand(mShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
+                new SetShooterTargetCommand(sShooter, ShootingParameters.BELOW_SPEAKER.speed_rps))
             .alongWith(new SetArmAngleCommand(arm, ShootingParameters.BELOW_SPEAKER.angle_deg))
-            .andThen(new FeedCommand(mTransfer).onlyIf(() -> mTransfer.isOmronDetected()))
+            .andThen(new FeedCommand(sTransfer).onlyIf(() -> sTransfer.isOmronDetected()))
             .andThen(
                 new InstantCommand(
                     () -> {
-                      mShooter.stop();
+                      sShooter.stop();
                     })));
   }
 

@@ -41,7 +41,6 @@ public class Shooter extends SubsystemBase {
     shooterConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
     shooterConfig.CurrentLimits.SupplyCurrentThreshold = 60.0;
     shooterConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
-    // TODO : TUNE SHOOTER VEL PID
     shooterConfig.Slot0.kV = 0.113;
     shooterConfig.Slot0.kP = 0.1;
     shooterConfig.Slot0.kI = 1.0;
@@ -49,7 +48,6 @@ public class Shooter extends SubsystemBase {
     Util.checkReturn(
         "shooter",
         mShooterTalon.getConfigurator().apply(shooterConfig, Constants.kLongCANTimeoutSec));
-    // TODO : TUNE SHOOTER FOLLOWER VEL PID
     shooterConfig.Slot0.kV = 0.118;
     shooterConfig.Slot0.kP = 0.1;
     shooterConfig.Slot0.kI = 1.0;
