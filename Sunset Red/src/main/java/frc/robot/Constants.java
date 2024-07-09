@@ -6,8 +6,12 @@ package frc.robot;
 
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
 import frc.robot.config.SwerveModuleConfig;
 import frc.robot.config.SwerveModuleConfig.ModuleCorner;
@@ -196,5 +200,18 @@ public final class Constants {
 
     public static final Translation2d kRedSpeaker = new Translation2d(16.32, 5.55);
     public static final Translation2d kBlueSpeaker = new Translation2d(0.26, 5.54);
+  }
+
+  public static final class FiendConstants{
+    public static final Pose2d BELOW_SPEAKER_POSITION_BLUE = new Pose2d(new Translation2d(1.42,5.54),new Rotation2d(0.0));
+    public static final Pose2d BELOW_SPEAKER_POSITION_RED = new Pose2d(new Translation2d(15.289,5.54),new Rotation2d(Units.degreesToRadians(180)));
+    public static final Pose2d IN_FRONT_AMP_POSITION_BLUE = new Pose2d(new Translation2d(1.79,7.56),new Rotation2d(Units.degreesToRadians(90.0)));
+    public static final Pose2d IN_FRONT_AMP_POSITION_RED = new Pose2d(new Translation2d(14.742,7.56),new Rotation2d(Units.degreesToRadians(90.0)));
+    public static final Pose2d NOTE_51_POSITION = new Pose2d(new Translation2d(8.30,7.45),new Rotation2d(0.0));
+    public static final Pose2d NOTE_52_POSITION = new Pose2d(new Translation2d(8.30,5.77),new Rotation2d(0.0));
+    public static final Pose2d NOTE_53_POSITION = new Pose2d(new Translation2d(8.30,4.11),new Rotation2d(0.0));
+    public static final Pose2d NOTE_54_POSITION = new Pose2d(new Translation2d(8.30,2.43),new Rotation2d(0.0));
+    public static final Pose2d NOTE_55_POSITION = new Pose2d(new Translation2d(8.30,0.78),new Rotation2d(0.0));
+
   }
 }

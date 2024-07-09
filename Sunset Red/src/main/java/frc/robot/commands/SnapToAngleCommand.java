@@ -110,7 +110,6 @@ public class SnapToAngleCommand extends Command {
 
   @Override
   public void initSendable(SendableBuilder builder) {
-    // TODO Auto-generated method stub
     super.initSendable(builder);
     builder.addDoubleProperty(
         "target heading error", () -> snapToAnglePID.getPositionError(), null);

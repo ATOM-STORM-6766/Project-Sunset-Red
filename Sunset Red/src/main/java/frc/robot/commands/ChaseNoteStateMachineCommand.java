@@ -92,7 +92,7 @@ public class ChaseNoteStateMachineCommand extends Command {
         // Intake the note
         sIntake.setIntake();
         sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
-        sDrivetrainSubsystem.drive(new Translation2d(1, 0), 0, false);
+        sDrivetrainSubsystem.drive(new Translation2d(2, 0), 0, false);
         if (sTransfer.isOmronDetected()) {
           currentState = State.END;
         }
