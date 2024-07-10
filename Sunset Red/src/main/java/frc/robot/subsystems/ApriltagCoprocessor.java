@@ -3,9 +3,11 @@ package frc.robot.subsystems;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Timer;
@@ -34,65 +36,74 @@ public class ApriltagCoprocessor extends SubsystemBase {
   }
 
   private ApriltagCoprocessor() {
-    photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    photonPoseEstimatorForShooterSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    photonPoseEstimatorForIntakeSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     double currentTime = Timer.getFPGATimestamp();
-    multiTagDelayedBoolean =
-        new DualEdgeDelayedBoolean(currentTime, MULTI_TAG_DELAY, EdgeType.RISING);
+    multiTagDelayedBoolean = new DualEdgeDelayedBoolean(currentTime, MULTI_TAG_DELAY, EdgeType.RISING);
   }
 
-  private PhotonCamera ov9281 = new PhotonCamera("OV9281");
-  // original 0.28
-  private Transform3d kRobotToCamera =
-      new Transform3d(-0.28, -0.06, 0.25, new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
-  private final AprilTagFieldLayout aprilTagFieldLayout =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
-  PhotonPoseEstimator photonPoseEstimator =
-      new PhotonPoseEstimator(
-          aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, ov9281, kRobotToCamera);
+  private PhotonCamera ApriltagCamShooterSide = new PhotonCamera("TagCamShooterSide");
+  private PhotonCamera ApriltagCamIntakeSide = new PhotonCamera("TagCamIntakeSide");
 
-  StructPublisher<Pose2d> lastRPpublisher =
-      NetworkTableInstance.getDefault()
-          .getTable("SmartDashboard")
-          .getStructTopic("lastRobotPose", Pose2d.struct)
-          .publish();
-  StructPublisher<Pose2d> currRPpublisher =
-      NetworkTableInstance.getDefault()
-          .getTable("SmartDashboard")
-          .getStructTopic("currRobotPose", Pose2d.struct)
-          .publish();
+  private Transform3d kRobotToCameraForShooterSide = new Transform3d(-0.28, -0.06, 0.25,
+      new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
+
+  private Transform3d kRobotToCameraForIntakeSide = new Transform3d(0.22, -0.075, 0.08,
+      new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-37), Units.degreesToRadians(0)));
+
+  private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+  PhotonPoseEstimator photonPoseEstimatorForShooterSide = new PhotonPoseEstimator(
+      aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, ApriltagCamShooterSide,
+      kRobotToCameraForShooterSide);
+  PhotonPoseEstimator photonPoseEstimatorForIntakeSide = new PhotonPoseEstimator(
+      aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, ApriltagCamIntakeSide,
+      kRobotToCameraForIntakeSide);
+
+  StructPublisher<Pose2d> lastRPpublisher = NetworkTableInstance.getDefault()
+      .getTable("SmartDashboard")
+      .getStructTopic("lastRobotPose", Pose2d.struct)
+      .publish();
+  StructPublisher<Pose2d> currRPpublisher = NetworkTableInstance.getDefault()
+      .getTable("SmartDashboard")
+      .getStructTopic("currRobotPose", Pose2d.struct)
+      .publish();
+
+  StructPublisher<Pose3d> intakeSidePublisher = NetworkTableInstance.getDefault()
+      .getTable("SmartDashboard")
+      .getStructTopic("Intake Side Estimated Pose", Pose3d.struct)
+      .publish();
+  
+  StructPublisher<Pose3d> shooterSidePublisher = NetworkTableInstance.getDefault()
+      .getTable("SmartDashboard")
+      .getStructTopic("Shooter Side Estimated Pose", Pose3d.struct)
+      .publish();
 
   private Translation2d lastVisionEstimatedPose = null;
   private double lastVisionEstimatedPoseTimestamp = 0;
 
-  /**
-   * Should run this function as frequent as possible
-   *
-   * @param prevEstimatedRobotPose latest estimated robot pose (ideally from odom)
-   * @return vision estimated robot pose using Optional class to signal vision presence
-   */
-  public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(
-      Pose2d prevEstimatedRobotPose, Translation2d chassisVelMS) {
+  private Optional<EstimatedRobotPose> processCameraResult(PhotonCamera camera, PhotonPoseEstimator photonPoseEstimator,
+      Pose2d prevEstimatedRobotPose) {
     photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
 
-    var result = ov9281.getLatestResult();
+    var result = camera.getLatestResult();
     if (!result.hasTargets()) {
-      SmartDashboard.putString("Vision Estimation Mode", "No Detected Targets");
+      SmartDashboard.putString("Vision Estimation Mode (" + camera.getName() + ")", "No Detected Targets");
       return Optional.empty();
     }
 
-    // Before filtering, publish the result to Smartdashboard
-    SmartDashboard.putNumber("Number of Targets", result.getTargets().size());
-    SmartDashboard.putNumber("Timestamp", result.getTimestampSeconds());
+    SmartDashboard.putNumber("Number of Targets (" + camera.getName() + ")", result.getTargets().size());
+    SmartDashboard.putNumber("Timestamp (" + camera.getName() + ")", result.getTimestampSeconds());
 
-    logOriginalTags(result);
+    logOriginalTags(result, camera.getName());
 
     var acceptableTargets = filterAcceptableTargets(result);
-    SmartDashboard.putNumber("Number of Accepted Targets", acceptableTargets.size());
+    SmartDashboard.putNumber("Number of Accepted Targets (" + camera.getName() + ")", acceptableTargets.size());
 
-    logAcceptedTags(acceptableTargets);
+    logAcceptedTags(acceptableTargets, camera.getName());
+    logTagAreas(acceptableTargets, camera.getName()); // Log tag areas
 
     if (acceptableTargets.isEmpty()) {
-      SmartDashboard.putString("Vision Estimation Mode", "No Acceptable Targets");
+      SmartDashboard.putString("Vision Estimation Mode (" + camera.getName() + ")", "No Acceptable Targets");
       return Optional.empty();
     }
 
@@ -106,27 +117,72 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
     if (newEstimatedRobotPose.isPresent()) {
       SmartDashboard.putString(
-          "Vision Estimation Mode", newEstimatedRobotPose.get().strategy.toString());
-      logEstimatedPose(newEstimatedRobotPose.get());
-      currRPpublisher.set(newEstimatedRobotPose.get().estimatedPose.toPose2d());
+          "Vision Estimation Mode (" + camera.getName() + ")",
+          newEstimatedRobotPose.get().strategy.toString());
+      if(camera.getName() == "TagCamShooterSide"){
+        shooterSidePublisher.set(newEstimatedRobotPose.get().estimatedPose);
+      }else{
+        intakeSidePublisher.set(newEstimatedRobotPose.get().estimatedPose);
+      }
     } else {
-      SmartDashboard.putStringArray("Estimated Pose", new String[] {"Failed to estimate pose"});
+      SmartDashboard.putStringArray("Estimated Pose (" + camera.getName() + ")",
+          new String[] { "Failed to estimate pose" });
     }
 
-    var return_pose = newEstimatedRobotPose;
+    return newEstimatedRobotPose;
+  }
 
-    // // velocity filter
+  private void logTagAreas(List<PhotonTrackedTarget> targets, String cameraName) {
+    double totalArea = targets.stream().mapToDouble(PhotonTrackedTarget::getArea).sum();
+    SmartDashboard.putNumber("Total Tag Area (" + cameraName + ")", totalArea);
+  }
+
+  private Optional<EstimatedRobotPose> selectBestResult(Optional<EstimatedRobotPose> shooterSideResult,
+      Optional<EstimatedRobotPose> intakeSideResult) {
+    if (shooterSideResult.isPresent() && intakeSideResult.isPresent()) {
+      PoseStrategy shooterStrategy = shooterSideResult.get().strategy;
+      PoseStrategy intakeStrategy = intakeSideResult.get().strategy;
+
+      if (shooterStrategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+          && intakeStrategy != PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
+        return shooterSideResult;
+      } else if (intakeStrategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
+          && shooterStrategy != PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR) {
+        return intakeSideResult;
+      } else {
+        double shooterArea = SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamShooterSide.getName() + ")", 0);
+        double intakeArea = SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamIntakeSide.getName() + ")", 0);
+        return shooterArea > intakeArea ? shooterSideResult : intakeSideResult;
+      }
+    } else if (shooterSideResult.isPresent()) {
+      return shooterSideResult;
+    } else if (intakeSideResult.isPresent()) {
+      return intakeSideResult;
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(Pose2d prevEstimatedRobotPose,
+      Translation2d chassisVelMS) {
+    Optional<EstimatedRobotPose> shooterSideResult = processCameraResult(ApriltagCamShooterSide,
+        photonPoseEstimatorForShooterSide, prevEstimatedRobotPose);
+    Optional<EstimatedRobotPose> intakeSideResult = processCameraResult(ApriltagCamIntakeSide,
+        photonPoseEstimatorForIntakeSide, prevEstimatedRobotPose);
+
+    Optional<EstimatedRobotPose> bestResult = selectBestResult(shooterSideResult, intakeSideResult);
+
+    var return_pose = bestResult;
+
     if (lastVisionEstimatedPose != null
-        && newEstimatedRobotPose.isPresent()
-        && lastVisionEstimatedPoseTimestamp != newEstimatedRobotPose.get().timestampSeconds) {
-      Translation2d visionVelMS =
-          newEstimatedRobotPose
-              .get()
-              .estimatedPose
-              .getTranslation()
-              .toTranslation2d()
-              .minus(lastVisionEstimatedPose)
-              .div(newEstimatedRobotPose.get().timestampSeconds - lastVisionEstimatedPoseTimestamp);
+        && bestResult.isPresent()
+        && lastVisionEstimatedPoseTimestamp != bestResult.get().timestampSeconds) {
+      Translation2d visionVelMS = bestResult
+          .get().estimatedPose
+          .getTranslation()
+          .toTranslation2d()
+          .minus(lastVisionEstimatedPose)
+          .div(bestResult.get().timestampSeconds - lastVisionEstimatedPoseTimestamp);
       SmartDashboard.putString("vision vel ms", visionVelMS.toString());
       SmartDashboard.putNumber("velocity delta v", visionVelMS.minus(chassisVelMS).getNorm());
       if (visionVelMS.minus(chassisVelMS).getNorm() > 0.5) {
@@ -134,10 +190,9 @@ public class ApriltagCoprocessor extends SubsystemBase {
       }
     }
 
-    if (newEstimatedRobotPose.isPresent()) {
-      lastVisionEstimatedPose =
-          newEstimatedRobotPose.get().estimatedPose.getTranslation().toTranslation2d();
-      lastVisionEstimatedPoseTimestamp = newEstimatedRobotPose.get().timestampSeconds;
+    if (bestResult.isPresent()) {
+      lastVisionEstimatedPose = bestResult.get().estimatedPose.getTranslation().toTranslation2d();
+      lastVisionEstimatedPoseTimestamp = bestResult.get().timestampSeconds;
     }
 
     return return_pose;
@@ -151,41 +206,34 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
     if (useMultiTag) {
       return PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
-      // return PoseStrategy.AVERAGE_BEST_TARGETS;
     } else {
       return PoseStrategy.AVERAGE_BEST_TARGETS;
     }
   }
 
-  private void logOriginalTags(PhotonPipelineResult result) {
+  private void logOriginalTags(PhotonPipelineResult result, String cameraName) {
     String[] originalTagsInfo = new String[result.getTargets().size()];
     for (int i = 0; i < result.getTargets().size(); i++) {
       var target = result.getTargets().get(i);
-      originalTagsInfo[i] =
-          String.format(
-              "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
-              target.getFiducialId(),
-              target.getArea(),
-              target.getYaw(),
-              target.getPitch(),
-              target.getPoseAmbiguity());
+      originalTagsInfo[i] = String.format(
+          "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
+          target.getFiducialId(),
+          target.getArea(),
+          target.getYaw(),
+          target.getPitch(),
+          target.getPoseAmbiguity());
     }
-    SmartDashboard.putStringArray("Original Tags", originalTagsInfo);
+    SmartDashboard.putStringArray("Original Tags (" + cameraName + ")", originalTagsInfo);
   }
 
   private List<PhotonTrackedTarget> filterAcceptableTargets(PhotonPipelineResult result) {
     return result.getTargets().stream()
         .filter(
             target -> {
-              boolean isAcceptable =
-                  target.getArea() > 0.07
-                      && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
-                      && Math.abs(target.getYaw()) < 30
-                      && Math.abs(target.getPitch()) < 25;
-              /*
-              * && Math.abs(target.getYaw()) < 30
-                           && Math.abs(target.getPitch()) < 20
-              */
+              boolean isAcceptable = target.getArea() > 0.07
+                  && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
+                  && Math.abs(target.getYaw()) < 30
+                  && Math.abs(target.getPitch()) < 25;
               SmartDashboard.putString(
                   "Filtering Log",
                   String.format(
@@ -201,36 +249,18 @@ public class ApriltagCoprocessor extends SubsystemBase {
         .collect(Collectors.toList());
   }
 
-  private void logAcceptedTags(List<PhotonTrackedTarget> acceptableTargets) {
+  private void logAcceptedTags(List<PhotonTrackedTarget> acceptableTargets, String cameraName) {
     String[] acceptedTagsInfo = new String[acceptableTargets.size()];
     for (int i = 0; i < acceptableTargets.size(); i++) {
       var target = acceptableTargets.get(i);
-      acceptedTagsInfo[i] =
-          String.format(
-              "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
-              target.getFiducialId(),
-              target.getArea(),
-              target.getYaw(),
-              target.getPitch(),
-              target.getPoseAmbiguity());
+      acceptedTagsInfo[i] = String.format(
+          "ID: %d, Area: %.3f, Yaw: %.2f, Pitch: %.2f, Ambiguity: %.3f",
+          target.getFiducialId(),
+          target.getArea(),
+          target.getYaw(),
+          target.getPitch(),
+          target.getPoseAmbiguity());
     }
-    SmartDashboard.putStringArray("Accepted Tags", acceptedTagsInfo);
-  }
-
-  private void logEstimatedPose(EstimatedRobotPose estimatedPose) {
-    var pose = estimatedPose.estimatedPose;
-    String[] poseInfo = {
-      String.format("X: %.2f", pose.getX()),
-      String.format("Y: %.2f", pose.getY()),
-      String.format("Z: %.2f", pose.getZ()),
-      String.format("Yaw: %.2f", pose.getRotation().getZ()),
-      String.format("Timestamp: %.3f", estimatedPose.timestampSeconds)
-    };
-    SmartDashboard.putStringArray("Estimated Pose", poseInfo);
-  }
-
-  @Override
-  public void periodic() {
-    // Add any periodic tasks if needed
+    SmartDashboard.putStringArray("Accepted Tags (" + cameraName + ")", acceptedTagsInfo);
   }
 }
