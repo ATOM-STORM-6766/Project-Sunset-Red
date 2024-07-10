@@ -3,9 +3,11 @@ package frc.robot.subsystems;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.Timer;
@@ -46,8 +48,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private Transform3d kRobotToCameraForShooterSide = new Transform3d(-0.28, -0.06, 0.25,
       new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
 
-  private Transform3d kRobotToCameraForIntakeSide = new Transform3d(-0.28, -0.06, 0.25,
-      new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
+  private Transform3d kRobotToCameraForIntakeSide = new Transform3d(0.22, -0.075, 0.08,
+      new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-37), Units.degreesToRadians(0)));
 
   private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
   PhotonPoseEstimator photonPoseEstimatorForShooterSide = new PhotonPoseEstimator(
@@ -64,6 +66,16 @@ public class ApriltagCoprocessor extends SubsystemBase {
   StructPublisher<Pose2d> currRPpublisher = NetworkTableInstance.getDefault()
       .getTable("SmartDashboard")
       .getStructTopic("currRobotPose", Pose2d.struct)
+      .publish();
+
+  StructPublisher<Pose3d> intakeSidePublisher = NetworkTableInstance.getDefault()
+      .getTable("SmartDashboard")
+      .getStructTopic("Intake Side Estimated Pose", Pose3d.struct)
+      .publish();
+  
+  StructPublisher<Pose3d> shooterSidePublisher = NetworkTableInstance.getDefault()
+      .getTable("SmartDashboard")
+      .getStructTopic("Shooter Side Estimated Pose", Pose3d.struct)
       .publish();
 
   private Translation2d lastVisionEstimatedPose = null;
@@ -107,7 +119,11 @@ public class ApriltagCoprocessor extends SubsystemBase {
       SmartDashboard.putString(
           "Vision Estimation Mode (" + camera.getName() + ")",
           newEstimatedRobotPose.get().strategy.toString());
-      logEstimatedPose(newEstimatedRobotPose.get(), camera.getName());
+      if(camera.getName() == "TagCamShooterSide"){
+        shooterSidePublisher.set(newEstimatedRobotPose.get().estimatedPose);
+      }else{
+        intakeSidePublisher.set(newEstimatedRobotPose.get().estimatedPose);
+      }
     } else {
       SmartDashboard.putStringArray("Estimated Pose (" + camera.getName() + ")",
           new String[] { "Failed to estimate pose" });
@@ -246,17 +262,5 @@ public class ApriltagCoprocessor extends SubsystemBase {
           target.getPoseAmbiguity());
     }
     SmartDashboard.putStringArray("Accepted Tags (" + cameraName + ")", acceptedTagsInfo);
-  }
-
-  private void logEstimatedPose(EstimatedRobotPose estimatedPose, String cameraName) {
-    var pose = estimatedPose.estimatedPose;
-    String[] poseInfo = {
-        String.format("X: %.2f", pose.getX()),
-        String.format("Y: %.2f", pose.getY()),
-        String.format("Z: %.2f", pose.getZ()),
-        String.format("Yaw: %.2f", pose.getRotation().getZ()),
-        String.format("Timestamp: %.3f", estimatedPose.timestampSeconds)
-    };
-    SmartDashboard.putStringArray("Estimated Pose (" + cameraName + ")", poseInfo);
   }
 }
