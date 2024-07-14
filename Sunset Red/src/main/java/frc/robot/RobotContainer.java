@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.auto.modes.*;
+import frc.robot.commands.BlowTrapAndDropCommand;
 import frc.robot.commands.ChaseNoteStateMachineCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
@@ -32,6 +33,7 @@ import frc.robot.subsystems.GamePieceProcessor;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
+import frc.robot.subsystems.TrapFan;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
 
@@ -55,6 +57,7 @@ public class RobotContainer {
   private final Transfer mTransfer = new Transfer();
   private final Shooter mShooter = new Shooter();
   private final Arm mArm = new Arm();
+  private final TrapFan mTrapFan = new TrapFan();
   private final ApriltagCoprocessor mCoprocessor = ApriltagCoprocessor.getInstance();
 
   private static final boolean kDualController = false;
@@ -141,7 +144,8 @@ public class RobotContainer {
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
                 () -> driverController.getRawRotationRate(), // amp heading
                 () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED));
-
+    
+    /* 
     // Vision Shoot
     Trigger visionShootTrigger = driverController.y();
 
@@ -168,6 +172,8 @@ public class RobotContainer {
                   mIntake.stop();
                 }));
 
+    */
+    driverController.y().whileTrue(new BlowTrapAndDropCommand( mTrapFan, mShooter, mArm, mTransfer,0.0 )).onFalse(new BlowTrapAndDropCommand( mTrapFan, mShooter, mArm, mTransfer,0));
     // intake system bindings
     if (kDualController) {
       operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
