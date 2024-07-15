@@ -3,7 +3,7 @@ package frc.robot.utils;
 public class ShootingParameters {
 
   public static final ShootingParameters BELOW_SPEAKER = new ShootingParameters(85, 59.0);
-  public static final ShootingParameters AMP = new ShootingParameters(25, 115);
+  public static final ShootingParameters AMP = new ShootingParameters(35, 118);
   public static final ShootingParameters AGAINST_ENEMY = new ShootingParameters(85, 48.0);
   public static final ShootingParameters PODIUM_SHOOT = new ShootingParameters(85, 44.5);
   public static final ShootingParameters FAR_SHOOT = new ShootingParameters(85, 26.2);

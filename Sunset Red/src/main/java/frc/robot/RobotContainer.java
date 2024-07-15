@@ -173,8 +173,9 @@ public class RobotContainer {
                 }));
 
     */
-    driverController.y().whileTrue(new BlowTrapAndDropCommand( mTrapFan, mShooter, mArm, mTransfer,0.0 )).onFalse(new BlowTrapAndDropCommand( mTrapFan, mShooter, mArm, mTransfer,0));
-    // intake system bindings
+   driverController.y().whileTrue(new BlowTrapAndDropCommand( mTrapFan, mShooter, mArm, mTransfer,1.0 )).onFalse(new BlowTrapAndDropCommand( mTrapFan, mShooter, mArm, mTransfer,0));
+    //buildShootBinding(driverController.y(), ShootingParameters.AMP);
+        // intake system bindings
     if (kDualController) {
       operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
       operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));

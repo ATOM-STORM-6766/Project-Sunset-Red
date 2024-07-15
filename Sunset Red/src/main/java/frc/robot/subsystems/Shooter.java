@@ -20,6 +20,7 @@ public class Shooter extends SubsystemBase {
   private final TalonFX mShooterFollower;
 
   private final VelocityVoltage shooterTargetVelocity = new VelocityVoltage(0);
+  private final VelocityVoltage shooterTargetVelocityLower = new VelocityVoltage(0);
 
   private DoubleLogEntry mVelocityLog;
   private DoubleLogEntry mTargetVelocityLog;
@@ -108,7 +109,8 @@ public class Shooter extends SubsystemBase {
    */
   public void setTargetVelocity(double target_rps) {
     shooterTargetVelocity.Velocity = target_rps;
-    mShooterTalon.setControl(shooterTargetVelocity);
+    shooterTargetVelocityLower.Velocity = target_rps;
+    mShooterTalon.setControl(shooterTargetVelocityLower);
     mShooterFollower.setControl(shooterTargetVelocity);
   }
 
