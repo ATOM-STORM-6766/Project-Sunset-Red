@@ -221,4 +221,8 @@ public final class Constants {
     public static final Pose2d NOTE_55_POSITION =
         new Pose2d(new Translation2d(8.30, 0.78), new Rotation2d(0.0));
   }
+
+  public static final class FanConstants{
+    public static final int FAN_ID = 2;
+  }
 }
