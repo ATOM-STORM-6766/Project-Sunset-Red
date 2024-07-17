@@ -73,7 +73,6 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
                 new FeedCommand(sTransfer))),
         logFinished);
 
-
     addRequirements(trapFan, shooter, arm, transfer);
   }
 }

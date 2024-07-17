@@ -7,7 +7,6 @@ package frc.robot;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.pathplanner.lib.path.PathConstraints;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -228,8 +227,8 @@ public final class Constants {
     public static final int FAN_ID = 2;
   }
 
-  public static final class PathfindConstants{
-    public static final  PathConstraints constraints = new PathConstraints(3.0, 2.0, Units.degreesToRadians(540),
-            Units.degreesToRadians(720));
+  public static final class PathfindConstants {
+    public static final PathConstraints constraints =
+        new PathConstraints(3.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
   }
 }
