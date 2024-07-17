@@ -222,7 +222,7 @@ public final class Constants {
         new Pose2d(new Translation2d(8.30, 0.78), new Rotation2d(0.0));
   }
 
-  public static final class FanConstants{
+  public static final class FanConstants {
     public static final int FAN_ID = 2;
   }
 }

@@ -8,13 +8,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.auto.modes.*;
-import frc.robot.commands.BlowTrapAndDropCommand;
 import frc.robot.commands.ChaseNoteStateMachineCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
@@ -23,7 +21,6 @@ import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.commands.SnapToAngleCommand;
-import frc.robot.commands.VisionShootCommand;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.ApriltagCoprocessor;
@@ -38,12 +35,9 @@ import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
 
 /**
- * This class is where the bulk of the robot should be declared. Since
- * Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in
- * the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of
- * the robot (including
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
@@ -68,15 +62,14 @@ public class RobotContainer {
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
-  private final SnapToAngleCommand mDriveWithRightStick = new SnapToAngleCommand(
-      sDrivetrainSubsystem,
-      () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-      () -> driverController.getDriveRotationAngle(), // amp heading
-      () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
+  private final SnapToAngleCommand mDriveWithRightStick =
+      new SnapToAngleCommand(
+          sDrivetrainSubsystem,
+          () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+          () -> driverController.getDriveRotationAngle(), // amp heading
+          () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
 
-  /**
-   * The container for the robot. Contains subsystems, OI devices, and commands.
-   */
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
 
@@ -92,17 +85,12 @@ public class RobotContainer {
   }
 
   /**
-   * Use this method to define your trigger->command mappings. Triggers can be
-   * created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
-   * an arbitrary
+   * Use this method to define your trigger->command mappings. Triggers can be created via the
+   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
    * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-   * {@link
-   * CommandXboxController
-   * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or
-   * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
   private void configureBindings() {
@@ -125,17 +113,18 @@ public class RobotContainer {
     // Default Command: Drive with right stick
 
     // reset heading
-    Command resetHeadingCommand = new InstantCommand(
-        () -> {
-          sDrivetrainSubsystem.zeroHeading();
-          driverController.setTranslationDirection(true);
-        });
+    Command resetHeadingCommand =
+        new InstantCommand(
+            () -> {
+              sDrivetrainSubsystem.zeroHeading();
+              driverController.setTranslationDirection(true);
+            });
     resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
     driverController.start().onTrue(resetHeadingCommand);
 
     // Snap to Amp Angle
     new Trigger(
-        () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
+            () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
         .onTrue(
             new SnapToAngleCommand(
                 sDrivetrainSubsystem,
@@ -156,11 +145,11 @@ public class RobotContainer {
     /*
      * // Vision Shoot
      * Trigger visionShootTrigger = driverController.y();
-     * 
+     *
      * if (kDualController) {
      * visionShootTrigger = operatorController.y();
      * }
-     * 
+     *
      * visionShootTrigger
      * .whileTrue(
      * new VisionShootCommand(
@@ -179,12 +168,15 @@ public class RobotContainer {
      * mTransfer.stop();
      * mIntake.stop();
      * }));
-     * 
+     *
      */
     // driverController.y().whileTrue(new BlowTrapAndDropCommand( mTrapFan,
     // mShooter, mArm, mTransfer,1.0 )).onFalse(new BlowTrapAndDropCommand(
     // mTrapFan, mShooter, mArm, mTransfer,0));
-    buildShootBinding(driverController.y(), ShootingParameters.AMP_INTERMEDIATE_POS,ShootingParameters.AMP_LOWSPEED);
+    buildShootBinding(
+        driverController.y(),
+        ShootingParameters.AMP_INTERMEDIATE_POS,
+        ShootingParameters.AMP_LOWSPEED);
     // intake system bindings
     if (kDualController) {
       operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
@@ -215,26 +207,34 @@ public class RobotContainer {
   }
 
   private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
-    Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
-        .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
-        .andThen(new FeedCommand(mTransfer));
+    Command shootCommand =
+        new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+            .andThen(new FeedCommand(mTransfer));
 
-    Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+    Command stopShootingCommand =
+        new InstantCommand(() -> mShooter.stop())
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
 
     trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
   }
 
-  private void buildShootBinding(Trigger trigger, ShootingParameters IntermediateParameter, ShootingParameters targetParameters){
-    Command swingUpCommand = new SetShooterTargetCommand(mShooter,targetParameters.speed_rps)
-      .alongWith(new SetArmAngleCommand(mArm,IntermediateParameter.angle_deg));
+  private void buildShootBinding(
+      Trigger trigger,
+      ShootingParameters IntermediateParameter,
+      ShootingParameters targetParameters) {
+    Command swingUpCommand =
+        new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, IntermediateParameter.angle_deg));
 
-    Command swingAndReleaseCommand = new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
-      .alongWith(new SetArmAngleCommand(mArm, targetParameters.angle_deg))
-      .alongWith(new FeedCommand(mTransfer));
-    
-    Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+    Command swingAndReleaseCommand =
+        new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, targetParameters.angle_deg))
+            .alongWith(new FeedCommand(mTransfer));
+
+    Command stopShootingCommand =
+        new InstantCommand(() -> mShooter.stop())
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
 
     trigger.whileTrue(swingUpCommand.andThen(swingAndReleaseCommand)).onFalse(stopShootingCommand);
   }
