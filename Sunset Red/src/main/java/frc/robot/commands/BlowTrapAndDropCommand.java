@@ -46,14 +46,6 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
           }
         };
 
-    // Create the drop and shoot command
-    Command shootTrapCommand =
-        new SequentialCommandGroup(
-            new InstantCommand(
-                () -> System.out.println("Starting to shoot after 2 seconds of blowing")),
-            new SetShooterTargetCommand(sShooter, ShootingParameters.TRAP.speed_rps)
-                .alongWith(new SetArmAngleCommand(sArm, ShootingParameters.TRAP.angle_deg)));
-
     // Add logging and SmartDashboard updates
     Command logStarted =
         new InstantCommand(
@@ -80,6 +72,7 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
                 new WaitCommand(2), // Wait for 2 seconds
                 new FeedCommand(sTransfer))),
         logFinished);
+
 
     addRequirements(trapFan, shooter, arm, transfer);
   }

@@ -264,7 +264,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
               boolean isAcceptable =
                   target.getArea() > 0.07
                       && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
-                      && Math.abs(target.getYaw()) < 30
+                      && Math.abs(target.getYaw()) < 25
                       && Math.abs(target.getPitch()) < 25;
               SmartDashboard.putString(
                   "Filtering Log",

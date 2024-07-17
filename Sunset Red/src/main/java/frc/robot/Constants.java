@@ -6,6 +6,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.pathplanner.lib.path.PathConstraints;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -207,9 +209,9 @@ public final class Constants {
     public static final Pose2d BELOW_SPEAKER_POSITION_RED =
         new Pose2d(new Translation2d(15.289, 5.54), new Rotation2d(Units.degreesToRadians(180)));
     public static final Pose2d IN_FRONT_AMP_POSITION_BLUE =
-        new Pose2d(new Translation2d(1.79, 7.56), new Rotation2d(Units.degreesToRadians(90.0)));
+        new Pose2d(new Translation2d(1.79, 7.76), new Rotation2d(Units.degreesToRadians(90.0)));
     public static final Pose2d IN_FRONT_AMP_POSITION_RED =
-        new Pose2d(new Translation2d(14.742, 7.56), new Rotation2d(Units.degreesToRadians(90.0)));
+        new Pose2d(new Translation2d(14.742, 7.76), new Rotation2d(Units.degreesToRadians(90.0)));
     public static final Pose2d NOTE_51_POSITION =
         new Pose2d(new Translation2d(8.30, 7.45), new Rotation2d(0.0));
     public static final Pose2d NOTE_52_POSITION =
@@ -224,5 +226,10 @@ public final class Constants {
 
   public static final class FanConstants {
     public static final int FAN_ID = 2;
+  }
+
+  public static final class PathfindConstants{
+    public static final  PathConstraints constraints = new PathConstraints(3.0, 2.0, Units.degreesToRadians(540),
+            Units.degreesToRadians(720));
   }
 }
