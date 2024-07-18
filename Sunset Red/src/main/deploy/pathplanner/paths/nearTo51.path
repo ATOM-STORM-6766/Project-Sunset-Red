@@ -8,51 +8,46 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.1037682234035895,
-        "y": 6.123848407203031
-      },
-      "isLocked": false,
-      "linkedName": "center"
-    },
-    {
-      "anchor": {
-        "x": 5.2416786209610375,
-        "y": 4.684070673004929
-      },
-      "prevControl": {
-        "x": 3.6564350959989347,
-        "y": 5.267440290190983
-      },
-      "nextControl": {
-        "x": 6.458952704382277,
-        "y": 4.2361138103059135
+        "x": 1.7098358983042754,
+        "y": 6.1979018544931685
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.261077565440443,
-        "y": 5.78440064760363
+        "x": 2.9026396514331485,
+        "y": 6.2797609355902475
       },
       "prevControl": {
-        "x": 7.453327759041757,
-        "y": 5.105156492221974
+        "x": 2.329626083753592,
+        "y": 6.291455090032687
+      },
+      "nextControl": {
+        "x": 3.6624814334653686,
+        "y": 6.264253960446733
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.281950694955519,
+        "y": 7.425788070949362
+      },
+      "prevControl": {
+        "x": 7.281950694955519,
+        "y": 7.425788070949362
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "note52"
+      "linkedName": null
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1,
-      "rotationDegrees": -30.76271953423891,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 1.6,
-      "rotationDegrees": 40.62877628063476,
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0,
       "rotateFast": false
     }
   ],
@@ -66,11 +61,14 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 52.8831393166563,
+    "rotation": 0.0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
-  "previewStartingState": null,
+  "previewStartingState": {
+    "rotation": 30.0,
+    "velocity": 0
+  },
   "useDefaultConstraints": true
 }
