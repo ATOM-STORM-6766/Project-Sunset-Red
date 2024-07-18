@@ -30,7 +30,6 @@ public class ChaseNoteStateMachineCommand extends Command {
 
   private State currentState;
 
-  private static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
   private SetArmAngleCommand setArmAngleCommand;
 
   // Constructor
