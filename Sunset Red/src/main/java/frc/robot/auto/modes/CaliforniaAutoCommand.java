@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -80,61 +82,81 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
         Command goto51 = AutoBuilder.followPath(PathPlannerPath.fromPathFile("nearTo51"));
 
-        Command chaseNote = new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor,
-                intake, transfer, arm);
-
-        Command findPathThenShoot = AutoBuilder.pathfindToPoseFlipped(kShootPose, PathfindConstants.constraints);
-
-        Command staticVisionShoot = new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake,
-                () -> kZeroTranslation);
-
         Command pathFind52 = AutoBuilder.pathfindToPoseFlipped(FiendConstants.NOTE_52_POSITION,
                 PathfindConstants.constraints);
 
-        SnapToAngleCommand snapTo90 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
+        SnapToAngleCommand snapTo90_1 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
+                () -> Optional.of(Rotation2d.fromDegrees(90.0)), () -> false);
+        
+        SnapToAngleCommand snapTo90_2 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
                 () -> Optional.of(Rotation2d.fromDegrees(90.0)), () -> false);
 
         // build auto
         addCommands(
                 prepare,
 
-                goto51.alongWith(
-                        new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
-                        new IntakeCommand(intake, transfer)).until(
-                                () -> isChaseDeadlineReached()
+                // go to 51
+                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
+                        .alongWith(new IntakeCommand(intake, transfer))
+                        .deadlineWith(goto51)
+                        .until(() -> isChaseDeadlineReached()
                                         && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
-                chaseNote,
-                Commands.either(
-                        // we have note: go back and shoot(below)
-                        Commands.none(),
-                        // we dont have note: rotate and chase another note (TODO: AT OUR SIDE)
-                        new SequentialCommandGroup(
-                                snapTo90.until(() -> snapTo90.isAligned()),
-                                chaseNote),
-                        () -> transfer.isOmronDetected()),
-                // TODO : PATH FIND ALONG WITH SHOOTER SPIN UP
-                findPathThenShoot,
-                staticVisionShoot,
+                // get note
+                new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor,
+                intake, transfer, arm),
 
-                // now we do 52
-                pathFind52.alongWith(
-                        new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
-                        new IntakeCommand(intake, transfer)).until(
-                                () -> isChaseDeadlineReached()
-                                        && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
-                chaseNote,
+                // if no note, rotate to find note
                 Commands.either(
                         // we have note: go back and shoot(below)
-                        Commands.none(),
+                        new WaitCommand(0),
                         // we dont have note: rotate and chase another note (TODO: AT OUR SIDE)
                         new SequentialCommandGroup(
-                                snapTo90.until(() -> snapTo90.isAligned()),
-                                chaseNote),
+                                snapTo90_1.until(() -> snapTo90_1.isAligned()),
+                                new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)),
+                        () -> transfer.isOmronDetected()),
+
+                // TODO : PATH FIND ALONG WITH SHOOTER SPIN UP
+
+                // go back 
+                buildFindPathThenShoot(),
+
+                // shoot 
+                new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation),
+
+                // now we go 52
+                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
+                        .alongWith(new IntakeCommand(intake, transfer))
+                        .deadlineWith(pathFind52)
+                        .until(
+                                () -> isChaseDeadlineReached()
+                                        && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
+
+                // get 52
+                new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor,
+                intake, transfer, arm),
+
+                // if no note, rotate to find note
+                Commands.either(
+                        // we have note: go back and shoot(below)
+                        new WaitCommand(0),
+                        // we dont have note: rotate and chase another note (TODO: AT OUR SIDE)
+                        new SequentialCommandGroup(
+                                snapTo90_2.until(() -> snapTo90_2.isAligned()),
+                                new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)),
                         () -> transfer.isOmronDetected()),
                 // TODO : PATH FIND ALONG WITH SHOOTER SPIN UP
-                findPathThenShoot,
-                staticVisionShoot);
+
+                // go back 
+                buildFindPathThenShoot(),
+
+                // shoot 
+                new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation));
     }
+
+    Command buildFindPathThenShoot(){
+        return AutoBuilder.pathfindToPoseFlipped(kShootPose, PathfindConstants.constraints);
+    }
+
 
     private boolean isChaseDeadlineReached() {
         Optional<Alliance> a = DriverStation.getAlliance();
@@ -145,5 +167,6 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
             return robotX > kChaseNoteDeadlineX;
         }
     }
+
 
 }
