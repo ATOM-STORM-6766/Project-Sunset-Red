@@ -81,7 +81,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
         Command goto51 = AutoBuilder.followPath(PathPlannerPath.fromPathFile("nearTo51"));
 
         Command chaseNote = new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor,
-                intake, transfer);
+                intake, transfer, arm);
 
         Command findPathThenShoot = AutoBuilder.pathfindToPoseFlipped(kShootPose, PathfindConstants.constraints);
 
@@ -99,8 +99,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                 prepare,
 
                 goto51.alongWith(
-                        // TODO : PRE SET CHASE NOTE ANGLE
-                        new SetArmAngleCommand(arm, ArmConstants.ARM_REST_ANGLE),
+                        new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
                         new IntakeCommand(intake, transfer)).until(
                                 () -> isChaseDeadlineReached()
                                         && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
@@ -119,8 +118,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
                 // now we do 52
                 pathFind52.alongWith(
-                        // TODO : PRE SET CHASE NOTE ANGLE
-                        new SetArmAngleCommand(arm, ArmConstants.ARM_REST_ANGLE),
+                        new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
                         new IntakeCommand(intake, transfer)).until(
                                 () -> isChaseDeadlineReached()
                                         && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
