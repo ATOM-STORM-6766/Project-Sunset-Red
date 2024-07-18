@@ -8,6 +8,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,11 +35,11 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
     // private static final Pose2d kNearStart = new Pose2d(1.28, 6.41,
     // Rotation2d.fromDegrees(30.0));
-    private static final Pose2d kShootPose = new Pose2d(3.71, 6.41, Rotation2d.fromDegrees(14.0));
+    private static final Pose2d kShootPose = new Pose2d(1.71, 6.41, Rotation2d.fromDegrees(14.0));
 
     // upon robot pose x reach 7.0m we start chase note
     // for reference: wing line ~5.8m
-    private static final double kChaseNoteDeadlineX = 7.0;
+    private static final double kChaseNoteDeadlineX = 5.8;
 
     private static final Translation2d kZeroTranslation = new Translation2d();
 
@@ -86,19 +87,19 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                 PathfindConstants.constraints);
 
         SnapToAngleCommand snapTo90_1 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
-                () -> Optional.of(Rotation2d.fromDegrees(90.0)), () -> false);
+                () -> Optional.of(Rotation2d.fromDegrees(-90.0)), () -> false);
         
         SnapToAngleCommand snapTo90_2 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
-                () -> Optional.of(Rotation2d.fromDegrees(90.0)), () -> false);
+                () -> Optional.of(Rotation2d.fromDegrees(-90.0)), () -> false);
 
         // build auto
         addCommands(
                 prepare,
 
                 // go to 51
-                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
-                        .alongWith(new IntakeCommand(intake, transfer))
-                        .deadlineWith(goto51)
+                goto51
+                        .deadlineWith((new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
+                                .alongWith(new IntakeCommand(intake, transfer))))
                         .until(() -> isChaseDeadlineReached()
                                         && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
                 // get note
@@ -113,7 +114,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                         new SequentialCommandGroup(
                                 snapTo90_1.until(() -> snapTo90_1.isAligned()),
                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)),
-                        () -> transfer.isOmronDetected()),
+                        () -> (transfer.isOmronDetected())),
 
                 // TODO : PATH FIND ALONG WITH SHOOTER SPIN UP
 
@@ -121,12 +122,15 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                 buildFindPathThenShoot(),
 
                 // shoot 
-                new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation),
+                new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation).until(()->!transfer.isOmronDetected())
+                        .andThen(new InstantCommand(()->shooter.stop())),
+        
 
                 // now we go 52
-                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
-                        .alongWith(new IntakeCommand(intake, transfer))
-                        .deadlineWith(pathFind52)
+                pathFind52
+                        .deadlineWith(new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
+                                .alongWith(new IntakeCommand(intake, transfer))
+                        )
                         .until(
                                 () -> isChaseDeadlineReached()
                                         && sGamePieceProcessor.getClosestGamePieceInfo().isPresent()),
@@ -143,14 +147,19 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                         new SequentialCommandGroup(
                                 snapTo90_2.until(() -> snapTo90_2.isAligned()),
                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)),
-                        () -> transfer.isOmronDetected()),
+                        () -> (transfer.isOmronDetected())),
+
+                
                 // TODO : PATH FIND ALONG WITH SHOOTER SPIN UP
 
                 // go back 
                 buildFindPathThenShoot(),
 
                 // shoot 
-                new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation));
+                new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation)
+                        .andThen(new InstantCommand(()->shooter.stop()))
+        );
+
     }
 
     Command buildFindPathThenShoot(){

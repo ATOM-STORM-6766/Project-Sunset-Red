@@ -157,7 +157,7 @@ public final class Constants {
   public static final class TransferConstants {
     // TRANSFER
     public static final int TRANSFER_ID = 27;
-    public static final int TRANSFER_OMRON_PORT = 5;
+    public static final int TRANSFER_OMRON_PORT = 4;
   }
 
   public static final class ArmConstants {
@@ -231,6 +231,6 @@ public final class Constants {
 
   public static final class PathfindConstants {
     public static final PathConstraints constraints =
-        new PathConstraints(3.0, 2.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+        new PathConstraints(4.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
   }
 }
