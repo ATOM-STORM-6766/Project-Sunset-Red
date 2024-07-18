@@ -114,6 +114,9 @@ public class SnapToAngleCommand extends Command {
     builder.addDoubleProperty(
         "target heading error", () -> snapToAnglePID.getPositionError(), null);
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
+    builder.addDoubleProperty("heading error", ()->Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+            .minus(mDrivetrainSubsystem.getHeading())
+            .getDegrees(), null);
   }
 
   public boolean isAligned() {
@@ -122,7 +125,7 @@ public class SnapToAngleCommand extends Command {
     }
     double headingError =
         Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
-            .minus(goalHeading.get())
+            .minus(mDrivetrainSubsystem.getHeading())
             .getDegrees();
     SmartDashboard.putNumber("heading error", headingError);
     return Math.abs(headingError) < 2.0;
