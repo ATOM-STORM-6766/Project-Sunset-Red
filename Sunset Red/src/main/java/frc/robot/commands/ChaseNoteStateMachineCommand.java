@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.GamePieceProcessor;
@@ -44,7 +45,7 @@ public class ChaseNoteStateMachineCommand extends Command {
     this.sIntake = intake;
     this.sTransfer = transfer;
     this.sArm = arm;
-    this.setArmAngleCommand = new SetArmAngleCommand(arm, INTAKE_OBSERVE_ARM_ANGLE);
+    this.setArmAngleCommand = new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE);
 
     xController = new PIDController(0.2, 0.0, 0.0); // Adjust PID values as needed
     yController = new PIDController(0.0, 0.0, 0.0); // Adjust PID values as needed
