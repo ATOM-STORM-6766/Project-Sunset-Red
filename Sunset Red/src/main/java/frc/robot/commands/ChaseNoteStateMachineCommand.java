@@ -77,7 +77,7 @@ public class ChaseNoteStateMachineCommand extends Command {
           double yawMeasure = target.getYaw();
           double pitchMeasure = target.getPitch();
 
-          if (sIntake.isOmronDetected() || pitchMeasure < -2) {
+          if (sIntake.isOmronDetected() || pitchMeasure < 3) {
             currentState = State.INTAKING;
           } else {
             // drive the robot
