@@ -207,7 +207,7 @@ public class RobotContainer {
           .and(driverController.rightBumper().negate())
           .whileTrue(
               new ChaseNoteStateMachineCommand(
-                  sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer));
+                  sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer, mArm));
       // manual intake
       driverController
           .a()

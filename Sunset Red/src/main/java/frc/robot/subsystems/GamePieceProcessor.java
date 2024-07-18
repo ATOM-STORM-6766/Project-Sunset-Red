@@ -13,7 +13,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class GamePieceProcessor extends SubsystemBase {
 
   private static GamePieceProcessor mCoprocessor = new GamePieceProcessor();
-  private PhotonCamera mUSBCamera = new PhotonCamera("rmoncam_720P");
+  private PhotonCamera mUSBCamera = new PhotonCamera("PieceCam");
 
   private Transform3d kRobotToPieceCam =
       new Transform3d(

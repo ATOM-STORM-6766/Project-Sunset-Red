@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.GamePieceProcessor;
 import frc.robot.subsystems.Intake;
@@ -21,6 +22,7 @@ public class ChaseNoteStateMachineCommand extends Command {
   private final GamePieceProcessor sGamePieceProcessor;
   private final Intake sIntake;
   private final Transfer sTransfer;
+  private final Arm sArm;
 
   private final PIDController xController;
   private final PIDController yController;
@@ -28,22 +30,28 @@ public class ChaseNoteStateMachineCommand extends Command {
 
   private State currentState;
 
+  private static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
+  private SetArmAngleCommand setArmAngleCommand;
+
   // Constructor
   public ChaseNoteStateMachineCommand(
       DrivetrainSubsystem drivetrainSubsystem,
       GamePieceProcessor gamePieceProcessor,
       Intake intake,
-      Transfer transfer) {
+      Transfer transfer,
+      Arm arm) {
     this.sDrivetrainSubsystem = drivetrainSubsystem;
     this.sGamePieceProcessor = gamePieceProcessor;
     this.sIntake = intake;
     this.sTransfer = transfer;
+    this.sArm = arm;
+    this.setArmAngleCommand = new SetArmAngleCommand(arm, INTAKE_OBSERVE_ARM_ANGLE);
 
     xController = new PIDController(0.2, 0.0, 0.0); // Adjust PID values as needed
     yController = new PIDController(0.0, 0.0, 0.0); // Adjust PID values as needed
-    rotationController = new PIDController(0.2, 0.0, 0.0); // Adjust PID values as needed
+    rotationController = new PIDController(0.15, 0.01, 0); // Adjust PID values as needed
 
-    addRequirements(drivetrainSubsystem, gamePieceProcessor, intake, transfer);
+    addRequirements(drivetrainSubsystem, gamePieceProcessor, intake, transfer, arm);
   }
 
   @Override
@@ -52,31 +60,32 @@ public class ChaseNoteStateMachineCommand extends Command {
     yController.reset();
     rotationController.reset();
     currentState = State.CHASING;
+    setArmAngleCommand.initialize();
   }
 
   @Override
   public void execute() {
+    setArmAngleCommand.execute();
     switch (currentState) {
       case CHASING:
         // Chase the note
-        Optional<PhotonTrackedTarget> targetOptional =
-            sGamePieceProcessor.getClosestGamePieceInfo();
+        Optional<PhotonTrackedTarget> targetOptional = sGamePieceProcessor.getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
 
-        if (isTargetPresent) {
+        if (isTargetPresent && !sTransfer.isOmronDetected()) {
           PhotonTrackedTarget target = targetOptional.get();
           double yawMeasure = target.getYaw();
           double pitchMeasure = target.getPitch();
 
-          if (sIntake.isOmronDetected() || pitchMeasure > 12) {
+          if (sIntake.isOmronDetected() || pitchMeasure < -2) {
             currentState = State.INTAKING;
           } else {
             // drive the robot
-            double xOutput = xController.calculate(pitchMeasure, 20);
-            double yOutput = -yController.calculate(yawMeasure, 0);
+            double xOutput = -xController.calculate(pitchMeasure, -5);
+            double yOutput = yController.calculate(yawMeasure, 0);
 
             Translation2d driveVector = new Translation2d(xOutput, yOutput);
-            double angularVelocity = -rotationController.calculate(yawMeasure, 0);
+            double angularVelocity = rotationController.calculate(yawMeasure, 0);
 
             sDrivetrainSubsystem.drive(driveVector, angularVelocity, false);
             sIntake.setIntake();
@@ -92,7 +101,7 @@ public class ChaseNoteStateMachineCommand extends Command {
         // Intake the note
         sIntake.setIntake();
         sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
-        sDrivetrainSubsystem.drive(new Translation2d(2, 0), 0, false);
+        sDrivetrainSubsystem.drive(new Translation2d(1.5, 0), 0, false);
         if (sTransfer.isOmronDetected()) {
           currentState = State.END;
         }
@@ -108,6 +117,7 @@ public class ChaseNoteStateMachineCommand extends Command {
   public void end(boolean interrupted) {
     sIntake.stop();
     sTransfer.stop();
+    setArmAngleCommand.end(interrupted);
   }
 
   @Override
