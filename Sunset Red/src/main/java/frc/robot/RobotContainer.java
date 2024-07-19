@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.FiendConstants;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.modes.*;
 import frc.robot.commands.BlowTrapAndDropCommand;
@@ -264,8 +264,8 @@ public class RobotContainer {
 
     private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
         Pose2d targetPose = isRedAlliance
-                ? FiendConstants.IN_FRONT_AMP_POSITION_RED
-                : FiendConstants.IN_FRONT_AMP_POSITION_BLUE;
+                ? FieldConstants.IN_FRONT_AMP_POSITION_RED
+                : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
         Command pathfindToAmp = AutoBuilder.pathfindToPose(targetPose, PathfindConstants.constraints, 0, 0.5);
 
         Command swingUpCommand = new SetShooterTargetCommand(mShooter, ShootingParameters.AMP_LOWSPEED.speed_rps)

@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.subsystems.Arm;
@@ -9,6 +10,7 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.GamePieceProcessor;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
+import frc.robot.lib6907.DualEdgeDelayedBoolean;
 import java.util.Optional;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -32,7 +34,6 @@ public class ChaseNoteStateMachineCommand extends Command {
   private State currentState;
 
   private SetArmAngleCommand setArmAngleCommand;
-
   // Constructor
   public ChaseNoteStateMachineCommand(
       DrivetrainSubsystem drivetrainSubsystem,
@@ -51,6 +52,7 @@ public class ChaseNoteStateMachineCommand extends Command {
     yController = new PIDController(0.0, 0.0, 0.0); // Adjust PID values as needed
     rotationController = new PIDController(0.15, 0.01, 0); // Adjust PID values as needed
 
+    double currentTimestamp = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
     addRequirements(drivetrainSubsystem, gamePieceProcessor, intake, transfer, arm);
   }
 
@@ -61,53 +63,70 @@ public class ChaseNoteStateMachineCommand extends Command {
     rotationController.reset();
     currentState = State.CHASING;
     setArmAngleCommand.initialize();
+    SmartDashboard.putString("ChaseNote State", "CHASING");
+    
   }
 
   @Override
   public void execute() {
     setArmAngleCommand.execute();
+    double currentTimestamp = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+
     switch (currentState) {
       case CHASING:
-        // Chase the note
+        SmartDashboard.putString("ChaseNote State", "CHASING");
         Optional<PhotonTrackedTarget> targetOptional = sGamePieceProcessor.getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
+
+        SmartDashboard.putBoolean("Target Present", isTargetPresent);
+        SmartDashboard.putBoolean("Transfer Omron", sTransfer.isOmronDetected());
 
         if (isTargetPresent && !sTransfer.isOmronDetected()) {
           PhotonTrackedTarget target = targetOptional.get();
           double yawMeasure = target.getYaw();
           double pitchMeasure = target.getPitch();
 
+          SmartDashboard.putNumber("Target Yaw", yawMeasure);
+          SmartDashboard.putNumber("Target Pitch", pitchMeasure);
+
           if (sIntake.isOmronDetected() || pitchMeasure < 3) {
             currentState = State.INTAKING;
+            SmartDashboard.putString("ChaseNote State", "INTAKING");
           } else {
             // drive the robot
             double xOutput = -xController.calculate(pitchMeasure, -5);
             double yOutput = yController.calculate(yawMeasure, 0);
-
-            Translation2d driveVector = new Translation2d(xOutput, yOutput);
             double angularVelocity = rotationController.calculate(yawMeasure, 0);
 
+            SmartDashboard.putNumber("Drive X Output", xOutput);
+            SmartDashboard.putNumber("Drive Y Output", yOutput);
+            SmartDashboard.putNumber("Angular Velocity", angularVelocity);
+
+            Translation2d driveVector = new Translation2d(xOutput, yOutput);
             sDrivetrainSubsystem.drive(driveVector, angularVelocity, false);
             sIntake.setIntake();
             sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
           }
         } else {
-          // End the command because the note is not present
           currentState = State.END;
+          SmartDashboard.putString("ChaseNote State", "END (No Target)");
         }
-
         break;
+
       case INTAKING:
-        // Intake the note
+        SmartDashboard.putString("ChaseNote State", "INTAKING");
         sIntake.setIntake();
         sTransfer.setVoltage(Transfer.INTAKE_VOLTS);
         sDrivetrainSubsystem.drive(new Translation2d(1.5, 0), 0, false);
+        SmartDashboard.putBoolean("Transfer Omron", sTransfer.isOmronDetected());
         if (sTransfer.isOmronDetected()) {
           currentState = State.END;
+          SmartDashboard.putString("ChaseNote State", "END (Note Acquired)");
         }
         break;
+
       case END:
-        // End the command
+        SmartDashboard.putString("ChaseNote State", "END");
         sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
         break;
     }
@@ -118,6 +137,8 @@ public class ChaseNoteStateMachineCommand extends Command {
     sIntake.stop();
     sTransfer.stop();
     setArmAngleCommand.end(interrupted);
+    SmartDashboard.putString("ChaseNote State", "ENDED");
+    SmartDashboard.putBoolean("ChaseNote Interrupted", interrupted);
   }
 
   @Override
