@@ -202,7 +202,7 @@ public final class Constants {
     public static final Translation2d kBlueSpeaker = new Translation2d(0.26, 5.54);
   }
 
-  public static final class FiendConstants {
+  public static final class FieldConstants {
     public static final Pose2d BELOW_SPEAKER_POSITION_BLUE =
         new Pose2d(new Translation2d(1.42, 5.54), new Rotation2d(0.0));
     public static final Pose2d BELOW_SPEAKER_POSITION_RED =
