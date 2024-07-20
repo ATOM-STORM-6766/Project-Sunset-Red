@@ -12,8 +12,9 @@ public class TurnToHeadingCommand extends Command {
     private final DrivetrainSubsystem sDrivetrainSubsystem;
 
     private Rotation2d mTargetHeading;
+    private double mTolerance = Math.toRadians(1.0); // 1 deg of tolerance
     // input in radians and output in rad/s
-    private final ProfiledPIDController mProfiledPID = new ProfiledPIDController(0.5, 0, 0.0,
+    private final ProfiledPIDController mProfiledPID = new ProfiledPIDController(0.7, 0, 0.2,
             new TrapezoidProfile.Constraints(
                     Math.toRadians(540), Math.toRadians(720)));
 
@@ -33,12 +34,17 @@ public class TurnToHeadingCommand extends Command {
         return this;
     }
 
+    public TurnToHeadingCommand withTolerance(double tolerance_rad) {
+        mTolerance = tolerance_rad;
+        return this;
+    }
+
     @Override
     public void initialize() {
         mProfiledPID.reset(sDrivetrainSubsystem.getHeading().getRadians());
         mProfiledPID.enableContinuousInput(-Math.PI, Math.PI);
         mProfiledPID.setGoal(mTargetHeading.getRadians());
-        mProfiledPID.setTolerance(Math.toRadians(0.5));
+        mProfiledPID.setTolerance(mTolerance);
     }
 
     @Override
