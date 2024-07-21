@@ -174,7 +174,6 @@ public final class Constants {
     public static final double STABILIZE_TIME = 0.1;
 
     public static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
-
   }
 
   public static final class ShooterConstants {

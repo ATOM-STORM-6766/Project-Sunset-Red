@@ -69,7 +69,8 @@ public class ChaseNoteStateMachineCommand extends Command {
     switch (currentState) {
       case CHASING:
         // Chase the note
-        Optional<PhotonTrackedTarget> targetOptional = sGamePieceProcessor.getClosestGamePieceInfo();
+        Optional<PhotonTrackedTarget> targetOptional =
+            sGamePieceProcessor.getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
 
         if (isTargetPresent && !sTransfer.isOmronDetected()) {

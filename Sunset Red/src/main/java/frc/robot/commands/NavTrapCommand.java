@@ -10,26 +10,28 @@ import frc.robot.utils.ShootingParameters;
 
 public class NavTrapCommand extends SequentialCommandGroup {
 
-    public NavTrapCommand(DrivetrainSubsystem drivetrainSubsystem, Arm arm, Shooter shooter, Intake intake,
-            Transfer transfer, TrapFan trapFan) {
+  public NavTrapCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Intake intake,
+      Transfer transfer,
+      TrapFan trapFan) {
 
-        DriveToTrapCommand driveToTrap = new DriveToTrapCommand(drivetrainSubsystem);
-        DriveToNearestTrapCommand driveToNearestTrap = new DriveToNearestTrapCommand(drivetrainSubsystem);
+    DriveToTrapCommand driveToTrap = new DriveToTrapCommand(drivetrainSubsystem);
+    DriveToNearestTrapCommand driveToNearestTrap =
+        new DriveToNearestTrapCommand(drivetrainSubsystem);
 
-        addCommands(
-            new ParallelCommandGroup(
-                driveToNearestTrap,
-                new SetArmAngleCommand(arm, ShootingParameters.TRAP.angle_deg),
-                new SetShooterTargetCommand(shooter, ShootingParameters.TRAP.speed_rps)
-            ),
-            Commands.either(
-                new SequentialCommandGroup(
-                    trapFan.blowTrapCommand().withTimeout(2.0),
-                    new FeedCommand(transfer)
-                ), 
-                new InstantCommand(() -> shooter.stop())
-                    .andThen(new SetArmAngleCommand(arm, ArmConstants.ARM_REST_ANGLE)), 
-                () -> !driveToTrap.getLastNoTag())
-        );
-    }
+    addCommands(
+        new ParallelCommandGroup(
+            driveToNearestTrap,
+            new SetArmAngleCommand(arm, ShootingParameters.TRAP.angle_deg),
+            new SetShooterTargetCommand(shooter, ShootingParameters.TRAP.speed_rps)),
+        Commands.either(
+            new SequentialCommandGroup(
+                trapFan.blowTrapCommand().withTimeout(2.0), new FeedCommand(transfer)),
+            new InstantCommand(() -> shooter.stop())
+                .andThen(new SetArmAngleCommand(arm, ArmConstants.ARM_REST_ANGLE)),
+            () -> !driveToTrap.getLastNoTag()));
+  }
 }
