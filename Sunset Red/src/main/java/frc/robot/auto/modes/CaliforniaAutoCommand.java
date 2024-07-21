@@ -31,6 +31,7 @@ import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.commands.SnapToAngleCommand;
+import frc.robot.commands.TurnToHeadingCommand;
 import frc.robot.commands.VisionShootCommand;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
@@ -108,11 +109,11 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                                 new InstantCommand(() -> SmartDashboard.putString("Auto Status",
                                                 "Finished pathFindto53")));
 
-                SnapToAngleCommand snapTo90_1 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
-                                () -> Optional.of(Rotation2d.fromDegrees(-90.0)), () -> false);
+                Command snapTo90_1 = new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(90.0))
+                        .withTolerance(Math.toRadians(3.5));
 
-                SnapToAngleCommand snapTo90_2 = new SnapToAngleCommand(drivetrainSubsystem, () -> kZeroTranslation,
-                                () -> Optional.of(Rotation2d.fromDegrees(-90.0)), () -> false);
+                Command snapTo90_2 = new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(90.0))
+                        .withTolerance(Math.toRadians(3.5));
 
                 // build auto
                 addCommands(
@@ -146,7 +147,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                                                                 new InstantCommand(() -> SmartDashboard.putString(
                                                                                 "Auto Status",
                                                                                 "Rotating to find note")),
-                                                                snapTo90_1.until(() -> snapTo90_1.isAligned()),
+                                                                snapTo90_1,
                                                                 new InstantCommand(() -> SmartDashboard.putString(
                                                                                 "Auto Status",
                                                                                 "Rotation Finished")),
@@ -203,7 +204,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                                                                 new InstantCommand(() -> SmartDashboard.putString(
                                                                                 "Auto Status",
                                                                                 "Rotating to find note (53)")),
-                                                                snapTo90_2.until(() -> snapTo90_2.isAligned()),
+                                                                snapTo90_2,
                                                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem,
                                                                                 sGamePieceProcessor, intake, transfer,
                                                                                 arm)),
