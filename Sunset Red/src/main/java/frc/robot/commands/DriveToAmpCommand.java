@@ -35,11 +35,11 @@ public class DriveToAmpCommand extends Command {
                 DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
                 DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
 
-        xController = new ProfiledPIDController(5.0, 0, 0, constraints);
+        xController = new ProfiledPIDController(4.0, 0, 0, constraints);
         xController.setTolerance(0.05);
-        yController = new ProfiledPIDController(5.0, 0, 0, constraints);
+        yController = new ProfiledPIDController(4.0, 0, 0, constraints);
         yController.setTolerance(0.05);
-        rotationController = new ProfiledPIDController(5.0, 0, 0,
+        rotationController = new ProfiledPIDController(4.0, 0, 0,
                 new TrapezoidProfile.Constraints(Math.toRadians(540.0),
                         Math.toRadians(720.0)));
         rotationController.enableContinuousInput(-Math.PI, Math.PI);

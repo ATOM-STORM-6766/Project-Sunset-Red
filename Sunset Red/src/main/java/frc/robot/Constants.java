@@ -157,7 +157,7 @@ public final class Constants {
   public static final class TransferConstants {
     // TRANSFER
     public static final int TRANSFER_ID = 27;
-    public static final int TRANSFER_OMRON_PORT = 5;
+    public static final int TRANSFER_OMRON_PORT = 4;
   }
 
   public static final class ArmConstants {
