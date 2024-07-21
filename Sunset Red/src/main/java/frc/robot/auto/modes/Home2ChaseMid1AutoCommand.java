@@ -86,7 +86,7 @@ public class Home2ChaseMid1AutoCommand extends SequentialCommandGroup {
                 new GoalEndState(1.5, Rotation2d.fromDegrees(0)), kNearHome, kWingWaypoint)
             .deadlineWith(new IntakeCommand(intake, transfer)),
         new ChaseNoteStateMachineCommand(
-            sDrivetrainSubsystem, GamePieceProcessor.getInstance(), sIntake, sTransfer),
+            sDrivetrainSubsystem, GamePieceProcessor.getInstance(), sIntake, sTransfer,sArm),
 
         // go from between 5152 to waypoint
         buildPathFromPoint(

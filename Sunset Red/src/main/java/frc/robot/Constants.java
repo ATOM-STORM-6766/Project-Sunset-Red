@@ -157,7 +157,7 @@ public final class Constants {
   public static final class TransferConstants {
     // TRANSFER
     public static final int TRANSFER_ID = 27;
-    public static final int TRANSFER_OMRON_PORT = 5;
+    public static final int TRANSFER_OMRON_PORT = 4;
   }
 
   public static final class ArmConstants {
@@ -171,8 +171,10 @@ public final class Constants {
     public static final double ARM_MAX_ANGLE = 120.0;
     // arm pitch when in max pitch in rotations
     public static final double ARM_MAX_POSITION = ARM_MAX_ANGLE / 360.0;
-
     public static final double STABILIZE_TIME = 0.1;
+
+    public static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
+
   }
 
   public static final class ShooterConstants {
@@ -202,7 +204,7 @@ public final class Constants {
     public static final Translation2d kBlueSpeaker = new Translation2d(0.26, 5.54);
   }
 
-  public static final class FiendConstants {
+  public static final class FieldConstants {
     public static final Pose2d BELOW_SPEAKER_POSITION_BLUE =
         new Pose2d(new Translation2d(1.42, 5.54), new Rotation2d(0.0));
     public static final Pose2d BELOW_SPEAKER_POSITION_RED =

@@ -58,7 +58,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
           new Rotation3d(
               Units.degreesToRadians(180), Units.degreesToRadians(-37), Units.degreesToRadians(0)));
 
-  private final AprilTagFieldLayout aprilTagFieldLayout =
+  public final AprilTagFieldLayout aprilTagFieldLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
   PhotonPoseEstimator photonPoseEstimatorForShooterSide =
       new PhotonPoseEstimator(
@@ -295,5 +295,9 @@ public class ApriltagCoprocessor extends SubsystemBase {
               target.getPoseAmbiguity());
     }
     SmartDashboard.putStringArray("Accepted Tags (" + cameraName + ")", acceptedTagsInfo);
+  }
+
+  public PhotonPipelineResult getShooterSideLatestResult() {
+    return ApriltagCamShooterSide.getLatestResult();
   }
 }
