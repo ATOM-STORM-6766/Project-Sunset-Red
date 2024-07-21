@@ -23,6 +23,7 @@ import frc.robot.commands.ChaseNoteStateMachineCommand;
 import frc.robot.commands.DriveWithTriggerCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.NavAmpCommand;
 import frc.robot.commands.NavTrapCommand;
 import frc.robot.commands.OuttakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
@@ -52,274 +53,287 @@ import java.util.Optional;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    // The robot's subsystems and commands are defined here...
+        // The robot's subsystems and commands are defined here...
 
-    private SendableChooser<Command> mChooser = new SendableChooser<>();
+        private SendableChooser<Command> mChooser = new SendableChooser<>();
 
-    // * Controllers */
-    private final CommandSwerveController driverController = new CommandSwerveController(0);
-    private final CommandXboxController operatorController = new CommandXboxController(1);
-    /* Subsystems */
-    private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
-    private final Intake mIntake = new Intake();
-    private final Transfer mTransfer = new Transfer();
-    private final Shooter mShooter = new Shooter();
-    private final Arm mArm = new Arm();
-    private final TrapFan mTrapFan = new TrapFan();
-    private final ApriltagCoprocessor mCoprocessor = ApriltagCoprocessor.getInstance();
+        // * Controllers */
+        private final CommandSwerveController driverController = new CommandSwerveController(0);
+        private final CommandXboxController operatorController = new CommandXboxController(1);
+        /* Subsystems */
+        private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
+        private final Intake mIntake = new Intake();
+        private final Transfer mTransfer = new Transfer();
+        private final Shooter mShooter = new Shooter();
+        private final Arm mArm = new Arm();
+        private final TrapFan mTrapFan = new TrapFan();
+        private final ApriltagCoprocessor mCoprocessor = ApriltagCoprocessor.getInstance();
 
-    private static final boolean kDualController = false;
-    private static final boolean isRedAlliance = DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+        private static final boolean kDualController = false;
+        private static final boolean isRedAlliance = DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
 
-    /* pre-constructed commands */
-    private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
+        /* pre-constructed commands */
+        private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
-    private final SnapToAngleCommand mDriveWithRightStick = new SnapToAngleCommand(
-            sDrivetrainSubsystem,
-            () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-            () -> driverController.getDriveRotationAngle(), // amp heading
-            () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
+        private final SnapToAngleCommand mDriveWithRightStick = new SnapToAngleCommand(
+                        sDrivetrainSubsystem,
+                        () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
+                        () -> driverController.getDriveRotationAngle(), // amp heading
+                        () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
 
-    /**
-     * The container for the robot. Contains subsystems, OI devices, and commands.
-     */
-    public RobotContainer() {
-        sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
-
-        sDrivetrainSubsystem.configureAutoBuilder();
-        configureBindings();
-        pushChooser();
-        SmartDashboard.putData(sDrivetrainSubsystem);
-        SmartDashboard.putData(mIntake);
-        SmartDashboard.putData(mTransfer);
-        SmartDashboard.putData(mArm);
-        SmartDashboard.putData(mShooter);
-        SmartDashboard.putData(mDriveWithRightStick);
-    }
-
-    /**
-     * Use this method to define your trigger->command mappings. Triggers can be
-     * created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
-     * an arbitrary
-     * predicate, or via the named factories in {@link
-     * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-     * {@link
-     * CommandXboxController
-     * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-     * PS4} controllers or
-     * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-     * joysticks}.
-     */
-    private void configureBindings() {
-
-        /*
-         * // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-         * new Trigger(m_exampleSubsystem::exampleCondition)
-         * .onTrue(new ExampleCommand(m_exampleSubsystem));
-         *
-         * // Schedule `exampleMethodCommand` when the Xbox controller's B button is
-         * // pressed,
-         * // cancelling on release.
-         * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+        /**
+         * The container for the robot. Contains subsystems, OI devices, and commands.
          */
+        public RobotContainer() {
+                sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
 
-        /*
-         * Swerve
-         */
-
-        // Default Command: Drive with right stick
-
-        // reset heading
-        Command resetHeadingCommand = new InstantCommand(
-                () -> {
-                    sDrivetrainSubsystem.zeroHeading();
-                    driverController.setTranslationDirection(true);
-                });
-        resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
-        driverController.start().onTrue(resetHeadingCommand);
-
-        // Snap to Amp Angle
-        new Trigger(
-                () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
-                .onTrue(
-                        new SnapToAngleCommand(
-                                sDrivetrainSubsystem,
-                                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-                                () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp heading
-                                () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED,
-                                () -> driverController.getDriveRotationAngle().isPresent()));
-
-        // Trigger Rotate
-        new Trigger(() -> driverController.getRawRotationRate() != 0.0)
-                .onTrue(
-                        new DriveWithTriggerCommand(
-                                sDrivetrainSubsystem,
-                                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-                                () -> driverController.getRawRotationRate(), // amp heading
-                                () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED));
-
-        // Vision Shoot
-        Trigger visionShootTrigger = driverController.y();
-
-        if (kDualController) {
-            visionShootTrigger = operatorController.y();
+                sDrivetrainSubsystem.configureAutoBuilder();
+                configureBindings();
+                pushChooser();
+                SmartDashboard.putData(sDrivetrainSubsystem);
+                SmartDashboard.putData(mIntake);
+                SmartDashboard.putData(mTransfer);
+                SmartDashboard.putData(mArm);
+                SmartDashboard.putData(mShooter);
+                SmartDashboard.putData(mDriveWithRightStick);
         }
 
-        visionShootTrigger
-                .whileTrue(
-                        new VisionShootCommand(
-                                mShooter,
-                                mArm,
-                                mTransfer,
-                                sDrivetrainSubsystem,
-                                mIntake,
-                                () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
-                .onFalse(
-                        new InstantCommand(
+        /**
+         * Use this method to define your trigger->command mappings. Triggers can be
+         * created via the
+         * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with
+         * an arbitrary
+         * predicate, or via the named factories in {@link
+         * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
+         * {@link
+         * CommandXboxController
+         * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+         * PS4} controllers or
+         * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+         * joysticks}.
+         */
+        private void configureBindings() {
+
+                /*
+                 * // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
+                 * new Trigger(m_exampleSubsystem::exampleCondition)
+                 * .onTrue(new ExampleCommand(m_exampleSubsystem));
+                 *
+                 * // Schedule `exampleMethodCommand` when the Xbox controller's B button is
+                 * // pressed,
+                 * // cancelling on release.
+                 * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
+                 */
+
+                /*
+                 * Swerve
+                 */
+
+                // Default Command: Drive with right stick
+
+                // reset heading
+                Command resetHeadingCommand = new InstantCommand(
                                 () -> {
-                                    mShooter.stop();
-                                    mArm.stop();
-                                    mTransfer.stop();
-                                    mIntake.stop();
-                                }));
-        // trap binding
-        // nav trap
-         Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
-        driverController.povUp()
-                .whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake, mTransfer, mTrapFan))
-                .onFalse(stopShootingCommand);
-        
+                                        sDrivetrainSubsystem.zeroHeading();
+                                        driverController.setTranslationDirection(true);
+                                });
+                resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
+                driverController.start().onTrue(resetHeadingCommand);
 
-        // amp binding
-        // navAmp
-        buildNavAmpBinding(
-                driverController.povRight().and(driverController.rightBumper().negate()), isRedAlliance);
+                // Snap to Amp Angle
+                new Trigger(
+                                () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
+                                .onTrue(
+                                                new SnapToAngleCommand(
+                                                                sDrivetrainSubsystem,
+                                                                () -> driverController.getDriveTranslation(
+                                                                                driverController.isRobotRelative()),
+                                                                () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp
+                                                                                                                 // heading
+                                                                () -> driverController
+                                                                                .isRobotRelative() == DriveMode.ROBOT_ORIENTED,
+                                                                () -> driverController.getDriveRotationAngle()
+                                                                                .isPresent()));
 
-        // manual amp
-        buildAmpBinding(
-                driverController.povRight().and(driverController.rightBumper()),
-                ShootingParameters.AMP_INTERMEDIATE_POS,
-                ShootingParameters.AMP_LOWSPEED);
+                // Trigger Rotate
+                new Trigger(() -> driverController.getRawRotationRate() != 0.0)
+                                .onTrue(
+                                                new DriveWithTriggerCommand(
+                                                                sDrivetrainSubsystem,
+                                                                () -> driverController.getDriveTranslation(
+                                                                                driverController.isRobotRelative()),
+                                                                () -> driverController.getRawRotationRate(), // amp
+                                                                                                             // heading
+                                                                () -> driverController
+                                                                                .isRobotRelative() == DriveMode.ROBOT_ORIENTED));
 
-        // intake system bindings
-        if (kDualController) {
-            operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
-            operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-        } else {
-            // chase note inake
-            driverController
-                    .a()
-                    .and(driverController.rightBumper().negate())
-                    .whileTrue(
-                            new ChaseNoteStateMachineCommand(
-                                    sDrivetrainSubsystem, GamePieceProcessor.getInstance(), mIntake, mTransfer));
-            // manual intake
-            driverController
-                    .a()
-                    .and(driverController.rightBumper())
-                    .whileTrue(new IntakeCommand(mIntake, mTransfer));
+                // Vision Shoot
+                Trigger visionShootTrigger = driverController.y();
 
-            driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+                if (kDualController) {
+                        visionShootTrigger = operatorController.y();
+                }
+
+                visionShootTrigger
+                                .whileTrue(
+                                                new VisionShootCommand(
+                                                                mShooter,
+                                                                mArm,
+                                                                mTransfer,
+                                                                sDrivetrainSubsystem,
+                                                                mIntake,
+                                                                () -> driverController.getDriveTranslation(
+                                                                                DriveMode.FIELD_ORIENTED))
+                                                                .withInterruptBehavior(
+                                                                                InterruptionBehavior.kCancelIncoming))
+                                .onFalse(
+                                                new InstantCommand(
+                                                                () -> {
+                                                                        mShooter.stop();
+                                                                        mArm.stop();
+                                                                        mTransfer.stop();
+                                                                        mIntake.stop();
+                                                                }));
+                // trap binding
+                // nav trap
+                Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
+                                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+                driverController.povUp()
+                                .whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake, mTransfer,
+                                                mTrapFan))
+                                .onFalse(stopShootingCommand);
+
+                // amp binding
+                // navAmp
+                driverController.povRight()
+                                .whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer))
+                                .onFalse(stopShootingCommand);
+                // manual amp
+                buildAmpBinding(
+                                driverController.povRight().and(driverController.rightBumper()),
+                                ShootingParameters.AMP_INTERMEDIATE_POS,
+                                ShootingParameters.AMP_LOWSPEED);
+
+                // intake system bindings
+                if (kDualController) {
+                        operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+                        operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+                } else {
+                        // chase note inake
+                        driverController
+                                        .a()
+                                        .and(driverController.rightBumper().negate())
+                                        .whileTrue(
+                                                        new ChaseNoteStateMachineCommand(
+                                                                        sDrivetrainSubsystem,
+                                                                        GamePieceProcessor.getInstance(), mIntake,
+                                                                        mTransfer));
+                        // manual intake
+                        driverController
+                                        .a()
+                                        .and(driverController.rightBumper())
+                                        .whileTrue(new IntakeCommand(mIntake, mTransfer));
+
+                        driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+                }
+
+                // Below Speaker
+                if (kDualController) {
+                        buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
+                } else {
+                        buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+                }
+
         }
 
-        // Below Speaker
-        if (kDualController) {
-            buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
-        } else {
-            buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+        private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
+                Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+                                .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+                                .andThen(new FeedCommand(mTransfer));
+
+                Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
+                                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+
+                trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
         }
 
-       
-    }
+        private void buildAmpBinding(
+                        Trigger trigger,
+                        ShootingParameters IntermediateParameter,
+                        ShootingParameters targetParameters) {
+                Command swingUpCommand = new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
+                                .alongWith(new SetArmAngleCommand(mArm, IntermediateParameter.angle_deg));
 
-    private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
-        Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
-                .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
-                .andThen(new FeedCommand(mTransfer));
+                Command swingBackAndReleaseCommand = new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
+                                .alongWith(new SetArmAngleCommand(mArm, targetParameters.angle_deg))
+                                .alongWith(new FeedCommand(mTransfer));
 
-        Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+                Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
+                                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
 
-        trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
-    }
+                trigger
+                                .whileTrue(swingUpCommand.andThen(swingBackAndReleaseCommand))
+                                .onFalse(stopShootingCommand);
+        }
 
-    private void buildAmpBinding(
-            Trigger trigger,
-            ShootingParameters IntermediateParameter,
-            ShootingParameters targetParameters) {
-        Command swingUpCommand = new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
-                .alongWith(new SetArmAngleCommand(mArm, IntermediateParameter.angle_deg));
+        private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
+                Pose2d targetPose = isRedAlliance
+                                ? FieldConstants.IN_FRONT_AMP_POSITION_RED
+                                : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
+                Command pathfindToAmp = AutoBuilder.pathfindToPose(targetPose, PathfindConstants.constraints, 0, 0.5);
 
-        Command swingBackAndReleaseCommand = new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
-                .alongWith(new SetArmAngleCommand(mArm, targetParameters.angle_deg))
-                .alongWith(new FeedCommand(mTransfer));
+                Command swingUpCommand = new SetShooterTargetCommand(mShooter,
+                                ShootingParameters.AMP_LOWSPEED.speed_rps)
+                                .alongWith(
+                                                new SetArmAngleCommand(mArm,
+                                                                ShootingParameters.AMP_INTERMEDIATE_POS.angle_deg));
 
-        Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+                Command swingBackAndReleaseCommand = new SetShooterTargetCommand(mShooter,
+                                ShootingParameters.AMP_LOWSPEED.speed_rps)
+                                .alongWith(new SetArmAngleCommand(mArm, ShootingParameters.AMP_LOWSPEED.angle_deg))
+                                .alongWith(new FeedCommand(mTransfer));
+                Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
+                                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
 
-        trigger
-                .whileTrue(swingUpCommand.andThen(swingBackAndReleaseCommand))
-                .onFalse(stopShootingCommand);
-    }
+                trigger
+                                .whileTrue(pathfindToAmp.alongWith(swingUpCommand).andThen(swingBackAndReleaseCommand))
+                                .onFalse(stopShootingCommand);
+        }
 
-    private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
-        Pose2d targetPose = isRedAlliance
-                ? FieldConstants.IN_FRONT_AMP_POSITION_RED
-                : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
-        Command pathfindToAmp = AutoBuilder.pathfindToPose(targetPose, PathfindConstants.constraints, 0, 0.5);
+        /**
+         * Use this to pass the autonomous command to the main {@link Robot} class.
+         *
+         * @return the command to run in autonomous
+         */
+        public Command getAutonomousCommand() {
+                // An example command will be run in autonomous
+                return mChooser.getSelected();
+        }
 
-        Command swingUpCommand = new SetShooterTargetCommand(mShooter, ShootingParameters.AMP_LOWSPEED.speed_rps)
-                .alongWith(
-                        new SetArmAngleCommand(mArm, ShootingParameters.AMP_INTERMEDIATE_POS.angle_deg));
+        public void checkDrivetrainZeroing() {
+                mZeroingCommand.schedule();
+        }
 
-        Command swingBackAndReleaseCommand = new SetShooterTargetCommand(mShooter,
-                ShootingParameters.AMP_LOWSPEED.speed_rps)
-                .alongWith(new SetArmAngleCommand(mArm, ShootingParameters.AMP_LOWSPEED.angle_deg))
-                .alongWith(new FeedCommand(mTransfer));
-        Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+        public void pushChooser() {
+                // init points
+                mChooser = new SendableChooser<>();
 
-        trigger
-                .whileTrue(pathfindToAmp.alongWith(swingUpCommand).andThen(swingBackAndReleaseCommand))
-                .onFalse(stopShootingCommand);
-    }
+                // tested
+                mChooser.setDefaultOption(
+                                "nearAmp2Plus3",
+                                new NearAmp2Plus3Command(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+                mChooser.addOption(
+                                "center4",
+                                new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+                mChooser.addOption(
+                                "home2chase1",
+                                new Home2ChaseMid1AutoCommand(mIntake, mShooter, mArm, mTransfer,
+                                                sDrivetrainSubsystem));
+                mChooser.addOption(
+                                "home4",
+                                new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
+                mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
 
-    
-
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
-    public Command getAutonomousCommand() {
-        // An example command will be run in autonomous
-        return mChooser.getSelected();
-    }
-
-    public void checkDrivetrainZeroing() {
-        mZeroingCommand.schedule();
-    }
-
-    public void pushChooser() {
-        // init points
-        mChooser = new SendableChooser<>();
-
-        // tested
-        mChooser.setDefaultOption(
-                "nearAmp2Plus3",
-                new NearAmp2Plus3Command(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
-        mChooser.addOption(
-                "center4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
-        mChooser.addOption(
-                "home2chase1",
-                new Home2ChaseMid1AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
-        mChooser.addOption(
-                "home4", new Home4AutoCommand(mIntake, mShooter, mArm, mTransfer, sDrivetrainSubsystem));
-        mChooser.addOption("example", new TestAutoCommand(sDrivetrainSubsystem));
-
-        SmartDashboard.putData("AUTO CHOICES", mChooser);
-    }
+                SmartDashboard.putData("AUTO CHOICES", mChooser);
+        }
 }
