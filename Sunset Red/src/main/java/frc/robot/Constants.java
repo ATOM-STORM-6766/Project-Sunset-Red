@@ -171,8 +171,10 @@ public final class Constants {
     public static final double ARM_MAX_ANGLE = 120.0;
     // arm pitch when in max pitch in rotations
     public static final double ARM_MAX_POSITION = ARM_MAX_ANGLE / 360.0;
-
     public static final double STABILIZE_TIME = 0.1;
+
+    public static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
+
   }
 
   public static final class ShooterConstants {
