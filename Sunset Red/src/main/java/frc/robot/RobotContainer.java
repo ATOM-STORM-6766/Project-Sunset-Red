@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -19,26 +20,10 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.modes.*;
-import frc.robot.commands.BlowTrapAndDropCommand;
-import frc.robot.commands.ChaseNoteStateMachineCommand;
-import frc.robot.commands.DriveWithTriggerCommand;
-import frc.robot.commands.FeedCommand;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.OuttakeCommand;
-import frc.robot.commands.SetArmAngleCommand;
-import frc.robot.commands.SetShooterTargetCommand;
-import frc.robot.commands.SnapToAngleCommand;
-import frc.robot.commands.VisionShootCommand;
+import frc.robot.commands.*;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.lib6907.CommandSwerveController.DriveMode;
-import frc.robot.subsystems.ApriltagCoprocessor;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.DrivetrainSubsystem;
-import frc.robot.subsystems.GamePieceProcessor;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Transfer;
-import frc.robot.subsystems.TrapFan;
+import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
 
