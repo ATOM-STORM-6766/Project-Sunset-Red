@@ -14,10 +14,11 @@ public class NavTrapCommand extends SequentialCommandGroup {
             Transfer transfer, TrapFan trapFan) {
 
         DriveToTrapCommand driveToTrap = new DriveToTrapCommand(drivetrainSubsystem);
+        DriveToNearestTrapCommand driveToNearestTrap = new DriveToNearestTrapCommand(drivetrainSubsystem);
 
         addCommands(
             new ParallelCommandGroup(
-                driveToTrap,
+                driveToNearestTrap,
                 new SetArmAngleCommand(arm, ShootingParameters.TRAP.angle_deg),
                 new SetShooterTargetCommand(shooter, ShootingParameters.TRAP.speed_rps)
             ),
