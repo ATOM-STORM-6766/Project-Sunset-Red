@@ -10,7 +10,7 @@ public class ShootingParameters {
   public static final ShootingParameters PODIUM_SHOOT = new ShootingParameters(85, 44.5);
   public static final ShootingParameters FAR_SHOOT = new ShootingParameters(85, 26.2);
   public static final ShootingParameters NEAR_SHOOT = new ShootingParameters(65, 26.2);
-  public static final ShootingParameters TRAP = new ShootingParameters(60, 60);
+  public static final ShootingParameters TRAP = new ShootingParameters(60, 62);
 
   public double speed_rps;
   public double angle_deg;
