@@ -4,7 +4,9 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 
 public class TurnToHeadingCommand extends Command {
@@ -14,9 +16,9 @@ public class TurnToHeadingCommand extends Command {
     private Rotation2d mTargetHeading;
     private double mTolerance = Math.toRadians(1.0); // 1 deg of tolerance
     // input in radians and output in rad/s
-    private final ProfiledPIDController mProfiledPID = new ProfiledPIDController(0.7, 0, 0.2,
+    private final ProfiledPIDController mProfiledPID = new ProfiledPIDController(3.5, 0.0, 0.0,
             new TrapezoidProfile.Constraints(
-                    Math.toRadians(540), Math.toRadians(720)));
+                    Math.toRadians(540), Math.toRadians(720)), Constants.kPeriodicDt);
 
     private static final Translation2d kZeroTranslation = new Translation2d();
 
@@ -52,6 +54,15 @@ public class TurnToHeadingCommand extends Command {
         // in rad/s
         double turnspeed = mProfiledPID.calculate(sDrivetrainSubsystem.getHeading().getRadians())
                 + mProfiledPID.getSetpoint().velocity;
+        
+                SmartDashboard.putString(
+                    "Turn to: string",
+                    String.format(
+                        "poserr: %.5f, setpoint vel: %.5f, turnspeed: %.5f, drive heading rad: %.5f",
+                        mProfiledPID.getPositionError(),
+                        mProfiledPID.getSetpoint().velocity,
+                        turnspeed,
+                        sDrivetrainSubsystem.getHeading().getRadians()));
         sDrivetrainSubsystem.drive(kZeroTranslation, turnspeed, true);
     }
 

@@ -30,7 +30,7 @@ public class GamePieceProcessor extends SubsystemBase {
   }
 
   public GamePieceProcessor() {
-    mDelayedDetection = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.2, DualEdgeDelayedBoolean.EdgeType.DUAL);
+    mDelayedDetection = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.3, DualEdgeDelayedBoolean.EdgeType.DUAL);
 
   }
 

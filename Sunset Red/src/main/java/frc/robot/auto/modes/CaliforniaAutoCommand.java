@@ -46,6 +46,8 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
         // for reference: wing line ~5.8m
         private static final double kChaseNoteDeadlineX = 4.8;
 
+        private static final double kMidFieldFenceX = 8.5;
+
         private static final Translation2d kZeroTranslation = new Translation2d();
 
         private DrivetrainSubsystem sDrivetrainSubsystem;
@@ -109,10 +111,10 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                                 new InstantCommand(() -> SmartDashboard.putString("Auto Status",
                                                 "Finished pathFindto53")));
 
-                Command snapTo90_1 = new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(90.0))
+                Command snapTo90_1 = new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(-90.0))
                         .withTolerance(Math.toRadians(3.5));
 
-                Command snapTo90_2 = new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(90.0))
+                Command snapTo90_2 = new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(-90.0))
                         .withTolerance(Math.toRadians(3.5));
 
                 // build auto
@@ -138,7 +140,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
                                 new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake,
-                                                transfer, arm),
+                                                transfer, arm).until(() -> isMidFieldFenceReached()),
 
                                 new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
                                 Commands.either(
@@ -153,7 +155,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                                                                                 "Rotation Finished")),
                                                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem,
                                                                                 sGamePieceProcessor, intake, transfer,
-                                                                                arm)),
+                                                                                arm).until(() -> isMidFieldFenceReached())),
                                                 () -> {
                                                         boolean hasNote = transfer.isOmronDetected();
                                                         SmartDashboard.putBoolean("Has Note", hasNote);
@@ -194,7 +196,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
                                 new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note (53)")),
                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake,
-                                                transfer, arm),
+                                                transfer, arm).until(() -> isMidFieldFenceReached()),
 
                                 new InstantCommand(() -> SmartDashboard.putString("Auto Status",
                                                 "Checking for note (53)")),
@@ -207,7 +209,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                                                                 snapTo90_2,
                                                                 new ChaseNoteStateMachineCommand(drivetrainSubsystem,
                                                                                 sGamePieceProcessor, intake, transfer,
-                                                                                arm)),
+                                                                                arm).until(() -> isMidFieldFenceReached())),
                                                 () -> {
                                                         boolean hasNote = transfer.isOmronDetected();
                                                         SmartDashboard.putBoolean("Has Note", hasNote);
@@ -244,6 +246,16 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
                         return robotX < 16.54 - kChaseNoteDeadlineX;
                 } else { // blue
                         return robotX > kChaseNoteDeadlineX;
+                }
+        }
+
+        private boolean isMidFieldFenceReached() {
+                Optional<Alliance> a = DriverStation.getAlliance();
+                double robotX = sDrivetrainSubsystem.getPose().getX();
+                if (a.isPresent() && a.get() == Alliance.Red) { // red
+                        return robotX < 16.54 - kMidFieldFenceX;
+                } else { // blue
+                        return robotX > kMidFieldFenceX;
                 }
         }
 

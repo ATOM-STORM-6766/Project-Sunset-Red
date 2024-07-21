@@ -89,7 +89,7 @@ public class ChaseNoteStateMachineCommand extends Command {
           SmartDashboard.putNumber("Target Yaw", yawMeasure);
           SmartDashboard.putNumber("Target Pitch", pitchMeasure);
 
-          if (sIntake.isOmronDetected() || pitchMeasure < 3) {
+          if (sIntake.isOmronDetected() || (pitchMeasure < 3 && yawMeasure < 5 && yawMeasure > -5)) {
             currentState = State.INTAKING;
             SmartDashboard.putString("ChaseNote State", "INTAKING");
           } else {
@@ -136,6 +136,8 @@ public class ChaseNoteStateMachineCommand extends Command {
   public void end(boolean interrupted) {
     sIntake.stop();
     sTransfer.stop();
+    sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
+
     setArmAngleCommand.end(interrupted);
     SmartDashboard.putString("ChaseNote State", "ENDED");
     SmartDashboard.putBoolean("ChaseNote Interrupted", interrupted);
