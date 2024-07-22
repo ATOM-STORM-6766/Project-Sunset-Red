@@ -48,55 +48,48 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
   // near 30.0 degree start, preload and go 51 (between 31 32)
   // shoot 51 and go 52
-  public CaliforniaAutoCommand(
-      DrivetrainSubsystem drivetrainSubsystem,
-      Arm arm,
-      Shooter shooter,
-      Transfer transfer,
-      Intake intake) {
+  public CaliforniaAutoCommand(DrivetrainSubsystem drivetrainSubsystem, Arm arm, Shooter shooter,
+      Transfer transfer, Intake intake) {
 
     sDrivetrainSubsystem = drivetrainSubsystem;
     sGamePieceProcessor = GamePieceProcessor.getInstance();
 
-    Command prepare =
-        new ParallelCommandGroup(
-            new SequentialCommandGroup(
-                drivetrainSubsystem.runZeroingCommand(),
-                new InstantCommand( // maybe don't need, will use vision to override
-                    () -> {
-                      Optional<Alliance> currentAlliance = DriverStation.getAlliance();
-                      PathPlannerPath firstPath = PathPlannerPath.fromPathFile("nearTo51");
-                      if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
-                        firstPath = firstPath.flipPath();
-                      }
-                      drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
-                      SmartDashboard.putString("Auto Status", "Finished prepare command");
-                    })),
-            new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, ShootingParameters.BELOW_SPEAKER.angle_deg),
-                    new SetShooterTargetCommand(
-                        shooter, ShootingParameters.BELOW_SPEAKER.speed_rps)),
-                new FeedCommand(transfer),
-                new InstantCommand(
-                    () -> {
-                      shooter.stop();
-                    })));
-
-    Command goto51 =
+    Command prepare = new ParallelCommandGroup(
+        new SequentialCommandGroup(drivetrainSubsystem.runZeroingCommand(), new InstantCommand( // maybe
+                                                                                                // don't
+                                                                                                // need,
+                                                                                                // will
+                                                                                                // use
+                                                                                                // vision
+                                                                                                // to
+                                                                                                // override
+            () -> {
+              Optional<Alliance> currentAlliance = DriverStation.getAlliance();
+              PathPlannerPath firstPath = PathPlannerPath.fromPathFile("California nearTo51");
+              if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
+                firstPath = firstPath.flipPath();
+              }
+              drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
+              SmartDashboard.putString("Auto Status", "Finished prepare command");
+            })),
         new SequentialCommandGroup(
-            new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting goto51")),
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile("California nearTo51")),
-            new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished goto51")));
+            new ParallelCommandGroup(
+                new SetArmAngleCommand(arm, ShootingParameters.BELOW_SPEAKER.angle_deg),
+                new SetShooterTargetCommand(shooter, ShootingParameters.BELOW_SPEAKER.speed_rps)),
+            new FeedCommand(transfer), new InstantCommand(() -> {
+              shooter.stop();
+            })));
 
-    Command pathFindto52 =
-        new SequentialCommandGroup(
-            new InstantCommand(
-                () -> SmartDashboard.putString("Auto Status", "Starting pathFindto53")),
-            AutoBuilder.pathfindToPoseFlipped(
-                FieldConstants.NOTE_52_POSITION, PathfindConstants.constraints, 0, 0),
-            new InstantCommand(
-                () -> SmartDashboard.putString("Auto Status", "Finished pathFindto53")));
+    Command goto51 = new SequentialCommandGroup(
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting goto51")),
+        AutoBuilder.followPath(PathPlannerPath.fromPathFile("California nearTo51")),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished goto51")));
+
+    Command pathFindto52 = new SequentialCommandGroup(
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting pathFindto53")),
+        AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_52_POSITION,
+            PathfindConstants.constraints, 0, 0),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished pathFindto53")));
 
     Command snapTo90_1 =
         new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(-90.0))
@@ -109,38 +102,27 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
     // build auto
     addCommands(
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting auto routine")),
-        prepare,
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Going to 51")),
-        goto51
-            .deadlineWith(
-                (new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
-                    .alongWith(new IntakeCommand(intake, transfer))))
-            .until(
-                () -> {
-                  boolean deadline = isChaseDeadlineReached();
-                  Optional<PhotonTrackedTarget> target =
-                      sGamePieceProcessor.getClosestGamePieceInfo();
-                  boolean hasTarget = target.isPresent();
-                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
-                  SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return deadline && hasTarget;
-                }),
+        prepare, new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Going to 51")),
+        goto51.deadlineWith((new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
+            .alongWith(new IntakeCommand(intake, transfer)))).until(() -> {
+              boolean deadline = isChaseDeadlineReached();
+              Optional<PhotonTrackedTarget> target = sGamePieceProcessor.getClosestGamePieceInfo();
+              boolean hasTarget = target.isPresent();
+              SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+              SmartDashboard.putBoolean("Has Target", hasTarget);
+              return deadline && hasTarget;
+            }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
-        new ChaseNoteStateMachineCommand(
-                drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)
-            .until(() -> isMidFieldFenceReached()),
+        new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake, transfer,
+            arm).until(() -> isMidFieldFenceReached()),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
-        Commands.either(
-            new WaitCommand(0),
-            new SequentialCommandGroup(
-                new InstantCommand(
-                    () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
-                snapTo90_1,
-                new InstantCommand(
-                    () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
-                new ChaseNoteStateMachineCommand(
-                        drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)
-                    .until(() -> isMidFieldFenceReached())),
+        Commands.either(new WaitCommand(0), new SequentialCommandGroup(
+            new InstantCommand(
+                () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
+            snapTo90_1,
+            new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
+            new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake,
+                transfer, arm).until(() -> isMidFieldFenceReached())),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
@@ -149,44 +131,31 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finding path to shoot")),
         buildFindPathThenShoot(),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Shooting")),
-        new VisionShootCommand(
-                shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation)
-            .until(() -> !transfer.isOmronDetected())
-            .andThen(
-                new InstantCommand(
-                    () -> {
-                      shooter.stop();
-                      SmartDashboard.putString("Auto Status", "Finished shooting");
-                    })),
+        new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake,
+            () -> kZeroTranslation).until(() -> !transfer.isOmronDetected())
+                .andThen(new InstantCommand(() -> {
+                  shooter.stop();
+                  SmartDashboard.putString("Auto Status", "Finished shooting");
+                })),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Going to 53")),
-        pathFindto52
-            .deadlineWith(
-                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
-                    .alongWith(new IntakeCommand(intake, transfer)))
-            .until(
-                () -> {
-                  boolean deadline = isChaseDeadlineReached();
-                  Optional<PhotonTrackedTarget> target =
-                      sGamePieceProcessor.getClosestGamePieceInfo();
-                  boolean hasTarget = target.isPresent();
-                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
-                  SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return deadline && hasTarget;
-                }),
+        pathFindto52.deadlineWith(new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE)
+            .alongWith(new IntakeCommand(intake, transfer))).until(() -> {
+              boolean deadline = isChaseDeadlineReached();
+              Optional<PhotonTrackedTarget> target = sGamePieceProcessor.getClosestGamePieceInfo();
+              boolean hasTarget = target.isPresent();
+              SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+              SmartDashboard.putBoolean("Has Target", hasTarget);
+              return deadline && hasTarget;
+            }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note (53)")),
-        new ChaseNoteStateMachineCommand(
-                drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)
-            .until(() -> isMidFieldFenceReached()),
+        new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor, intake, transfer,
+            arm).until(() -> isMidFieldFenceReached()),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note (53)")),
-        Commands.either(
-            new WaitCommand(0),
-            new SequentialCommandGroup(
-                new InstantCommand(
-                    () -> SmartDashboard.putString("Auto Status", "Rotating to find note (53)")),
-                snapTo90_2,
-                new ChaseNoteStateMachineCommand(
-                        drivetrainSubsystem, sGamePieceProcessor, intake, transfer, arm)
-                    .until(() -> isMidFieldFenceReached())),
+        Commands.either(new WaitCommand(0), new SequentialCommandGroup(
+            new InstantCommand(
+                () -> SmartDashboard.putString("Auto Status", "Rotating to find note (53)")),
+            snapTo90_2, new ChaseNoteStateMachineCommand(drivetrainSubsystem, sGamePieceProcessor,
+                intake, transfer, arm).until(() -> isMidFieldFenceReached())),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
@@ -196,14 +165,11 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
             () -> SmartDashboard.putString("Auto Status", "Finding path to shoot (53)")),
         buildFindPathThenShoot(),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Shooting (53)")),
-        new VisionShootCommand(
-                shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation)
-            .andThen(
-                new InstantCommand(
-                    () -> {
-                      shooter.stop();
-                      SmartDashboard.putString("Auto Status", "Finished auto routine");
-                    })));
+        new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake,
+            () -> kZeroTranslation).andThen(new InstantCommand(() -> {
+              shooter.stop();
+              SmartDashboard.putString("Auto Status", "Finished auto routine");
+            })));
   }
 
   Command buildFindPathThenShoot() {
