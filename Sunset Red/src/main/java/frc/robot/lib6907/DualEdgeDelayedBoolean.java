@@ -10,8 +10,7 @@ public class DualEdgeDelayedBoolean {
 
   public enum EdgeType {
     RISING,
-    FALLING,
-    DUAL
+    FALLING
   }
 
   public DualEdgeDelayedBoolean(double timestamp, double delay, EdgeType edgeType) {
@@ -40,15 +39,6 @@ public class DualEdgeDelayedBoolean {
         break;
       case FALLING:
         mState = !value && (timestamp - mFallingEdgeTimestamp > mDelay);
-        break;
-      case DUAL:
-        if (value && (timestamp - mRisingEdgeTimestamp > mDelay)) {
-          mState = true;
-        } else if (!value && (timestamp - mFallingEdgeTimestamp > mDelay)) {
-          mState = true;
-        } else {
-          mState = false;
-        }
         break;
     }
 
