@@ -91,14 +91,13 @@ public class SnapToAngleCommand extends Command {
     }
 
     // this calculate() method must run before calling atGoal() to update measurement
-    double pid_output = snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
-                + snapToAnglePID.getSetpoint().velocity;
+    double pid_output =
+        snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
+            + snapToAnglePID.getSetpoint().velocity;
 
     mDrivetrainSubsystem.drive(
         driveVector,
-        snapToAnglePID.atGoal()
-            ? 0
-            : pid_output, // output is in radians per second
+        snapToAnglePID.atGoal() ? 0 : pid_output, // output is in radians per second
         !robotCentricSupplier.getAsBoolean());
   }
 
@@ -115,12 +114,15 @@ public class SnapToAngleCommand extends Command {
   @Override
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
-    builder.addDoubleProperty(
-        "target heading", () -> snapToAnglePID.getGoal().position, null);
+    builder.addDoubleProperty("target heading", () -> snapToAnglePID.getGoal().position, null);
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
-    builder.addDoubleProperty("heading error", ()->Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
-            .minus(mDrivetrainSubsystem.getHeading())
-            .getDegrees(), null);
+    builder.addDoubleProperty(
+        "heading error",
+        () ->
+            Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+                .minus(mDrivetrainSubsystem.getHeading())
+                .getDegrees(),
+        null);
   }
 
   public boolean isAligned() {

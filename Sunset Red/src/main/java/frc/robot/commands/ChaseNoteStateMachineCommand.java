@@ -10,13 +10,14 @@ import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.GamePieceProcessor;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Transfer;
-import frc.robot.lib6907.DualEdgeDelayedBoolean;
 import java.util.Optional;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class ChaseNoteStateMachineCommand extends Command {
   private enum State {
-    CHASING, INTAKING, END
+    CHASING,
+    INTAKING,
+    END
   }
 
   private final DrivetrainSubsystem sDrivetrainSubsystem;
@@ -34,8 +35,12 @@ public class ChaseNoteStateMachineCommand extends Command {
   private SetArmAngleCommand setArmAngleCommand;
 
   // Constructor
-  public ChaseNoteStateMachineCommand(DrivetrainSubsystem drivetrainSubsystem,
-      GamePieceProcessor gamePieceProcessor, Intake intake, Transfer transfer, Arm arm) {
+  public ChaseNoteStateMachineCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      GamePieceProcessor gamePieceProcessor,
+      Intake intake,
+      Transfer transfer,
+      Arm arm) {
     this.sDrivetrainSubsystem = drivetrainSubsystem;
     this.sGamePieceProcessor = gamePieceProcessor;
     this.sIntake = intake;
@@ -59,7 +64,6 @@ public class ChaseNoteStateMachineCommand extends Command {
     currentState = State.CHASING;
     setArmAngleCommand.initialize();
     SmartDashboard.putString("ChaseNote State", "CHASING");
-
   }
 
   @Override
