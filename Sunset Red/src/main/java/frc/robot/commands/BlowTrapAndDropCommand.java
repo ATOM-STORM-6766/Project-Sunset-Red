@@ -27,22 +27,7 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
     this.fanSpeed = fanSpeed;
 
     // Create the blow trap command
-    Command blowTrapCommand = new Command() {
-      @Override
-      public void initialize() {
-        sTrapFan.setFanSpeed(fanSpeed);
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        sTrapFan.stopFan();
-      }
-
-      @Override
-      public boolean isFinished() {
-        return false;
-      }
-    };
+    Command blowTrapCommand = sTrapFan.blowTrapCommand();
 
     // Add logging and SmartDashboard updates
     Command logStarted = new InstantCommand(() -> {

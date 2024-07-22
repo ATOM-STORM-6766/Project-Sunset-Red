@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
+@Deprecated
 public class SnapToAngleCommand extends Command {
 
   private final TrapezoidProfile.Constraints swerveRotateConstraints =
@@ -25,26 +26,26 @@ public class SnapToAngleCommand extends Command {
   private final DrivetrainSubsystem mDrivetrainSubsystem;
   private final Supplier<Translation2d> driveVectorSupplier;
   /*
-   * Getting the angular velocity from the product of the joysticks (Right X) and the max angular velocity
+   * Getting the angular velocity from the product of the joysticks (Right X) and the max angular
+   * velocity
    */
   private final BooleanSupplier interruptSupplier;
   private final BooleanSupplier robotCentricSupplier;
   private final Supplier<Optional<Rotation2d>> goalHeadingSupplier;
   private Optional<Rotation2d> goalHeading = Optional.empty();
+
   /**
    * The default drive command constructor
    *
    * @param drivetrainSubsystem The coordinator between the gyro and the swerve modules
    * @param xVelocitySupplier Gets the joystick value for the x velocity and multiplies it by the
-   *     max velocity
+   *        max velocity
    * @param yVelocitySupplier Gets the joystick value for the y velocity and multiplies it by the
-   *     max velocity
+   *        max velocity
    */
-  public SnapToAngleCommand(
-      DrivetrainSubsystem drivetrainSubsystem,
+  public SnapToAngleCommand(DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
-      Supplier<Optional<Rotation2d>> goalHeadingSupplier,
-      BooleanSupplier robotCentricSupplier,
+      Supplier<Optional<Rotation2d>> goalHeadingSupplier, BooleanSupplier robotCentricSupplier,
       BooleanSupplier interruptSupplier) {
     this.setName("snapToAmp");
     mDrivetrainSubsystem = drivetrainSubsystem;
@@ -55,16 +56,10 @@ public class SnapToAngleCommand extends Command {
     addRequirements(drivetrainSubsystem); // required for default command
   }
 
-  public SnapToAngleCommand(
-      DrivetrainSubsystem drivetrainSubsystem,
+  public SnapToAngleCommand(DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
-      Supplier<Optional<Rotation2d>> goalHeadingSupplier,
-      BooleanSupplier robotCentricSupplier) {
-    this(
-        drivetrainSubsystem,
-        driveVectorSupplier,
-        goalHeadingSupplier,
-        robotCentricSupplier,
+      Supplier<Optional<Rotation2d>> goalHeadingSupplier, BooleanSupplier robotCentricSupplier) {
+    this(drivetrainSubsystem, driveVectorSupplier, goalHeadingSupplier, robotCentricSupplier,
         () -> false);
     this.setName("driveWithRightStick");
   }
@@ -82,22 +77,23 @@ public class SnapToAngleCommand extends Command {
     // Running the lambda statements and getting the velocity values
 
     Translation2d driveVector =
-        driveVectorSupplier
-            .get()
-            .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
+        driveVectorSupplier.get().times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1
+                                                                                           // to
+                                                                                           // meters
+                                                                                           // per
+                                                                                           // second
     goalHeading = goalHeadingSupplier.get();
     if (goalHeading.isPresent()) {
       snapToAnglePID.setGoal(goalHeading.get().getRadians());
     }
 
     // this calculate() method must run before calling atGoal() to update measurement
-    double pid_output =
-        snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
-            + snapToAnglePID.getSetpoint().velocity;
+    double pid_output = snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
+        + snapToAnglePID.getSetpoint().velocity;
 
-    mDrivetrainSubsystem.drive(
-        driveVector,
-        snapToAnglePID.atGoal() ? 0 : pid_output, // output is in radians per second
+    mDrivetrainSubsystem.drive(driveVector, snapToAnglePID.atGoal() ? 0 : pid_output, // output is
+                                                                                      // in radians
+                                                                                      // per second
         !robotCentricSupplier.getAsBoolean());
   }
 
@@ -116,12 +112,9 @@ public class SnapToAngleCommand extends Command {
     super.initSendable(builder);
     builder.addDoubleProperty("target heading", () -> snapToAnglePID.getGoal().position, null);
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
-    builder.addDoubleProperty(
-        "heading error",
-        () ->
-            Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
-                .minus(mDrivetrainSubsystem.getHeading())
-                .getDegrees(),
+    builder.addDoubleProperty("heading error",
+        () -> Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+            .minus(mDrivetrainSubsystem.getHeading()).getDegrees(),
         null);
   }
 
@@ -129,10 +122,8 @@ public class SnapToAngleCommand extends Command {
     if (goalHeading.isEmpty()) {
       return false;
     }
-    double headingError =
-        Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
-            .minus(mDrivetrainSubsystem.getHeading())
-            .getDegrees();
+    double headingError = Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+        .minus(mDrivetrainSubsystem.getHeading()).getDegrees();
     SmartDashboard.putNumber("heading error", headingError);
     return Math.abs(headingError) < 2.0;
   }

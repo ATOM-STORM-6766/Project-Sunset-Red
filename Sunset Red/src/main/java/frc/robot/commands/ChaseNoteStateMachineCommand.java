@@ -15,9 +15,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class ChaseNoteStateMachineCommand extends Command {
   private enum State {
-    CHASING,
-    INTAKING,
-    END
+    CHASING, INTAKING, END
   }
 
   private final DrivetrainSubsystem sDrivetrainSubsystem;
@@ -35,12 +33,8 @@ public class ChaseNoteStateMachineCommand extends Command {
   private SetArmAngleCommand setArmAngleCommand;
 
   // Constructor
-  public ChaseNoteStateMachineCommand(
-      DrivetrainSubsystem drivetrainSubsystem,
-      GamePieceProcessor gamePieceProcessor,
-      Intake intake,
-      Transfer transfer,
-      Arm arm) {
+  public ChaseNoteStateMachineCommand(DrivetrainSubsystem drivetrainSubsystem,
+      GamePieceProcessor gamePieceProcessor, Intake intake, Transfer transfer, Arm arm) {
     this.sDrivetrainSubsystem = drivetrainSubsystem;
     this.sGamePieceProcessor = gamePieceProcessor;
     this.sIntake = intake;
@@ -52,7 +46,6 @@ public class ChaseNoteStateMachineCommand extends Command {
     yController = new PIDController(0.0, 0.0, 0.0); // Adjust PID values as needed
     rotationController = new PIDController(0.15, 0.01, 0); // Adjust PID values as needed
 
-    double currentTimestamp = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
     addRequirements(drivetrainSubsystem, gamePieceProcessor, intake, transfer, arm);
   }
 
@@ -69,7 +62,6 @@ public class ChaseNoteStateMachineCommand extends Command {
   @Override
   public void execute() {
     setArmAngleCommand.execute();
-    double currentTimestamp = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
 
     switch (currentState) {
       case CHASING:

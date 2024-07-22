@@ -9,7 +9,7 @@ import frc.robot.subsystems.Arm;
 
 /**
  * @brief This command sets a single target (which must be determined at code initilization/before
- *     match)
+ *        match)
  */
 public class SetArmAngleCommand extends Command {
   private final Arm sArm;
@@ -31,17 +31,16 @@ public class SetArmAngleCommand extends Command {
   public void initialize() {
     sArm.setAngle(targetAngle);
     isFinished = false;
-    mArmInPosition =
-        new DualEdgeDelayedBoolean(
-            Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME, EdgeType.RISING);
+    mArmInPosition = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(),
+        ArmConstants.STABILIZE_TIME, EdgeType.RISING);
   }
 
   @Override
   public void execute() {
     // if going rest and almost reach, brake and let gravity do the job.
     /*
-     * This part of logic is here because it needs to be run in loop
-     * If it is put in subsystem, then we must introduce states in subsystem, which is not desired.
+     * This part of logic is here because it needs to be run in loop If it is put in subsystem, then
+     * we must introduce states in subsystem, which is not desired.
      */
     if (targetAngle < ArmConstants.ARM_REST_ANGLE + 3.0
         && sArm.getAngleDeg() < ArmConstants.ARM_REST_ANGLE + 5.0) {
