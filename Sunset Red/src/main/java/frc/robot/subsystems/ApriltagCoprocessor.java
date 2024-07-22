@@ -262,7 +262,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
         .filter(
             target -> {
               boolean isAcceptable =
-                  target.getArea() > 0.07
+                  target.getArea() > 0.1
                       && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
                       && Math.abs(target.getYaw()) < 25
                       && Math.abs(target.getPitch()) < 25;

@@ -3,32 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.852691870536508,
-        "y": 7.102701571216519
+        "x": 6.15706873169381,
+        "y": 6.018203068434607
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.215120402529452,
-        "y": 8.423892533643011
+        "x": 6.8387422184097035,
+        "y": 5.453387893727152
       },
       "isLocked": false,
-      "linkedName": "center"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.270256540513081,
-        "y": 7.42743718561799
+        "x": 8.27025654051308,
+        "y": 5.7844864444177295
       },
       "prevControl": {
-        "x": 7.5110631611853504,
-        "y": 7.462443082049037
+        "x": 7.413295585784529,
+        "y": 5.570246205735591
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "note51"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [],
   "globalConstraints": {
@@ -39,13 +45,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0,
+    "rotation": 17.354024636261226,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "California",
   "previewStartingState": {
-    "rotation": 0.0,
+    "rotation": -31.21840276434637,
     "velocity": 0
   },
   "useDefaultConstraints": true

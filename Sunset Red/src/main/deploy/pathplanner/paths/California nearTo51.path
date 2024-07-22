@@ -1,0 +1,100 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.2771521839339972,
+        "y": 6.4083966344570875
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.7098358983042754,
+        "y": 6.1979018544931685
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.9026396514331485,
+        "y": 6.2797609355902475
+      },
+      "prevControl": {
+        "x": 2.329626083753592,
+        "y": 6.291455090032687
+      },
+      "nextControl": {
+        "x": 3.6624814334653686,
+        "y": 6.264253960446733
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.819265833074965,
+        "y": 7.625004858550643
+      },
+      "prevControl": {
+        "x": 5.856488217254344,
+        "y": 7.689190032938685
+      },
+      "nextControl": {
+        "x": 7.6957031731382575,
+        "y": 7.566575702546423
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.281950694955519,
+        "y": 7.425788070949362
+      },
+      "prevControl": {
+        "x": 7.530153897792967,
+        "y": 7.527622931876944
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.0,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 2,
+      "rotationDegrees": -10.539183728628203,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.75,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -11.28792695237948,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "California",
+  "previewStartingState": {
+    "rotation": 30.0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

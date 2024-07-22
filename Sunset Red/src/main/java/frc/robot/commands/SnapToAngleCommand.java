@@ -19,7 +19,7 @@ public class SnapToAngleCommand extends Command {
   private final TrapezoidProfile.Constraints swerveRotateConstraints =
       new TrapezoidProfile.Constraints(Units.degreesToRadians(360), Units.degreesToRadians(540));
   private final ProfiledPIDController snapToAnglePID =
-      new ProfiledPIDController(0.5, 0, 0.0, swerveRotateConstraints);
+      new ProfiledPIDController(1.0, 0, 0.1, swerveRotateConstraints);
   // new ProfiledPIDController(4.0, 0, 0.2, swerveRotateConstraints);
 
   private final DrivetrainSubsystem mDrivetrainSubsystem;
@@ -89,12 +89,16 @@ public class SnapToAngleCommand extends Command {
     if (goalHeading.isPresent()) {
       snapToAnglePID.setGoal(goalHeading.get().getRadians());
     }
+
+    // this calculate() method must run before calling atGoal() to update measurement
+    double pid_output = snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
+                + snapToAnglePID.getSetpoint().velocity;
+
     mDrivetrainSubsystem.drive(
         driveVector,
         snapToAnglePID.atGoal()
             ? 0
-            : snapToAnglePID.calculate(mDrivetrainSubsystem.getHeading().getRadians())
-                + snapToAnglePID.getSetpoint().velocity, // output is in radians per second
+            : pid_output, // output is in radians per second
         !robotCentricSupplier.getAsBoolean());
   }
 
@@ -112,8 +116,11 @@ public class SnapToAngleCommand extends Command {
   public void initSendable(SendableBuilder builder) {
     super.initSendable(builder);
     builder.addDoubleProperty(
-        "target heading error", () -> snapToAnglePID.getPositionError(), null);
+        "target heading", () -> snapToAnglePID.getGoal().position, null);
     builder.addBooleanProperty("rightStickInputPresent:", () -> goalHeading.isPresent(), null);
+    builder.addDoubleProperty("heading error", ()->Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
+            .minus(mDrivetrainSubsystem.getHeading())
+            .getDegrees(), null);
   }
 
   public boolean isAligned() {
@@ -122,7 +129,7 @@ public class SnapToAngleCommand extends Command {
     }
     double headingError =
         Rotation2d.fromRadians(snapToAnglePID.getGoal().position)
-            .minus(goalHeading.get())
+            .minus(mDrivetrainSubsystem.getHeading())
             .getDegrees();
     SmartDashboard.putNumber("heading error", headingError);
     return Math.abs(headingError) < 2.0;
