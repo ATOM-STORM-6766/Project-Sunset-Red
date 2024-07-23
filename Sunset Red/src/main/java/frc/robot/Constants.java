@@ -152,6 +152,7 @@ public final class Constants {
     // used for LED to tell note entered state
     public static final int INTAKER_ENTER_OMRON_ID = 9;
     public static final int INTAKE_EXTERIOR_ID = 30;
+    public static final int EXTERNAL_ROLLER_ID = 25;
   }
 
   public static final class TransferConstants {

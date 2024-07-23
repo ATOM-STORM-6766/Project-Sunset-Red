@@ -20,7 +20,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
   // private static final Pose2d kNearStart = new Pose2d(1.28, 6.41,
   // Rotation2d.fromDegrees(30.0));
-  private static final Pose2d kShootPose = new Pose2d(1.71, 6.41, Rotation2d.fromDegrees(14.0));
+  private static final Pose2d kShootPose = new Pose2d(2.71, 6.41, Rotation2d.fromDegrees(14.0));
 
   private static final Translation2d kZeroTranslation = new Translation2d();
 
