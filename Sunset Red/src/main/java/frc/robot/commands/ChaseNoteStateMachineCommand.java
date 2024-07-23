@@ -19,7 +19,6 @@ public class ChaseNoteStateMachineCommand extends Command {
   }
 
   private final DrivetrainSubsystem sDrivetrainSubsystem;
-  private final GamePieceProcessor sGamePieceProcessor;
   private final Intake sIntake;
   private final Transfer sTransfer;
   private final Arm sArm;
@@ -33,20 +32,19 @@ public class ChaseNoteStateMachineCommand extends Command {
   private SetArmAngleCommand setArmAngleCommand;
 
   // Constructor
-  public ChaseNoteStateMachineCommand(DrivetrainSubsystem drivetrainSubsystem,
-      GamePieceProcessor gamePieceProcessor, Intake intake, Transfer transfer, Arm arm) {
+  public ChaseNoteStateMachineCommand(DrivetrainSubsystem drivetrainSubsystem, Intake intake, Transfer transfer,
+      Arm arm) {
     this.sDrivetrainSubsystem = drivetrainSubsystem;
-    this.sGamePieceProcessor = gamePieceProcessor;
     this.sIntake = intake;
     this.sTransfer = transfer;
     this.sArm = arm;
-    this.setArmAngleCommand = new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE);
+    this.setArmAngleCommand = new SetArmAngleCommand(sArm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE);
 
     xController = new PIDController(0.2, 0.0, 0.0); // Adjust PID values as needed
     yController = new PIDController(0.0, 0.0, 0.0); // Adjust PID values as needed
     rotationController = new PIDController(0.15, 0.01, 0); // Adjust PID values as needed
 
-    addRequirements(drivetrainSubsystem, gamePieceProcessor, intake, transfer, arm);
+    addRequirements(drivetrainSubsystem, intake, transfer, arm);
   }
 
   @Override
@@ -66,8 +64,7 @@ public class ChaseNoteStateMachineCommand extends Command {
     switch (currentState) {
       case CHASING:
         SmartDashboard.putString("ChaseNote State", "CHASING");
-        Optional<PhotonTrackedTarget> targetOptional =
-            sGamePieceProcessor.getClosestGamePieceInfo();
+        Optional<PhotonTrackedTarget> targetOptional = GamePieceProcessor.getInstance().getClosestGamePieceInfo();
         boolean isTargetPresent = targetOptional.isPresent();
 
         SmartDashboard.putBoolean("Target Present", isTargetPresent);
@@ -82,7 +79,9 @@ public class ChaseNoteStateMachineCommand extends Command {
           SmartDashboard.putNumber("Target Pitch", pitchMeasure);
 
           if (sIntake.isOmronDetected()
-              || (pitchMeasure < 3 && yawMeasure < 5 && yawMeasure > -5)) {
+              || (pitchMeasure < 3 && yawMeasure < 5 && yawMeasure > -5)) { // this ensures that the robot is close
+                                                                            // enough to the note, the note should be at
+                                                                            // bottom of camera view, also in the center
             currentState = State.INTAKING;
             SmartDashboard.putString("ChaseNote State", "INTAKING");
           } else {
