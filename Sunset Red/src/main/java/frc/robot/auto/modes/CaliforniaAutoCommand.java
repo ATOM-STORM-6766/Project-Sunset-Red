@@ -44,10 +44,10 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished goto51")));
 
     Command pathFindto52 = new SequentialCommandGroup(
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting pathFindto53")),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting pathFindto52")),
         AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_52_POSITION,
             PathfindConstants.constraints, 0, 0),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished pathFindto53")));
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished pathFindto52")));
 
     // build auto
     addCommands(
