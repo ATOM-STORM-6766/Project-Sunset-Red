@@ -92,7 +92,7 @@ public class AutoCommandFactory {
           SmartDashboard.putBoolean("Has Target", hasTarget);
           return deadline && hasTarget;
         }), new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
-        new ChaseNoteStateMachineCommand(drivetrainSubsystem, gamePieceProcessor, intake, transfer,
+        new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake, transfer,
             arm).until(() -> isMidFieldFenceReached(drivetrainSubsystem)),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(new WaitCommand(0), new SequentialCommandGroup(
@@ -100,7 +100,7 @@ public class AutoCommandFactory {
                 () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
             new TurnToHeadingCommand(drivetrainSubsystem, findNoteHeading),
             new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
-            new ChaseNoteStateMachineCommand(drivetrainSubsystem, gamePieceProcessor, intake,
+            new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake,
                 transfer, arm).until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
