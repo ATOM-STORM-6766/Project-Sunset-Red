@@ -43,15 +43,15 @@ public class Shooter extends SubsystemBase {
     shooterConfig.CurrentLimits.SupplyCurrentThreshold = 60.0;
     shooterConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
     shooterConfig.Slot0.kV = 0.113;
-    shooterConfig.Slot0.kP = 0.1;
-    shooterConfig.Slot0.kI = 1.0;
+    shooterConfig.Slot0.kP = 0.15;
+    shooterConfig.Slot0.kI = 3.0;
     shooterConfig.Slot0.kD = 0.0;
     Util.checkReturn(
         "shooter",
         mShooterTalon.getConfigurator().apply(shooterConfig, Constants.kLongCANTimeoutSec));
     shooterConfig.Slot0.kV = 0.118;
-    shooterConfig.Slot0.kP = 0.1;
-    shooterConfig.Slot0.kI = 1.0;
+    shooterConfig.Slot0.kP = 0.15;
+    shooterConfig.Slot0.kI = 3.0;
     shooterConfig.Slot0.kD = 0.0;
     Util.checkReturn(
         "shooter follower",

@@ -20,7 +20,7 @@ public class SetShooterTargetCommand extends Command {
       new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), STABLIZE_TIME, EdgeType.RISING);
   private static final double SHOOT_THRESHOLD_RPS =
       10.0; // lower than this velocity, game piece will get stuck
-  private static final double ERR_TOL = 2.0; // spin velocity error tolerance (rps)
+  private static final double ERR_TOL = 5.0; // spin velocity error tolerance (rps)
 
   /**
    * @brief sets the shooter to a target rps, finishes when target reached, do not interact with
