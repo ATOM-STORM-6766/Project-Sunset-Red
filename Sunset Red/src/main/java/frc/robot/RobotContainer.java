@@ -152,7 +152,7 @@ public class RobotContainer {
         }));
 
     driverController.povUp()
-        .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer, 1.0))
+        .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
         .onFalse(new InstantCommand(() -> mShooter.stop())
             .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
 

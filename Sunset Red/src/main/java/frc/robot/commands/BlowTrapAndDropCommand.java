@@ -16,15 +16,12 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
   private final Shooter sShooter;
   private final Arm sArm;
   private final Transfer sTransfer;
-  private final double fanSpeed;
 
-  public BlowTrapAndDropCommand(TrapFan trapFan, Shooter shooter, Arm arm, Transfer transfer,
-      double fanSpeed) {
+  public BlowTrapAndDropCommand(TrapFan trapFan, Shooter shooter, Arm arm, Transfer transfer) {
     this.sTrapFan = trapFan;
     this.sShooter = shooter;
     this.sArm = arm;
     this.sTransfer = transfer;
-    this.fanSpeed = fanSpeed;
 
     // Create the blow trap command
     Command blowTrapCommand = sTrapFan.blowTrapCommand();

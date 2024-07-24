@@ -189,13 +189,28 @@ public final class Constants {
     static {
       // TODO : TUNE
       // distance meters <-> arm angle degrees
-      kSpeakerAngleMap.put(1.00, 59.0);
-      kSpeakerAngleMap.put(1.30, 56.5);
-      kSpeakerAngleMap.put(1.40, 52.0);
-      kSpeakerAngleMap.put(1.65, 48.5);
-      kSpeakerAngleMap.put(2.00, 45.0);
-      kSpeakerAngleMap.put(2.25, 45.0);
-      kSpeakerAngleMap.put(2.50, 46.0);
+      // the distance here is the distance from the speaker to the robot ()
+      // lowest allowable angle is 28, lower then that will hit camera
+
+      /*
+       * These values below are based on Speaker wall to frame front measurement
+       * with some of the bold guesses
+       * 0724
+       */
+      kSpeakerAngleMap.put(0.93,60.0);
+      kSpeakerAngleMap.put(1.22, 55.0);
+      kSpeakerAngleMap.put(1.55, 48.0);
+      kSpeakerAngleMap.put(1.81, 44.0);
+      kSpeakerAngleMap.put(2.18, 41.0);
+      kSpeakerAngleMap.put(2.57, 41.0);
+      kSpeakerAngleMap.put(2.91, 38.0);
+      kSpeakerAngleMap.put(3.25, 36.0);
+      kSpeakerAngleMap.put(3.4, 34.0);
+      kSpeakerAngleMap.put(4.5,30.0);
+
+
+
+
       // kSpeakerAngleMap.put(3.00, 49.0);
       // kSpeakerAngleMap.put(4.00, 38.0);
     }
@@ -231,6 +246,6 @@ public final class Constants {
 
   public static final class PathfindConstants {
     public static final PathConstraints constraints =
-        new PathConstraints(4.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+        new PathConstraints(4.0, 4.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
   }
 }
