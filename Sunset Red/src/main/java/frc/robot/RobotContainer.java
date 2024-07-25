@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,10 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.PathfindConstants;
+import frc.robot.Constants.*;
 import frc.robot.auto.modes.*;
 import frc.robot.commands.*;
 import frc.robot.lib6907.CommandSwerveController;
@@ -52,16 +50,25 @@ public class RobotContainer {
 
   private static final boolean kDualController = false;
   private static final boolean isRedAlliance =
-      DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
+      DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
 
   /* pre-constructed commands */
   private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
-  private final SnapToAngleCommand mDriveWithRightStick =
-      new SnapToAngleCommand(sDrivetrainSubsystem,
-          () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-          () -> driverController.getDriveRotationAngle(), // amp heading
+  private final DriveWithFollowHeadingCommand mDriveWithRightStick =
+      new DriveWithFollowHeadingCommand(sDrivetrainSubsystem,
+          () -> driverController.getDriveTranslation(driverController.isRobotRelative())
+              .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+          () -> readDriveHeading(), // amp heading
           () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
+
+  private Optional<Rotation2d> readDriveHeading() {
+    Optional<Rotation2d> rightStickHeading = driverController.getDriveRotationAngle();
+
+    // TODO : HEADING KEY BINDINGS HERE
+
+    return rightStickHeading;
+  }
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -113,16 +120,6 @@ public class RobotContainer {
     resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
     driverController.start().onTrue(resetHeadingCommand);
 
-    // Snap to Amp Angle
-    new Trigger(
-        () -> driverController.snapToAmpAngle() && driverController.getRawRotationRate() == 0.0)
-            .onTrue(new SnapToAngleCommand(sDrivetrainSubsystem,
-                () -> driverController.getDriveTranslation(driverController.isRobotRelative()),
-                () -> Optional.of(Rotation2d.fromDegrees(90.0)), // amp
-                // heading
-                () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED,
-                () -> driverController.getDriveRotationAngle().isPresent()));
-
     // Trigger Rotate
     new Trigger(() -> driverController.getRawRotationRate() != 0.0)
         .onTrue(new DriveWithTriggerCommand(sDrivetrainSubsystem,
@@ -135,11 +132,6 @@ public class RobotContainer {
 
     // Vision Shoot
     Trigger visionShootTrigger = driverController.y();
-
-    if (kDualController) {
-      visionShootTrigger = operatorController.y();
-    }
-
     visionShootTrigger
         .whileTrue(new VisionShootCommand(mShooter, mArm, mTransfer, sDrivetrainSubsystem, mIntake,
             () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
@@ -151,7 +143,8 @@ public class RobotContainer {
           mIntake.stop();
         }));
 
-    driverController.povUp()
+    // manual trap
+    operatorController.povUp()
         .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
         .onFalse(new InstantCommand(() -> mShooter.stop())
             .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
@@ -171,8 +164,8 @@ public class RobotContainer {
       operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     } else {
       // chase note inake
-      driverController.a().and(driverController.rightBumper().negate())
-          .whileTrue(new ChaseNoteStateMachineCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
+      driverController.a().and(driverController.rightBumper().negate()).whileTrue(
+          new ChaseNoteStateMachineCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
       // manual intake
       driverController.a().and(driverController.rightBumper())
           .whileTrue(new IntakeCommand(mIntake, mTransfer));
