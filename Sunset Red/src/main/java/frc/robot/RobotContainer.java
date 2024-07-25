@@ -46,8 +46,7 @@ public class RobotContainer {
   private final Shooter mShooter = new Shooter();
   private final Arm mArm = new Arm();
   private final TrapFan mTrapFan = new TrapFan();
-  private final ApriltagCoprocessor mCoprocessor = ApriltagCoprocessor.getInstance();
-
+  
   private static final boolean kDualController = false;
   private static final boolean isRedAlliance =
       DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
