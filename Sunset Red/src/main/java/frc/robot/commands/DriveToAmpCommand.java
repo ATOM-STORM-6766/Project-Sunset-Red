@@ -94,7 +94,7 @@ public class DriveToAmpCommand extends Command {
     int ampTagId = alliance == Alliance.Blue ? BLUE_TAG_ID : RED_TAG_ID;
 
     Optional<Pose3d> ampTagPoseOptional =
-        ApriltagCoprocessor.getInstance().aprilTagFieldLayout.getTagPose(ampTagId);
+        ApriltagCoprocessor.getInstance().getAprilTagPose(ampTagId);
 
     if (ampTagPoseOptional.isPresent()) {
       Pose2d ampPose = ampTagPoseOptional.get().toPose2d();
