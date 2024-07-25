@@ -7,6 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.controls.NeutralOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.util.GeometryUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -21,7 +22,8 @@ import frc.robot.config.SwerveModuleConfig.ModuleCorner;
  * constants. This class should not be used for any other purpose. All constants should be declared
  * globally (i.e. public static). Do not put anything functional in this class.
  *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
+ * <p>
+ * It is advised to statically import this class (or one of its inner classes) wherever the
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
@@ -114,9 +116,6 @@ public final class Constants {
 
   public static final class DriveConstants {
 
-    // driver constants
-    public static final double kDeadband = 0.1;
-
     // chassis dimensions
     public static final double kTrackWidth = 0.56;
     public static final double kWheelBase = 0.56;
@@ -142,7 +141,6 @@ public final class Constants {
     public static final double kLongCANTimeoutSec = 0.1;
     // Update Freq (Hz): minimum 4Hz, maximum 1000Hz
     public static final int kOdomUpdateFreq = 100; // signal for odometry
-    public static final int kDefaultUpdateFreq = 50;
   }
 
   public static final class IntakeConstants {
@@ -193,11 +191,10 @@ public final class Constants {
       // lowest allowable angle is 28, lower then that will hit camera
 
       /*
-       * These values below are based on Speaker wall to frame front measurement
-       * with some of the bold guesses
-       * 0724
+       * These values below are based on Speaker wall to frame front measurement with some of the
+       * bold guesses 0724
        */
-      kSpeakerAngleMap.put(0.93,60.0);
+      kSpeakerAngleMap.put(0.93, 60.0);
       kSpeakerAngleMap.put(1.22, 55.0);
       kSpeakerAngleMap.put(1.55, 48.0);
       kSpeakerAngleMap.put(1.81, 44.0);
@@ -206,8 +203,7 @@ public final class Constants {
       kSpeakerAngleMap.put(2.91, 38.0);
       kSpeakerAngleMap.put(3.25, 36.0);
       kSpeakerAngleMap.put(3.4, 34.0);
-      kSpeakerAngleMap.put(4.5,30.0);
-
+      kSpeakerAngleMap.put(4.5, 30.0);
 
 
 
@@ -220,14 +216,10 @@ public final class Constants {
   }
 
   public static final class FieldConstants {
-    public static final Pose2d BELOW_SPEAKER_POSITION_BLUE =
-        new Pose2d(new Translation2d(1.42, 5.54), new Rotation2d(0.0));
-    public static final Pose2d BELOW_SPEAKER_POSITION_RED =
-        new Pose2d(new Translation2d(15.289, 5.54), new Rotation2d(Units.degreesToRadians(180)));
     public static final Pose2d IN_FRONT_AMP_POSITION_BLUE =
-        new Pose2d(new Translation2d(1.79, 7.76), new Rotation2d(Units.degreesToRadians(90.0)));
+        new Pose2d(new Translation2d(1.79, 7.76), Rotation2d.fromDegrees(90.0));
     public static final Pose2d IN_FRONT_AMP_POSITION_RED =
-        new Pose2d(new Translation2d(14.742, 7.76), new Rotation2d(Units.degreesToRadians(90.0)));
+        GeometryUtil.flipFieldPose(IN_FRONT_AMP_POSITION_BLUE);
     public static final Pose2d NOTE_51_POSITION =
         new Pose2d(new Translation2d(8.30, 7.45), new Rotation2d(0.0));
     public static final Pose2d NOTE_52_POSITION =

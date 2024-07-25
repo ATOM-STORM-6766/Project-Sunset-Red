@@ -7,10 +7,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.lib6907.DualEdgeDelayedBoolean;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.PhotonCamera;
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
@@ -18,36 +18,35 @@ public class GamePieceProcessor extends SubsystemBase {
 
   private static GamePieceProcessor mCoprocessor = new GamePieceProcessor();
   private PhotonCamera mUSBCamera = new PhotonCamera("PieceCam");
-  private double kLastDetectionTime = 0.0;
+  private double kLastDetectionTime = -100.0;
   private PhotonTrackedTarget kLastValidTarget = null;
   private final double kDetectionTimeout = 0.3;
-  private Transform3d kRobotToPieceCam =
-      new Transform3d(
-          new Translation3d(-0.03, 0.0, 0.43),
-          new Rotation3d(Math.toRadians(180.0), Math.toRadians(14.0), 0.0));
+  private Transform3d kRobotToPieceCam = new Transform3d(new Translation3d(-0.03, 0.0, 0.43),
+      new Rotation3d(Math.toRadians(180.0), Math.toRadians(14.0), 0.0));
 
   public static GamePieceProcessor getInstance() {
     return mCoprocessor;
   }
 
-  public GamePieceProcessor() {
-  }
+  private GamePieceProcessor() {}
 
   public Optional<PhotonTrackedTarget> getClosestGamePieceInfo() {
     var result = mUSBCamera.getLatestResult();
     boolean hasTargets = result.hasTargets();
-    if (hasTargets) {
-      updateLastValidTarget(result.getBestTarget());
+    double currTime = Timer.getFPGATimestamp();
+    if (hasTargets && (result.getTimestampSeconds() - kLastDetectionTime > 1e-6)) {
+      updateLastValidTarget(result);
       return Optional.of(kLastValidTarget);
-    }else if (Timer.getFPGATimestamp() - kLastDetectionTime < kDetectionTimeout) {
+    } else if (currTime - kLastDetectionTime < kDetectionTimeout) {
       return Optional.ofNullable(kLastValidTarget);
+    }
+    return Optional.empty();
   }
-  return Optional.empty();
+
+  private void updateLastValidTarget(PhotonPipelineResult result) {
+    kLastValidTarget = result.getBestTarget();
+    kLastDetectionTime = result.getTimestampSeconds();
   }
-  private void updateLastValidTarget(PhotonTrackedTarget target) {
-    kLastValidTarget = target;
-    kLastDetectionTime = Timer.getFPGATimestamp();
-}
 
   public Translation2d robotToPiece(PhotonTrackedTarget target) {
     if (target == null) {
@@ -72,9 +71,8 @@ public class GamePieceProcessor extends SubsystemBase {
     }
 
     // Calculate the distance based on the apparent size of the Note
-    double distanceEstimate =
-        (NOTE_OUTER_DIAMETER_METERS * CAMERA_RESOLUTION_WIDTH)
-            / (2 * widthPixels * Math.tan(CAMERA_FOV_HORIZONTAL / 2));
+    double distanceEstimate = (NOTE_OUTER_DIAMETER_METERS * CAMERA_RESOLUTION_WIDTH)
+        / (2 * widthPixels * Math.tan(CAMERA_FOV_HORIZONTAL / 2));
 
     // Get the yaw and pitch from the target
     double yawRadians = Math.toRadians(target.getYaw());
@@ -104,21 +102,21 @@ public class GamePieceProcessor extends SubsystemBase {
     SmartDashboard.putBoolean("PieceCam/HasTarget", hasTargets);
     SmartDashboard.putNumber("PieceCam/LatencyMillis", result.getLatencyMillis());
 
-    if (hasTargets) {
-            var target = result.getBestTarget();
-            if (target != null) {
-                processValidTarget(target);
-                updateLastValidTarget(target);
-            } else {
-                clearDashboardValues();
-            }
-        } else if (Timer.getFPGATimestamp() - kLastDetectionTime < kDetectionTimeout) {
-            if (kLastValidTarget != null) {
-                processValidTarget(kLastValidTarget);
-            }
-        } else {
-            clearDashboardValues();
-        }
+    if (hasTargets && (result.getTimestampSeconds() - kLastDetectionTime > 1e-6)) {
+      var target = result.getBestTarget();
+      if (target != null) {
+        processValidTarget(target);
+        updateLastValidTarget(result);
+      } else {
+        clearDashboardValues();
+      }
+    } else if (Timer.getFPGATimestamp() - kLastDetectionTime < kDetectionTimeout) {
+      if (kLastValidTarget != null) {
+        processValidTarget(kLastValidTarget);
+      }
+    } else {
+      clearDashboardValues();
+    }
   }
 
   private void processValidTarget(PhotonTrackedTarget target) {

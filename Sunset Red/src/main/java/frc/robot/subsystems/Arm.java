@@ -16,11 +16,6 @@ import frc.robot.utils.Util;
 
 public class Arm extends SubsystemBase {
   private static final double ARM_GEAR_RATIO = 80.0;
-  // private static final double ARM_CLIMB_TARGET_DEG = 30.0;
-  // private static final double ARM_CLIMB_MAX_DEG = 35.0;
-  private static final double ERR_TOL = 1.0 / 360.0;
-
-  private static final double LOW_SHOOT_TOLERANCE_ROTATION = 23.5 / 360.0;
 
   private final TalonFX mArmTalon;
   // private boolean climbTargetReached = false;
@@ -59,14 +54,12 @@ public class Arm extends SubsystemBase {
     armConfig.MotionMagic.MotionMagicCruiseVelocity = 1.25;
     armConfig.MotionMagic.MotionMagicAcceleration = 2.0;
     armConfig.Feedback.SensorToMechanismRatio = ARM_GEAR_RATIO;
-    Util.checkReturn(
-        "arm", mArmTalon.getConfigurator().apply(armConfig, Constants.kLongCANTimeoutSec));
+    Util.checkReturn("arm",
+        mArmTalon.getConfigurator().apply(armConfig, Constants.kLongCANTimeoutSec));
     mArmTalon.setPosition(ArmConstants.ARM_REST_POSITION, Constants.kLongCANTimeoutSec);
-    Util.checkReturn(
-        "arm position",
+    Util.checkReturn("arm position",
         mArmTalon.getPosition().setUpdateFrequency(100, Constants.kLongCANTimeoutSec));
-    Util.checkReturn(
-        "arm current",
+    Util.checkReturn("arm current",
         mArmTalon.getTorqueCurrent().setUpdateFrequency(50, Constants.kLongCANTimeoutSec));
     Util.checkReturn("arm canbus", mArmTalon.optimizeBusUtilization(Constants.kLongCANTimeoutSec));
 
@@ -79,21 +72,21 @@ public class Arm extends SubsystemBase {
     builder.addDoubleProperty(getName() + "Target Angle Degree", () -> getTargetAngleDeg(), null);
     builder.addDoubleProperty(getName() + "Angle Degree", () -> getAngleDeg(), null);
     builder.addDoubleProperty(getName() + "Current", () -> getStatorCurrent(), null);
-    builder.addStringProperty(
-        getName() + "Active Control Request", () -> mArmTalon.getAppliedControl().toString(), null);
+    builder.addStringProperty(getName() + "Active Control Request",
+        () -> mArmTalon.getAppliedControl().toString(), null);
   }
 
   @Override
   public void periodic() {}
 
   public void setAngle(double angle_deg) {
-    if (angle_deg < ArmConstants.ARM_REST_ANGLE || angle_deg > ArmConstants.ARM_MAX_ANGLE) return;
+    if (angle_deg < ArmConstants.ARM_REST_ANGLE || angle_deg > ArmConstants.ARM_MAX_ANGLE)
+      return;
 
     setReverseLimit(true);
     double angle_rotation = angle_deg / 360.0;
-    mArmTalon.setControl(
-        ArmMotionMagic.withPosition(
-            angle_rotation)); // reuse previously created ControlRequest Instance
+    mArmTalon.setControl(ArmMotionMagic.withPosition(angle_rotation)); // reuse previously created
+                                                                       // ControlRequest Instance
   }
 
   public void stop() {

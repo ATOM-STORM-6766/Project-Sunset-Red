@@ -19,12 +19,12 @@ public class CommandSwerveController extends CommandXboxController {
   private static final double NEAR_POLE_DRIVE_DEGREES = 7;
   private static final double NEAR_POLE_TURN_DEGREES = 7;
 
-  private final SlewRateLimiter translationXRateLimiter =
-      new SlewRateLimiter(5); // (1 / seconds_from_neutral_to_full)
-  private final SlewRateLimiter translationYRateLimiter =
-      new SlewRateLimiter(5); // (1 / seconds_from_neutral_to_full)
-  private final SlewRateLimiter rotationRateLimiter =
-      new SlewRateLimiter(5); // (1 / seconds_from_neutral_to_full)
+  private final SlewRateLimiter translationXRateLimiter = new SlewRateLimiter(5); // (1 /
+                                                                                  // seconds_from_neutral_to_full)
+  private final SlewRateLimiter translationYRateLimiter = new SlewRateLimiter(5); // (1 /
+                                                                                  // seconds_from_neutral_to_full)
+  private final SlewRateLimiter rotationRateLimiter = new SlewRateLimiter(5); // (1 /
+                                                                              // seconds_from_neutral_to_full)
 
   private double translationDirectionMultiplier = 1.0; // 1.0 for blue, -1.0 for red
 
@@ -44,14 +44,10 @@ public class CommandSwerveController extends CommandXboxController {
    * @return the translation vector for the swerve drive
    */
   public Translation2d getDriveTranslation(DriveMode driveMode) {
-    double xSpeed =
-        driveMode == DriveMode.ROBOT_ORIENTED
-            ? -getLeftY()
-            : translationDirectionMultiplier * getLeftY();
-    double ySpeed =
-        driveMode == DriveMode.ROBOT_ORIENTED
-            ? -getLeftX()
-            : translationDirectionMultiplier * getLeftX();
+    double xSpeed = driveMode == DriveMode.ROBOT_ORIENTED ? -getLeftY()
+        : translationDirectionMultiplier * getLeftY();
+    double ySpeed = driveMode == DriveMode.ROBOT_ORIENTED ? -getLeftX()
+        : translationDirectionMultiplier * getLeftX();
 
     // this prevents the target velocity increase to fast, but should be included in setpoint
     // generator already
@@ -79,7 +75,7 @@ public class CommandSwerveController extends CommandXboxController {
    * Returns an Optional containing the target angle for rotating the swerve drive, if available.
    *
    * @return An Optional containing the target angle in degrees, or an empty Optional if the
-   *     rotation is below the deadband.
+   *         rotation is below the deadband.
    */
   public Optional<Rotation2d> getDriveRotationAngle() {
     double rightY = translationDirectionMultiplier * getRightY();
@@ -144,22 +140,20 @@ public class CommandSwerveController extends CommandXboxController {
   /**
    * Returns the nearest pole angle to the given rotation.
    *
-   * <p>The nearest pole is determined by comparing the absolute values of the cosine and sine of
-   * the rotation angle. If the absolute cosine is greater, the nearest pole is along the x-axis (0
-   * or 180 degrees). If the absolute sine is greater, the nearest pole is along the y-axis (90 or
-   * 270 degrees).
+   * <p>
+   * The nearest pole is determined by comparing the absolute values of the cosine and sine of the
+   * rotation angle. If the absolute cosine is greater, the nearest pole is along the x-axis (0 or
+   * 180 degrees). If the absolute sine is greater, the nearest pole is along the y-axis (90 or 270
+   * degrees).
    *
    * @param rotation The rotation to find the nearest pole for.
    * @return The nearest pole angle.
    */
   private static Rotation2d nearestPole(Rotation2d rotation) {
-    double poleSin =
-        Math.abs(rotation.getCos()) > Math.abs(rotation.getSin())
-            ? 0.0
-            : Math.signum(rotation.getSin());
+    double poleSin = Math.abs(rotation.getCos()) > Math.abs(rotation.getSin()) ? 0.0
+        : Math.signum(rotation.getSin());
     double poleCos =
-        Math.abs(rotation.getCos()) > Math.abs(rotation.getSin())
-            ? Math.signum(rotation.getCos())
+        Math.abs(rotation.getCos()) > Math.abs(rotation.getSin()) ? Math.signum(rotation.getCos())
             : 0.0;
     return new Rotation2d(poleCos, poleSin);
   }
@@ -176,8 +170,7 @@ public class CommandSwerveController extends CommandXboxController {
 
   /** Represents the drive mode of the swerve drive. */
   public enum DriveMode {
-    ROBOT_ORIENTED,
-    FIELD_ORIENTED
+    ROBOT_ORIENTED, FIELD_ORIENTED
   }
 
   /**
@@ -187,9 +180,5 @@ public class CommandSwerveController extends CommandXboxController {
    */
   public DriveMode isRobotRelative() {
     return getHID().getLeftBumper() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
-  }
-
-  public Boolean snapToAmpAngle() {
-    return getHID().getBackButton();
   }
 }
