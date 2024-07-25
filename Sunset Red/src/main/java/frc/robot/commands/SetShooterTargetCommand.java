@@ -18,13 +18,13 @@ public class SetShooterTargetCommand extends Command {
   private static final double STABLIZE_TIME = 0.1;
   private DualEdgeDelayedBoolean spinStablized =
       new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), STABLIZE_TIME, EdgeType.RISING);
-  private static final double SHOOT_THRESHOLD_RPS =
-      10.0; // lower than this velocity, game piece will get stuck
+  private static final double SHOOT_THRESHOLD_RPS = 10.0; // lower than this velocity, game piece
+                                                          // will get stuck
   private static final double ERR_TOL = 2.0; // spin velocity error tolerance (rps)
 
   /**
    * @brief sets the shooter to a target rps, finishes when target reached, do not interact with
-   *     transfer subsystem
+   *        transfer subsystem
    */
   public SetShooterTargetCommand(Shooter shooter, double targetRPS) {
     mShooter = shooter;
@@ -45,8 +45,7 @@ public class SetShooterTargetCommand extends Command {
   public void execute() {
     double mainMotorVelocity = mShooter.getMainMotorVelocity();
     double followerVelocity = mShooter.getFollowerVelocity();
-    if (spinStablized.update(
-        Timer.getFPGATimestamp(),
+    if (spinStablized.update(Timer.getFPGATimestamp(),
         mShooter.getMainMotorVelocity() > SHOOT_THRESHOLD_RPS
             && mShooter.getFollowerVelocity() > SHOOT_THRESHOLD_RPS
             && Math.abs(mainMotorVelocity - shooterTargetRPS) < ERR_TOL

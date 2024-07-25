@@ -32,20 +32,15 @@ public class DriveToNearestTrapCommand extends Command {
     this.sDrivetrainSubsystem = drivetrainSubsystem;
 
     TrapezoidProfile.Constraints constraints =
-        new TrapezoidProfile.Constraints(
-            DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
+        new TrapezoidProfile.Constraints(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
             DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
 
     xController = new ProfiledPIDController(5.0, 0, 0, constraints);
     xController.setTolerance(0.05);
     yController = new ProfiledPIDController(5.0, 0, 0, constraints);
     yController.setTolerance(0.05);
-    rotationController =
-        new ProfiledPIDController(
-            5.0,
-            0,
-            0,
-            new TrapezoidProfile.Constraints(Math.toRadians(540.0), Math.toRadians(720.0)));
+    rotationController = new ProfiledPIDController(5.0, 0, 0,
+        new TrapezoidProfile.Constraints(Math.toRadians(540.0), Math.toRadians(720.0)));
 
     rotationController.enableContinuousInput(-Math.PI, Math.PI);
     rotationController.setTolerance(Math.toRadians(2.0));
@@ -67,16 +62,12 @@ public class DriveToNearestTrapCommand extends Command {
   public void execute() {
     Pose2d currentPose = sDrivetrainSubsystem.getPose();
 
-    double xSpeed =
-        xController.calculate(currentPose.getX(), mTargetPose.getX())
-            + xController.getSetpoint().velocity;
-    double ySpeed =
-        yController.calculate(currentPose.getY(), mTargetPose.getY())
-            + yController.getSetpoint().velocity;
-    double rotationSpeed =
-        rotationController.calculate(
-                currentPose.getRotation().getRadians(), mTargetPose.getRotation().getRadians())
-            + rotationController.getSetpoint().velocity;
+    double xSpeed = xController.calculate(currentPose.getX(), mTargetPose.getX())
+        + xController.getSetpoint().velocity;
+    double ySpeed = yController.calculate(currentPose.getY(), mTargetPose.getY())
+        + yController.getSetpoint().velocity;
+    double rotationSpeed = rotationController.calculate(currentPose.getRotation().getRadians(),
+        mTargetPose.getRotation().getRadians()) + rotationController.getSetpoint().velocity;
 
     sDrivetrainSubsystem.drive(new Translation2d(xSpeed, ySpeed), rotationSpeed, true);
   }
@@ -97,9 +88,7 @@ public class DriveToNearestTrapCommand extends Command {
 
     List<Pose2d> trapPoses = new ArrayList<>();
     for (int tagId : trapTagIds) {
-      ApriltagCoprocessor.getInstance()
-          .aprilTagFieldLayout
-          .getTagPose(tagId)
+      ApriltagCoprocessor.getInstance().aprilTagFieldLayout.getTagPose(tagId)
           .ifPresent(tagPose -> trapPoses.add(tagPose.toPose2d()));
     }
 
@@ -115,7 +104,7 @@ public class DriveToNearestTrapCommand extends Command {
     }
 
     // Adjust the final pose to be in front of the trap
-    return nearestTrap.transformBy(
-        new Transform2d(new Translation2d(DISTANCE_OFFSET, 0), new Rotation2d()));
+    return nearestTrap
+        .transformBy(new Transform2d(new Translation2d(DISTANCE_OFFSET, 0), new Rotation2d()));
   }
 }

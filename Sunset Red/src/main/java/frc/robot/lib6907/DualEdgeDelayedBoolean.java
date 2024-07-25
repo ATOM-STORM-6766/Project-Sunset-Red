@@ -9,9 +9,7 @@ public class DualEdgeDelayedBoolean {
   private boolean mState;
 
   public enum EdgeType {
-    RISING,
-    FALLING,
-    DUAL
+    RISING, FALLING
   }
 
   public DualEdgeDelayedBoolean(double timestamp, double delay, EdgeType edgeType) {
@@ -39,16 +37,7 @@ public class DualEdgeDelayedBoolean {
         mState = value && (timestamp - mRisingEdgeTimestamp > mDelay);
         break;
       case FALLING:
-        mState = !value && (timestamp - mFallingEdgeTimestamp > mDelay);
-        break;
-      case DUAL:
-        if (value && (timestamp - mRisingEdgeTimestamp > mDelay)) {
-          mState = true;
-        } else if (!value && (timestamp - mFallingEdgeTimestamp > mDelay)) {
-          mState = true;
-        } else {
-          mState = false;
-        }
+        mState = value || (timestamp - mFallingEdgeTimestamp < mDelay);
         break;
     }
 

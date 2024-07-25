@@ -31,20 +31,15 @@ public class DriveToAmpCommand extends Command {
   public DriveToAmpCommand(DrivetrainSubsystem drivetrainSubsystem) {
     this.sDrivetrainSubsystem = drivetrainSubsystem;
     TrapezoidProfile.Constraints constraints =
-        new TrapezoidProfile.Constraints(
-            DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
+        new TrapezoidProfile.Constraints(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond,
             DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
 
     xController = new ProfiledPIDController(4.0, 0, 0, constraints);
     xController.setTolerance(0.05);
     yController = new ProfiledPIDController(4.0, 0, 0, constraints);
     yController.setTolerance(0.05);
-    rotationController =
-        new ProfiledPIDController(
-            4.0,
-            0,
-            0,
-            new TrapezoidProfile.Constraints(Math.toRadians(540.0), Math.toRadians(720.0)));
+    rotationController = new ProfiledPIDController(4.0, 0, 0,
+        new TrapezoidProfile.Constraints(Math.toRadians(540.0), Math.toRadians(720.0)));
     rotationController.enableContinuousInput(-Math.PI, Math.PI);
     rotationController.setTolerance(Math.toRadians(2.0));
 
@@ -65,16 +60,12 @@ public class DriveToAmpCommand extends Command {
   public void execute() {
     Pose2d currentPose = sDrivetrainSubsystem.getPose();
 
-    double xSpeed =
-        xController.calculate(currentPose.getX(), mTargetPose.getX())
-            + xController.getSetpoint().velocity;
-    double ySpeed =
-        yController.calculate(currentPose.getY(), mTargetPose.getY())
-            + yController.getSetpoint().velocity;
-    double rotationSpeed =
-        rotationController.calculate(
-                currentPose.getRotation().getRadians(), mTargetPose.getRotation().getRadians())
-            + rotationController.getSetpoint().velocity;
+    double xSpeed = xController.calculate(currentPose.getX(), mTargetPose.getX())
+        + xController.getSetpoint().velocity;
+    double ySpeed = yController.calculate(currentPose.getY(), mTargetPose.getY())
+        + yController.getSetpoint().velocity;
+    double rotationSpeed = rotationController.calculate(currentPose.getRotation().getRadians(),
+        mTargetPose.getRotation().getRadians()) + rotationController.getSetpoint().velocity;
 
     sDrivetrainSubsystem.drive(new Translation2d(xSpeed, ySpeed), rotationSpeed, true);
   }

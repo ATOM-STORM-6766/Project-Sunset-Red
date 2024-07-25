@@ -12,25 +12,25 @@ public class DriveWithTriggerCommand extends Command {
 
   private final Supplier<Translation2d> driveVectorSupplier;
   /*
-   * Getting the angular velocity from the product of the joysticks (Right X) and the max angular velocity
+   * Getting the angular velocity from the product of the joysticks (Right X) and the max angular
+   * velocity
    */
 
   private final BooleanSupplier robotCentricSupplier;
   private final Supplier<Double> rawRotationRateSupplier;
   private double angularVelocity;
+
   /**
    * The default drive command constructor
    *
    * @param drivetrainSubsystem The coordinator between the gyro and the swerve modules
    * @param xVelocitySupplier Gets the joystick value for the x velocity and multiplies it by the
-   *     max velocity
+   *        max velocity
    * @param yVelocitySupplier Gets the joystick value for the y velocity and multiplies it by the
-   *     max velocity
+   *        max velocity
    */
-  public DriveWithTriggerCommand(
-      DrivetrainSubsystem drivetrainSubsystem,
-      Supplier<Translation2d> driveVectorSupplier,
-      Supplier<Double> rawRotationRateSupplier,
+  public DriveWithTriggerCommand(DrivetrainSubsystem drivetrainSubsystem,
+      Supplier<Translation2d> driveVectorSupplier, Supplier<Double> rawRotationRateSupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;
@@ -42,14 +42,8 @@ public class DriveWithTriggerCommand extends Command {
   @Override
   public void execute() {
     // Running the lambda statements and getting the velocity values
-    angularVelocity =
-        rawRotationRateSupplier.get()
-            * DriveConstants
-                .kTeleDriveMaxAngularSpeedRadiansPerSecond; // -1~1 to radians per second
-    Translation2d driveVector =
-        driveVectorSupplier
-            .get()
-            .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond); // -1~1 to meters per second
+    angularVelocity = rawRotationRateSupplier.get();
+    Translation2d driveVector = driveVectorSupplier.get();
     mDrivetrainSubsystem.drive(driveVector, angularVelocity, !robotCentricSupplier.getAsBoolean());
   }
 
