@@ -29,35 +29,45 @@ public class AutoCommandFactory {
   /**
    * This is the start command for any auto routine. It zeroes the drivetrain and set initial pose
    * along with shooting the preload. This command has proper logging for command scheduling.
-   * 
+   *
    * @param drivetrainSubsystem
    * @param shootingParameters the preload shooting parameter
    * @param startPathName the path file name that used as the start of the path (to set initial
-   *        pose)
+   *     pose)
    * @param arm
    * @param shooter
    * @param transfer
    * @return Command
    */
-  public static Command buildPrepCommand(DrivetrainSubsystem drivetrainSubsystem,
-      ShootingParameters shootingParameters, String startPathName, Arm arm, Shooter shooter,
+  public static Command buildPrepCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      ShootingParameters shootingParameters,
+      String startPathName,
+      Arm arm,
+      Shooter shooter,
       Transfer transfer) {
-    return new ParallelCommandGroup(new SequentialCommandGroup(
-        drivetrainSubsystem.runZeroingCommand(), new InstantCommand(() -> {
-          Optional<Alliance> currentAlliance = DriverStation.getAlliance();
-          PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
-          if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
-            firstPath = firstPath.flipPath();
-          }
-          drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
-          SmartDashboard.putString("Auto Status", "Finished prepare command");
-        })),
+    return new ParallelCommandGroup(
         new SequentialCommandGroup(
-            new ParallelCommandGroup(new SetArmAngleCommand(arm, shootingParameters.angle_deg),
+            drivetrainSubsystem.runZeroingCommand(),
+            new InstantCommand(
+                () -> {
+                  Optional<Alliance> currentAlliance = DriverStation.getAlliance();
+                  PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
+                  if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
+                    firstPath = firstPath.flipPath();
+                  }
+                  drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
+                  SmartDashboard.putString("Auto Status", "Finished prepare command");
+                })),
+        new SequentialCommandGroup(
+            new ParallelCommandGroup(
+                new SetArmAngleCommand(arm, shootingParameters.angle_deg),
                 new SetShooterTargetCommand(shooter, shootingParameters.speed_rps)),
-            new FeedCommand(transfer), new InstantCommand(() -> {
-              shooter.stop();
-            })));
+            new FeedCommand(transfer),
+            new InstantCommand(
+                () -> {
+                  shooter.stop();
+                })));
   }
 
   /**
@@ -65,7 +75,7 @@ public class AutoCommandFactory {
    * pathCommand until note is seen, then chase note. If the first chase attempt failed (no note in
    * transfer) we do a findNoteHeading turn and then chase again. This command takes care of mid
    * field fencing. After this command you can do what you want with the note (if you have it!)
-   * 
+   *
    * @param drivetrainSubsystem
    * @param arm
    * @param shooter
@@ -73,35 +83,49 @@ public class AutoCommandFactory {
    * @param intake
    * @param gamePieceProcessor
    * @param pathCommand the command for finding the path to a specific note. Can be pathfollow or
-   *        pathfind or followthenfind, whatever you want.
+   *     pathfind or followthenfind, whatever you want.
    * @param findNoteHeading the heading for finding note. For example with near-side auto
-   *        (california) give me -90.0 degree and for far-side auto(southern-cross) give 90.0
-   *        degrees.
+   *     (california) give me -90.0 degree and for far-side auto(southern-cross) give 90.0 degrees.
    * @return
    */
-  public static Command buildPathThenChaseNoteCommand(DrivetrainSubsystem drivetrainSubsystem,
-      Arm arm, Shooter shooter, Transfer transfer, Intake intake,
-      GamePieceProcessor gamePieceProcessor, Command pathCommand, Rotation2d findNoteHeading) {
-    return new SequentialCommandGroup(new ParallelDeadlineGroup(pathCommand,
-        new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
-        new IntakeCommand(intake, transfer)).until(() -> {
-          boolean deadline = isChaseDeadlineReached(drivetrainSubsystem);
-          Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
-          boolean hasTarget = target.isPresent();
-          SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
-          SmartDashboard.putBoolean("Has Target", hasTarget);
-          return deadline && hasTarget;
-        }), new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
-        new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake, transfer,
-            arm).until(() -> isMidFieldFenceReached(drivetrainSubsystem)),
+  public static Command buildPathThenChaseNoteCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Transfer transfer,
+      Intake intake,
+      GamePieceProcessor gamePieceProcessor,
+      Command pathCommand,
+      Rotation2d findNoteHeading) {
+    return new SequentialCommandGroup(
+        new ParallelDeadlineGroup(
+                pathCommand,
+                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                new IntakeCommand(intake, transfer))
+            .until(
+                () -> {
+                  boolean deadline = isChaseDeadlineReached(drivetrainSubsystem);
+                  Optional<PhotonTrackedTarget> target =
+                      gamePieceProcessor.getClosestGamePieceInfo();
+                  boolean hasTarget = target.isPresent();
+                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+                  SmartDashboard.putBoolean("Has Target", hasTarget);
+                  return deadline && hasTarget;
+                }),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
+        new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake, transfer, arm)
+            .until(() -> isMidFieldFenceReached(drivetrainSubsystem)),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
-        Commands.either(new WaitCommand(0), new SequentialCommandGroup(
-            new InstantCommand(
-                () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
-            new TurnToHeadingCommand(drivetrainSubsystem, findNoteHeading),
-            new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
-            new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake,
-                transfer, arm).until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
+        Commands.either(
+            new WaitCommand(0),
+            new SequentialCommandGroup(
+                new InstantCommand(
+                    () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
+                new TurnToHeadingCommand(drivetrainSubsystem, findNoteHeading),
+                new InstantCommand(
+                    () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
+                new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake, transfer, arm)
+                    .until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
@@ -137,5 +161,4 @@ public class AutoCommandFactory {
       return robotX > kMidFieldFenceX;
     }
   }
-
 }

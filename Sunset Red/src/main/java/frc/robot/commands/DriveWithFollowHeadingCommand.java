@@ -20,15 +20,18 @@ public class DriveWithFollowHeadingCommand extends Command {
 
   // input in radians and output in rad/s
   // TODO : CHECK PID
-  private final ProfiledPIDController mProfiledPID = new ProfiledPIDController(0.5, 0, 0.0,
-      new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
+  private final ProfiledPIDController mProfiledPID =
+      new ProfiledPIDController(
+          0.5, 0, 0.0, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
 
   // accept drive supplier and target heading
   // use a profiled controller to do the heading following
   // NOTE: this command dont finish itself.
-  public DriveWithFollowHeadingCommand(DrivetrainSubsystem drivetrainSubsystem,
+  public DriveWithFollowHeadingCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
       Supplier<Translation2d> driveVectorSupplier,
-      Supplier<Optional<Rotation2d>> targetHeadingSupplier, BooleanSupplier robotCentricSupplier) {
+      Supplier<Optional<Rotation2d>> targetHeadingSupplier,
+      BooleanSupplier robotCentricSupplier) {
 
     sDrivetrainSubsystem = drivetrainSubsystem;
     mDriveVectorSupplier = driveVectorSupplier;
@@ -58,12 +61,15 @@ public class DriveWithFollowHeadingCommand extends Command {
       mProfiledPID.setGoal(target.get().getRadians());
     }
     // in rad/s
-    double turnspeed = mProfiledPID.calculate(sDrivetrainSubsystem.getHeading().getRadians())
-        + mProfiledPID.getSetpoint().velocity;
+    double turnspeed =
+        mProfiledPID.calculate(sDrivetrainSubsystem.getHeading().getRadians())
+            + mProfiledPID.getSetpoint().velocity;
     if (mProfiledPID.atGoal()) {
       turnspeed = 0.0;
     }
-    sDrivetrainSubsystem.drive(driveVector, turnspeed, // output is in radians per second
+    sDrivetrainSubsystem.drive(
+        driveVector,
+        turnspeed, // output is in radians per second
         !mRobotCentricSupplier.getAsBoolean());
   }
 

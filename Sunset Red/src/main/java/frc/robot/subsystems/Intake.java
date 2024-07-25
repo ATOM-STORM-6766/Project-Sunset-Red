@@ -30,7 +30,8 @@ public class Intake extends SubsystemBase {
   private final DigitalInput mIntakeOmron;
 
   private final VoltageOut intakeVoltage = new VoltageOut(0);
-  private final VoltageOut externalRollerVoltage = new VoltageOut(0); // New VoltageOut for external roller
+  private final VoltageOut externalRollerVoltage =
+      new VoltageOut(0); // New VoltageOut for external roller
 
   public Intake() {
     mIntakeMotor = new TalonFX(IntakeConstants.INTAKER_ID);

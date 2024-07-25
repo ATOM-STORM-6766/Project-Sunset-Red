@@ -29,53 +29,88 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
   // near 30.0 degree start, preload and go 51 (between 31 32)
   // shoot 51 and go 52
-  public CaliforniaAutoCommand(DrivetrainSubsystem drivetrainSubsystem, Arm arm, Shooter shooter,
-      Transfer transfer, Intake intake) {
+  public CaliforniaAutoCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Transfer transfer,
+      Intake intake) {
 
     sDrivetrainSubsystem = drivetrainSubsystem;
     sGamePieceProcessor = GamePieceProcessor.getInstance();
 
-    Command prepare = AutoCommandFactory.buildPrepCommand(drivetrainSubsystem,
-        ShootingParameters.BELOW_SPEAKER, "California nearTo51", arm, shooter, transfer);
+    Command prepare =
+        AutoCommandFactory.buildPrepCommand(
+            drivetrainSubsystem,
+            ShootingParameters.BELOW_SPEAKER,
+            "California nearTo51",
+            arm,
+            shooter,
+            transfer);
 
-    Command goto51 = new SequentialCommandGroup(
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting goto51")),
-        AutoBuilder.followPath(PathPlannerPath.fromPathFile("California nearTo51")),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished goto51")));
+    Command goto51 =
+        new SequentialCommandGroup(
+            new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting goto51")),
+            AutoBuilder.followPath(PathPlannerPath.fromPathFile("California nearTo51")),
+            new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished goto51")));
 
-    Command pathFindto52 = new SequentialCommandGroup(
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting pathFindto52")),
-        AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_52_POSITION,
-            PathfindConstants.constraints, 0, 0),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finished pathFindto52")));
+    Command pathFindto52 =
+        new SequentialCommandGroup(
+            new InstantCommand(
+                () -> SmartDashboard.putString("Auto Status", "Starting pathFindto52")),
+            AutoBuilder.pathfindToPoseFlipped(
+                FieldConstants.NOTE_52_POSITION, PathfindConstants.constraints, 0, 0),
+            new InstantCommand(
+                () -> SmartDashboard.putString("Auto Status", "Finished pathFindto52")));
 
     // build auto
     addCommands(
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Starting auto routine")),
-        prepare, new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Going to 51")),
-        AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
-            transfer, intake, sGamePieceProcessor, goto51, Rotation2d.fromDegrees(-90.0)),
+        prepare,
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Going to 51")),
+        AutoCommandFactory.buildPathThenChaseNoteCommand(
+            drivetrainSubsystem,
+            arm,
+            shooter,
+            transfer,
+            intake,
+            sGamePieceProcessor,
+            goto51,
+            Rotation2d.fromDegrees(-90.0)),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Finding path to shoot")),
         buildFindPathThenShoot(),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Shooting")),
-        new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake,
-            () -> kZeroTranslation).until(() -> !transfer.isOmronDetected())
-                .andThen(new InstantCommand(() -> {
-                  shooter.stop();
-                  SmartDashboard.putString("Auto Status", "Finished shooting");
-                })),
+        new VisionShootCommand(
+                shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation)
+            .until(() -> !transfer.isOmronDetected())
+            .andThen(
+                new InstantCommand(
+                    () -> {
+                      shooter.stop();
+                      SmartDashboard.putString("Auto Status", "Finished shooting");
+                    })),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Going to 53")),
-        AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
-            transfer, intake, sGamePieceProcessor, pathFindto52, Rotation2d.fromDegrees(-90.0)),
+        AutoCommandFactory.buildPathThenChaseNoteCommand(
+            drivetrainSubsystem,
+            arm,
+            shooter,
+            transfer,
+            intake,
+            sGamePieceProcessor,
+            pathFindto52,
+            Rotation2d.fromDegrees(-90.0)),
         new InstantCommand(
             () -> SmartDashboard.putString("Auto Status", "Finding path to shoot (53)")),
         buildFindPathThenShoot(),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Shooting (53)")),
-        new VisionShootCommand(shooter, arm, transfer, drivetrainSubsystem, intake,
-            () -> kZeroTranslation).andThen(new InstantCommand(() -> {
-              shooter.stop();
-              SmartDashboard.putString("Auto Status", "Finished auto routine");
-            })));
+        new VisionShootCommand(
+                shooter, arm, transfer, drivetrainSubsystem, intake, () -> kZeroTranslation)
+            .andThen(
+                new InstantCommand(
+                    () -> {
+                      shooter.stop();
+                      SmartDashboard.putString("Auto Status", "Finished auto routine");
+                    })));
   }
 
   Command buildFindPathThenShoot() {
