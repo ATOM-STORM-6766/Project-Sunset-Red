@@ -27,22 +27,29 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
     Command blowTrapCommand = sTrapFan.blowTrapCommand();
 
     // Add logging and SmartDashboard updates
-    Command logStarted = new InstantCommand(() -> {
-      System.out.println("BlowTrapAndDrop: Started");
-      SmartDashboard.putString("BlowTrapAndDrop/Status", "Running");
-    });
+    Command logStarted =
+        new InstantCommand(
+            () -> {
+              System.out.println("BlowTrapAndDrop: Started");
+              SmartDashboard.putString("BlowTrapAndDrop/Status", "Running");
+            });
 
-    Command logFinished = new InstantCommand(() -> {
-      System.out.println("BlowTrapAndDrop: Finished");
-      SmartDashboard.putString("BlowTrapAndDrop/Status", "Finished");
-    });
+    Command logFinished =
+        new InstantCommand(
+            () -> {
+              System.out.println("BlowTrapAndDrop: Finished");
+              SmartDashboard.putString("BlowTrapAndDrop/Status", "Finished");
+            });
 
     // Add the commands to the sequence
-    addCommands(logStarted,
+    addCommands(
+        logStarted,
         new SetShooterTargetCommand(sShooter, ShootingParameters.TRAP.speed_rps)
             .alongWith(new SetArmAngleCommand(sArm, ShootingParameters.TRAP.angle_deg)),
-        new SequentialCommandGroup(new WaitCommand(2), // Wait for 2 seconds
-            new FeedCommand(sTransfer)).deadlineWith(blowTrapCommand),
+        new SequentialCommandGroup(
+                new WaitCommand(2), // Wait for 2 seconds
+                new FeedCommand(sTransfer))
+            .deadlineWith(blowTrapCommand),
         logFinished);
 
     addRequirements(trapFan, shooter, arm, transfer);

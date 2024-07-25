@@ -29,10 +29,8 @@ public class ShootingParameters {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null || getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
     ShootingParameters other = (ShootingParameters) obj;
     return speed_rps == other.speed_rps && angle_deg == other.angle_deg;
   }

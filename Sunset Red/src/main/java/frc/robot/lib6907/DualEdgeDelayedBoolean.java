@@ -9,7 +9,8 @@ public class DualEdgeDelayedBoolean {
   private boolean mState;
 
   public enum EdgeType {
-    RISING, FALLING
+    RISING,
+    FALLING
   }
 
   public DualEdgeDelayedBoolean(double timestamp, double delay, EdgeType edgeType) {

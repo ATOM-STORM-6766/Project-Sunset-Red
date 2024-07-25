@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -25,12 +24,14 @@ public class DriveWithTriggerCommand extends Command {
    *
    * @param drivetrainSubsystem The coordinator between the gyro and the swerve modules
    * @param xVelocitySupplier Gets the joystick value for the x velocity and multiplies it by the
-   *        max velocity
+   *     max velocity
    * @param yVelocitySupplier Gets the joystick value for the y velocity and multiplies it by the
-   *        max velocity
+   *     max velocity
    */
-  public DriveWithTriggerCommand(DrivetrainSubsystem drivetrainSubsystem,
-      Supplier<Translation2d> driveVectorSupplier, Supplier<Double> rawRotationRateSupplier,
+  public DriveWithTriggerCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Supplier<Translation2d> driveVectorSupplier,
+      Supplier<Double> rawRotationRateSupplier,
       BooleanSupplier robotCentricSupplier) {
     mDrivetrainSubsystem = drivetrainSubsystem;
     this.driveVectorSupplier = driveVectorSupplier;

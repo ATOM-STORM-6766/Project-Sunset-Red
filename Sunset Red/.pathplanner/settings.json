@@ -1,13 +1,13 @@
 {
   "robotWidth": 0.9,
-  "robotLength": 0.9,
+  "robotLength": 0.97,
   "holonomicMode": true,
   "pathFolders": [
     "California",
     "Section Based"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 3.75,
+  "defaultMaxVel": 4.2,
   "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,

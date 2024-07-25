@@ -9,7 +9,7 @@ import frc.robot.subsystems.Arm;
 
 /**
  * @brief This command sets a single target (which must be determined at code initilization/before
- *        match)
+ *     match)
  */
 public class SetArmAngleCommand extends Command {
   private final Arm sArm;
@@ -31,8 +31,9 @@ public class SetArmAngleCommand extends Command {
   public void initialize() {
     sArm.setAngle(targetAngle);
     isFinished = false;
-    mArmInPosition = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(),
-        ArmConstants.STABILIZE_TIME, EdgeType.RISING);
+    mArmInPosition =
+        new DualEdgeDelayedBoolean(
+            Timer.getFPGATimestamp(), ArmConstants.STABILIZE_TIME, EdgeType.RISING);
   }
 
   @Override

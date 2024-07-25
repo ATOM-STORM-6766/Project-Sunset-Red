@@ -21,8 +21,10 @@ public class GamePieceProcessor extends SubsystemBase {
   private double kLastDetectionTime = -100.0;
   private PhotonTrackedTarget kLastValidTarget = null;
   private final double kDetectionTimeout = 0.3;
-  private Transform3d kRobotToPieceCam = new Transform3d(new Translation3d(-0.03, 0.0, 0.43),
-      new Rotation3d(Math.toRadians(180.0), Math.toRadians(14.0), 0.0));
+  private Transform3d kRobotToPieceCam =
+      new Transform3d(
+          new Translation3d(-0.03, 0.0, 0.43),
+          new Rotation3d(Math.toRadians(180.0), Math.toRadians(14.0), 0.0));
 
   public static GamePieceProcessor getInstance() {
     return mCoprocessor;
@@ -71,8 +73,9 @@ public class GamePieceProcessor extends SubsystemBase {
     }
 
     // Calculate the distance based on the apparent size of the Note
-    double distanceEstimate = (NOTE_OUTER_DIAMETER_METERS * CAMERA_RESOLUTION_WIDTH)
-        / (2 * widthPixels * Math.tan(CAMERA_FOV_HORIZONTAL / 2));
+    double distanceEstimate =
+        (NOTE_OUTER_DIAMETER_METERS * CAMERA_RESOLUTION_WIDTH)
+            / (2 * widthPixels * Math.tan(CAMERA_FOV_HORIZONTAL / 2));
 
     // Get the yaw and pitch from the target
     double yawRadians = Math.toRadians(target.getYaw());
