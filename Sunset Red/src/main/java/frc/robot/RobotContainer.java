@@ -85,6 +85,7 @@ public class RobotContainer {
     SmartDashboard.putData(mArm);
     SmartDashboard.putData(mShooter);
     SmartDashboard.putData(mDriveWithRightStick);
+    ApriltagCoprocessor.getInstance().setLoggingEnabled(true);
   }
 
   /**
