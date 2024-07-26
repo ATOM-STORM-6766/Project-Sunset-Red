@@ -189,8 +189,7 @@ public class RobotContainer {
       driverController
           .a()
           .and(driverController.rightBumper().negate())
-          .whileTrue(
-              new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
+          .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
       // manual intake
       driverController
           .a()
