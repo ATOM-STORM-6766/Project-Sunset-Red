@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.commands.ChaseNoteStateMachineCommand;
+import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
@@ -113,7 +113,7 @@ public class AutoCommandFactory {
                   return deadline && hasTarget;
                 }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
-        new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake, transfer, arm)
+        new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(() -> isMidFieldFenceReached(drivetrainSubsystem)),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
@@ -124,7 +124,7 @@ public class AutoCommandFactory {
                 new TurnToHeadingCommand(drivetrainSubsystem, findNoteHeading),
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
-                new ChaseNoteStateMachineCommand(drivetrainSubsystem, intake, transfer, arm)
+                new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
                     .until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
