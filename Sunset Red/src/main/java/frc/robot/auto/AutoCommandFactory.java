@@ -32,14 +32,26 @@ public class AutoCommandFactory {
   // the starting pose for near home. Heading set for shooting preload in-place.
   public static final Pose2d kNearStart = new Pose2d(1.27, 6.55, Rotation2d.fromDegrees(30.0));
 
+  // upon robot pose x reach kChaseNoteDeadlineX we start chase note
+  // for reference: wing line ~5.8m
+  // TODO: THIS SHOULD BE 6.5-7.0
+  private static final double kChaseNoteDeadlineX = 6.15;
+
+  // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield completely
+  // which is likely to violate rules, so chase note will be cancelled.
+  private static final double kMidFieldFenceX = 8.5;
+
   /**
-   * This is the start command for any auto routine. It zeroes the drivetrain and set initial pose
-   * along with shooting the preload. This command has proper logging for command scheduling.
+   * This is the start command for any auto routine. It zeroes the drivetrain and
+   * set initial pose
+   * along with shooting the preload. This command has proper logging for command
+   * scheduling.
    *
    * @param drivetrainSubsystem
-   * @param shootingParameters the preload shooting parameter
-   * @param startPathName the path file name that used as the start of the path (to set initial
-   *     pose)
+   * @param shootingParameters  the preload shooting parameter
+   * @param startPathName       the path file name that used as the start of the
+   *                            path (to set initial
+   *                            pose)
    * @param arm
    * @param shooter
    * @param transfer
@@ -77,10 +89,14 @@ public class AutoCommandFactory {
   }
 
   /**
-   * This is the standard command for finding and chasing note in auto routine. It follows the
-   * pathCommand until note is seen, then chase note. If the first chase attempt failed (no note in
-   * transfer) we do a findNoteHeading turn and then chase again. This command takes care of mid
-   * field fencing. After this command you can do what you want with the note (if you have it!)
+   * This is the standard command for finding and chasing note in auto routine. It
+   * follows the
+   * pathCommand until note is seen, then chase note. If the first chase attempt
+   * failed (no note in
+   * transfer) we do a findNoteHeading turn and then chase again. This command
+   * takes care of mid
+   * field fencing. After this command you can do what you want with the note (if
+   * you have it!)
    *
    * @param drivetrainSubsystem
    * @param arm
@@ -88,10 +104,13 @@ public class AutoCommandFactory {
    * @param transfer
    * @param intake
    * @param gamePieceProcessor
-   * @param pathCommand the command for finding the path to a specific note. Can be pathfollow or
-   *     pathfind or followthenfind, whatever you want.
-   * @param findNoteHeading the heading for finding note. For example with near-side auto
-   *     (california) give me -90.0 degree and for far-side auto(southern-cross) give 90.0 degrees.
+   * @param pathCommand         the command for finding the path to a specific
+   *                            note. Can be pathfollow or
+   *                            pathfind or followthenfind, whatever you want.
+   * @param findNoteHeading     the heading for finding note. For example with
+   *                            near-side auto
+   *                            (california) give me -90.0 degree and for far-side
+   *                            auto(southern-cross) give 90.0 degrees.
    * @return
    */
   public static Command buildPathThenChaseNoteCommand(
@@ -105,23 +124,25 @@ public class AutoCommandFactory {
       Rotation2d findNoteHeading) {
     return new SequentialCommandGroup(
         new ParallelDeadlineGroup(
-                pathCommand,
+            pathCommand,
+            new SequentialCommandGroup(
+                // if note, it must be prepared, feed first
                 new SequentialCommandGroup(
-                  // if note, it must be prepared, feed first
-                  new SequentialCommandGroup(
                     new FeedCommand(transfer),
-                    Commands.runOnce(() -> shooter.stop(), shooter)
-                  ).onlyIf(() -> transfer.isOmronDetected()),
-                  new ParallelCommandGroup(
+                    Commands.runOnce(() -> shooter.stop(), shooter)).onlyIf(() -> transfer.isOmronDetected()),
+                new ParallelCommandGroup(
                     new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
-                    new IntakeCommand(intake, transfer)
-                  )
-                ))
+                    new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
-                  boolean deadline = isChaseDeadlineReached(drivetrainSubsystem);
-                  Optional<PhotonTrackedTarget> target =
-                      gamePieceProcessor.getClosestGamePieceInfo();
+                  /*
+                   * Chase conditions
+                   * 1. Deadline is whether we are far enough the field to 54
+                   * 2. Has target is whether we have a target to chase
+                   * 3. If we have a note, we can stop chasing
+                   */
+                  boolean deadline = isFieldPositionReached(drivetrainSubsystem,kChaseNoteDeadlineX);
+                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
@@ -129,8 +150,8 @@ public class AutoCommandFactory {
                 }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-            .until(() -> isMidFieldFenceReached(drivetrainSubsystem))
-              .unless(() -> transfer.isOmronDetected()),
+            .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))
+            .unless(() -> transfer.isOmronDetected()),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
             new WaitCommand(0),
@@ -141,7 +162,7 @@ public class AutoCommandFactory {
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
+                    .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
@@ -159,37 +180,33 @@ public class AutoCommandFactory {
       Intake intake,
       GamePieceProcessor gamePieceProcessor) {
     return new SequentialCommandGroup(
-      new ParallelDeadlineGroup(
-        AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("take54EndPath"), 
-          PathfindConstants.constraints),
-        new SequentialCommandGroup(
-          // if note, it must be prepared, feed first
-          new SequentialCommandGroup(
-            new FeedCommand(transfer),
-            Commands.runOnce(() -> shooter.stop(), shooter)
-          ).onlyIf(() -> transfer.isOmronDetected()),
-          new ParallelCommandGroup(
-            new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
-            new IntakeCommand(intake, transfer)
-          )
-        ))
-          .until(
-              () -> {
-                // deadline is whether we are far enough the field to 54
-                boolean deadline = (drivetrainSubsystem.getPose().getY() < 3.0);
-                Optional<PhotonTrackedTarget> target =
-                    gamePieceProcessor.getClosestGamePieceInfo();
-                boolean hasTarget = target.isPresent();
-                SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
-                SmartDashboard.putBoolean("Has Target", hasTarget);
-                return (deadline && hasTarget) || transfer.isOmronDetected();
-              }),
-      new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
-      new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-          .until(() -> isMidFieldFenceReached(drivetrainSubsystem))
+        new ParallelDeadlineGroup(
+            AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("take54EndPath"),
+                PathfindConstants.constraints),
+            new SequentialCommandGroup(
+                // if note, it must be prepared, feed first
+                new SequentialCommandGroup(
+                    new FeedCommand(transfer),
+                    Commands.runOnce(() -> shooter.stop(), shooter)).onlyIf(() -> transfer.isOmronDetected()),
+                new ParallelCommandGroup(
+                    new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                    new IntakeCommand(intake, transfer))))
+            .until(
+                () -> {
+                  // deadline is whether we are far enough the field to 54
+                  boolean deadline = (drivetrainSubsystem.getPose().getY() < 3.0);
+                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+                  boolean hasTarget = target.isPresent();
+                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+                  SmartDashboard.putBoolean("Has Target", hasTarget);
+                  return (deadline && hasTarget) || transfer.isOmronDetected();
+                }),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
+        new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+            .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))
             .unless(() -> transfer.isOmronDetected()),
-      new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
-      Commands.either(
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
+        Commands.either(
             // stop 55 and ok
             AutoBuilder.pathfindToPose(kStop55Pose, PathfindConstants.constraints),
             // if no note, just take 55
@@ -200,41 +217,22 @@ public class AutoCommandFactory {
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
+                    .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
               return hasNote;
-            })
-    );
+            }));
   }
 
-  // upon robot pose x reach kChaseNoteDeadlineX we start chase note
-  // for reference: wing line ~5.8m
-  // TODO: THIS SHOULD BE 6.5-7.0
-  private static final double kChaseNoteDeadlineX = 4.8;
-
-  public static boolean isChaseDeadlineReached(DrivetrainSubsystem drivetrainSubsystem) {
+  public static boolean isFieldPositionReached(DrivetrainSubsystem drivetrainSubsystem, double threshold) {
     Optional<Alliance> a = DriverStation.getAlliance();
     double robotX = drivetrainSubsystem.getPose().getX();
     if (a.isPresent() && a.get() == Alliance.Red) { // red
-      return robotX < 16.54 - kChaseNoteDeadlineX;
+      return robotX < 16.54 - threshold;
     } else { // blue
-      return robotX > kChaseNoteDeadlineX;
+      return robotX > threshold;
     }
-  }
 
-  // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield completely
-  // which is likely to violate rules, so chase note will be cancelled.
-  private static final double kMidFieldFenceX = 8.5;
-
-  public static boolean isMidFieldFenceReached(DrivetrainSubsystem drivetrainSubsystem) {
-    Optional<Alliance> a = DriverStation.getAlliance();
-    double robotX = drivetrainSubsystem.getPose().getX();
-    if (a.isPresent() && a.get() == Alliance.Red) { // red
-      return robotX < 16.54 - kMidFieldFenceX;
-    } else { // blue
-      return robotX > kMidFieldFenceX;
-    }
   }
 }

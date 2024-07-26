@@ -284,15 +284,13 @@ public class RobotContainer {
   }
 
   public void pushChooser() {
-    // init points
     mChooser = new SendableChooser<>();
-
     mChooser.addOption(
-        "california",
-        new CaliforniaAutoCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake));
-    mChooser.setDefaultOption("near 51then52", new NearMid51then52AutoCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake));
-    mChooser.addOption("near 52then51", new NearMid52then51AutoCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake));
-
+        "California - Start with 51",
+        new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, false));
+    mChooser.addOption(
+        "California - Start with 52",
+        new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, true));
     SmartDashboard.putData("AUTO CHOICES", mChooser);
-  }
+}
 }
