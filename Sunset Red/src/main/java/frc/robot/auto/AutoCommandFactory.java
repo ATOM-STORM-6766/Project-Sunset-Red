@@ -1,6 +1,8 @@
 package frc.robot.auto;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -13,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.PathfindConstants;
 import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeCommand;
@@ -25,6 +28,9 @@ import java.util.Optional;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class AutoCommandFactory {
+
+  // the starting pose for near home. Heading set for shooting preload in-place.
+  public static final Pose2d kNearStart = new Pose2d(1.27, 6.55, Rotation2d.fromDegrees(30.0));
 
   /**
    * This is the start command for any auto routine. It zeroes the drivetrain and set initial pose
@@ -100,8 +106,17 @@ public class AutoCommandFactory {
     return new SequentialCommandGroup(
         new ParallelDeadlineGroup(
                 pathCommand,
-                new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
-                new IntakeCommand(intake, transfer))
+                new SequentialCommandGroup(
+                  // if note, it must be prepared, feed first
+                  new SequentialCommandGroup(
+                    new FeedCommand(transfer),
+                    Commands.runOnce(() -> shooter.stop(), shooter)
+                  ).onlyIf(() -> transfer.isOmronDetected()),
+                  new ParallelCommandGroup(
+                    new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                    new IntakeCommand(intake, transfer)
+                  )
+                ))
             .until(
                 () -> {
                   boolean deadline = isChaseDeadlineReached(drivetrainSubsystem);
@@ -110,11 +125,12 @@ public class AutoCommandFactory {
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return deadline && hasTarget;
+                  return (deadline && hasTarget) || transfer.isOmronDetected();
                 }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-            .until(() -> isMidFieldFenceReached(drivetrainSubsystem)),
+            .until(() -> isMidFieldFenceReached(drivetrainSubsystem))
+              .unless(() -> transfer.isOmronDetected()),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
             new WaitCommand(0),
@@ -133,12 +149,72 @@ public class AutoCommandFactory {
             }));
   }
 
+  private static final Pose2d kStop55Pose = new Pose2d(7.72, 1.24, Rotation2d.fromDegrees(-45.0));
+
+  public static Command buildTake54Stop55Command(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Transfer transfer,
+      Intake intake,
+      GamePieceProcessor gamePieceProcessor) {
+    return new SequentialCommandGroup(
+      new ParallelDeadlineGroup(
+        AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("take54EndPath"), 
+          PathfindConstants.constraints),
+        new SequentialCommandGroup(
+          // if note, it must be prepared, feed first
+          new SequentialCommandGroup(
+            new FeedCommand(transfer),
+            Commands.runOnce(() -> shooter.stop(), shooter)
+          ).onlyIf(() -> transfer.isOmronDetected()),
+          new ParallelCommandGroup(
+            new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+            new IntakeCommand(intake, transfer)
+          )
+        ))
+          .until(
+              () -> {
+                // deadline is whether we are far enough the field to 54
+                boolean deadline = (drivetrainSubsystem.getPose().getY() < 3.0);
+                Optional<PhotonTrackedTarget> target =
+                    gamePieceProcessor.getClosestGamePieceInfo();
+                boolean hasTarget = target.isPresent();
+                SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+                SmartDashboard.putBoolean("Has Target", hasTarget);
+                return (deadline && hasTarget) || transfer.isOmronDetected();
+              }),
+      new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
+      new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+          .until(() -> isMidFieldFenceReached(drivetrainSubsystem))
+            .unless(() -> transfer.isOmronDetected()),
+      new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
+      Commands.either(
+            // stop 55 and ok
+            AutoBuilder.pathfindToPose(kStop55Pose, PathfindConstants.constraints),
+            // if no note, just take 55
+            new SequentialCommandGroup(
+                new InstantCommand(
+                    () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
+                new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(-90.0)),
+                new InstantCommand(
+                    () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
+                new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+                    .until(() -> isMidFieldFenceReached(drivetrainSubsystem))),
+            () -> {
+              boolean hasNote = transfer.isOmronDetected();
+              SmartDashboard.putBoolean("Has Note", hasNote);
+              return hasNote;
+            })
+    );
+  }
+
   // upon robot pose x reach kChaseNoteDeadlineX we start chase note
   // for reference: wing line ~5.8m
   // TODO: THIS SHOULD BE 6.5-7.0
   private static final double kChaseNoteDeadlineX = 4.8;
 
-  private static boolean isChaseDeadlineReached(DrivetrainSubsystem drivetrainSubsystem) {
+  public static boolean isChaseDeadlineReached(DrivetrainSubsystem drivetrainSubsystem) {
     Optional<Alliance> a = DriverStation.getAlliance();
     double robotX = drivetrainSubsystem.getPose().getX();
     if (a.isPresent() && a.get() == Alliance.Red) { // red
@@ -152,7 +228,7 @@ public class AutoCommandFactory {
   // which is likely to violate rules, so chase note will be cancelled.
   private static final double kMidFieldFenceX = 8.5;
 
-  private static boolean isMidFieldFenceReached(DrivetrainSubsystem drivetrainSubsystem) {
+  public static boolean isMidFieldFenceReached(DrivetrainSubsystem drivetrainSubsystem) {
     Optional<Alliance> a = DriverStation.getAlliance();
     double robotX = drivetrainSubsystem.getPose().getX();
     if (a.isPresent() && a.get() == Alliance.Red) { // red

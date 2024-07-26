@@ -2,13 +2,16 @@ package frc.robot.utils;
 
 public class ShootingParameters {
 
-  public static final ShootingParameters BELOW_SPEAKER = new ShootingParameters(85, 59.0);
+  public static final ShootingParameters BELOW_SPEAKER = new ShootingParameters(75, 59.0);
   // amp shooting angle and speed
-  public static final ShootingParameters AMP_LOWSPEED = new ShootingParameters(10, 118);
+  public static final ShootingParameters AMP_LOWSPEED = new ShootingParameters(11, 118);
   // amp prep state
   public static final ShootingParameters AMP_INTERMEDIATE_POS = new ShootingParameters(35, 90);
   // trap shooting state
-  public static final ShootingParameters TRAP = new ShootingParameters(40, 62);
+  public static final ShootingParameters TRAP = new ShootingParameters(60, 62);
+
+  // everything above has not been fine tuned for new shooter !TODO
+  public static final ShootingParameters IN_FRONT_OF_WING = new ShootingParameters(75, 34);
 
   public double speed_rps;
   public double angle_deg;
