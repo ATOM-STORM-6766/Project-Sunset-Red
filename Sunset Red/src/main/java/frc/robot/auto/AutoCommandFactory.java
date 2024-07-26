@@ -37,7 +37,8 @@ public class AutoCommandFactory {
   // TODO: THIS SHOULD BE 6.5-7.0
   private static final double kChaseNoteDeadlineX = 6.15;
 
-  // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield completely
+  // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield
+  // completely
   // which is likely to violate rules, so chase note will be cancelled.
   private static final double kMidFieldFenceX = 8.5;
 
@@ -141,7 +142,7 @@ public class AutoCommandFactory {
                    * 2. Has target is whether we have a target to chase
                    * 3. If we have a note, we can stop chasing
                    */
-                  boolean deadline = isFieldPositionReached(drivetrainSubsystem,kChaseNoteDeadlineX);
+                  boolean deadline = isFieldPositionReached(drivetrainSubsystem, kChaseNoteDeadlineX);
                   Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
@@ -150,7 +151,7 @@ public class AutoCommandFactory {
                 }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-            .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))
+            .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
             .unless(() -> transfer.isOmronDetected()),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
@@ -162,7 +163,7 @@ public class AutoCommandFactory {
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))),
+                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
@@ -203,7 +204,7 @@ public class AutoCommandFactory {
                 }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-            .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))
+            .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
             .unless(() -> transfer.isOmronDetected()),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
@@ -217,7 +218,7 @@ public class AutoCommandFactory {
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isFieldPositionReached(drivetrainSubsystem,kMidFieldFenceX))),
+                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
@@ -234,5 +235,72 @@ public class AutoCommandFactory {
       return robotX > threshold;
     }
 
+  }
+
+  /**
+   * This command is almost only for the OP-Robotics mid start auto.
+   * i.e. Dallas Auto
+   * we follow path and shoot 32 on the fly
+   * 
+   * @param drivetrainSubsystem
+   * @param arm
+   * @param shooter
+   * @param transfer
+   * @param intake
+   * @param gamePieceProcessor
+   * @param pathName
+   * @param shootParams
+   * @param findNoteHeading
+   * @return
+   */
+  public static Command buildIntakeShootWhileMovingCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Transfer transfer,
+      Intake intake,
+      GamePieceProcessor gamePieceProcessor,
+      String pathName,
+      ShootingParameters shootParams,
+      Rotation2d findNoteHeading) {
+    return new SequentialCommandGroup(
+        new ParallelDeadlineGroup(
+            AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
+            new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new SetArmAngleCommand(arm, shootParams.angle_deg),
+                    new SetShooterTargetCommand(shooter, shootParams.speed_rps),
+                    new IntakeCommand(intake, transfer),
+                    new FeedCommand(transfer)).until(() -> !transfer.isOmronDetected()),
+                new ParallelCommandGroup(
+                    new SetShooterTargetCommand(shooter, ShootingParameters.IDLE.speed_rps),
+                    new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                    new IntakeCommand(intake, transfer))))
+            .until(() -> {
+              boolean deadline = isFieldPositionReached(drivetrainSubsystem, kChaseNoteDeadlineX);
+              Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+              boolean hasTarget = target.isPresent();
+              SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+              SmartDashboard.putBoolean("Has Target", hasTarget);
+              return (deadline && hasTarget) || transfer.isOmronDetected();
+            }),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
+        new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+            .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
+            .unless(() -> transfer.isOmronDetected()),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
+        Commands.either(
+            new WaitCommand(0),
+            new SequentialCommandGroup(
+                new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
+                new TurnToHeadingCommand(drivetrainSubsystem, findNoteHeading),
+                new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
+                new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))),
+            () -> {
+              boolean hasNote = transfer.isOmronDetected();
+              SmartDashboard.putBoolean("Has Note", hasNote);
+              return hasNote;
+            }));
   }
 }

@@ -13,6 +13,8 @@ public class ShootingParameters {
   // everything above has not been fine tuned for new shooter !TODO
   public static final ShootingParameters IN_FRONT_OF_WING = new ShootingParameters(75, 34);
 
+  public static final ShootingParameters IDLE = new ShootingParameters(0, 36); // intake observation angle
+
   public double speed_rps;
   public double angle_deg;
 

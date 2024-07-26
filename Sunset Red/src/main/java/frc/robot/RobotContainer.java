@@ -291,6 +291,12 @@ public class RobotContainer {
     mChooser.addOption(
         "California - Start with 52",
         new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, true));
-    SmartDashboard.putData("AUTO CHOICES", mChooser);
+        mChooser.addOption("Dallas - Start with 53", 
+        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_53));
+    mChooser.addOption("Dallas - Start with 52", 
+        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_52));
+    mChooser.addOption("Dallas - Start 53 then Trap", 
+        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_53_THEN_TRAP));
+        SmartDashboard.putData("AUTO CHOICES", mChooser);
 }
 }
