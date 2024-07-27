@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.*;
 import frc.robot.auto.modes.*;
 import frc.robot.commands.*;
+import frc.robot.commands.PepGuardiolaCommand.GoalZone;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
@@ -205,6 +206,8 @@ public class RobotContainer {
     } else {
       buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
     }
+    // seven zones transfer
+    buildPepGBinding(new Trigger[]{driverController.povUp(),driverController.povDown(),driverController.povLeft(),driverController.povRight()});
   }
 
   private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
@@ -242,6 +245,31 @@ public class RobotContainer {
         .onFalse(stopShootingCommand);
   }
 
+  private void buildPepGBinding(Trigger[] triggers){
+    // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter, null, 
+    // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
+    Command pepGuardiolaCommandUP = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
+                    driverController
+                        .getDriveTranslation(driverController.isRobotRelative())
+                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.UP);
+        Command pepGuardiolaCommandDOWN = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
+                    driverController
+                        .getDriveTranslation(driverController.isRobotRelative())
+                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.DOWN);
+        Command pepGuardiolaCommandLEFT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
+                    driverController
+                        .getDriveTranslation(driverController.isRobotRelative())
+                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.LEFT);
+        Command pepGuardiolaCommandRIGHT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
+                    driverController
+                        .getDriveTranslation(driverController.isRobotRelative())
+                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.RIGHT);
+    
+    triggers[0].onTrue(pepGuardiolaCommandUP);
+    triggers[1].onTrue(pepGuardiolaCommandDOWN);
+    triggers[2].onTrue(pepGuardiolaCommandLEFT);
+    triggers[3].onTrue(pepGuardiolaCommandRIGHT);
+  }
   private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
     Pose2d targetPose =
         isRedAlliance
