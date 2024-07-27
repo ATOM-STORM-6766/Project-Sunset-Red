@@ -181,7 +181,8 @@ public class PepGuardiolaCommand extends Command {
       && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
       && mProfiledPID.atGoal();
     
-    return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);
+      return shootOk&&zoneOk;
+    // return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);
   }
 
   private boolean checkLowShoot() {
