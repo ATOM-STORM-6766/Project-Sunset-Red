@@ -157,6 +157,7 @@ public class PepGuardiolaCommand extends Command {
     // detect time to feed
     if (decideToFeed()) {
       mDeliverState = DeliverState.FEEDING;
+      sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
       stateTimer.start();
     }
   }
