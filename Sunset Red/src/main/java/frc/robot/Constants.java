@@ -79,7 +79,7 @@ public final class Constants {
       BL.driveID = 2;
       BL.azimuthID = 3;
       BL.azimuthBlockCenterDegree = 105.0;
-      BL.azimuthEncoderOffsetRotation = -0.384277;
+      BL.azimuthEncoderOffsetRotation = -0.360840;
       BL.lightGateID = 1;
       BL.corner = ModuleCorner.Back_Left;
       BL.invertDrive = InvertedValue.Clockwise_Positive;
