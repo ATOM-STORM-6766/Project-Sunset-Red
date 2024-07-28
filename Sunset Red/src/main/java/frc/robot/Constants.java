@@ -79,7 +79,7 @@ public final class Constants {
       BL.driveID = 2;
       BL.azimuthID = 3;
       BL.azimuthBlockCenterDegree = 105.0;
-      BL.azimuthEncoderOffsetRotation = -0.384277;
+      BL.azimuthEncoderOffsetRotation = 0.360840;
       BL.lightGateID = 1;
       BL.corner = ModuleCorner.Back_Left;
       BL.invertDrive = InvertedValue.Clockwise_Positive;
@@ -162,7 +162,7 @@ public final class Constants {
     // ARM
     public static final int ARM_ID = 10;
     // arm pitch when resting in degrees
-    public static final double ARM_REST_ANGLE = 22.0;
+    public static final double ARM_REST_ANGLE = 23.0;
     // arm pitch when resting in rotations
     public static final double ARM_REST_POSITION = ARM_REST_ANGLE / 360.0;
     // arm pitch when in max pitch in degrees
