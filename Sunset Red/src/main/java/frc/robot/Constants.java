@@ -78,8 +78,8 @@ public final class Constants {
       BL = new SwerveModuleConfig();
       BL.driveID = 2;
       BL.azimuthID = 3;
-      BL.azimuthBlockCenterDegree = 105.0;
-      BL.azimuthEncoderOffsetRotation = -0.360840;
+      BL.azimuthBlockCenterDegree = 95.0;
+      BL.azimuthEncoderOffsetRotation = 0.060840;
       BL.lightGateID = 1;
       BL.corner = ModuleCorner.Back_Left;
       BL.invertDrive = InvertedValue.Clockwise_Positive;

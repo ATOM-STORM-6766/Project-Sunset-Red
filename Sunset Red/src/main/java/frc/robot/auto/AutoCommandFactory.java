@@ -131,7 +131,7 @@ public class AutoCommandFactory {
                 // if note, it must be prepared, feed first
                 new SequentialCommandGroup(
                     new FeedCommand(transfer),
-                    Commands.runOnce(() -> shooter.stop(), shooter)).onlyIf(() -> transfer.isOmronDetected()),
+                    Commands.runOnce(() -> shooter.stop(), shooter)),
                 new ParallelCommandGroup(
                     new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
                     new IntakeCommand(intake, transfer))))
@@ -148,13 +148,13 @@ public class AutoCommandFactory {
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return (deadline && hasTarget) || transfer.isOmronDetected();
+                  return (deadline && hasTarget); //|| transfer.isOmronDetected();
                 }),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
+        // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
             .unless(() -> transfer.isOmronDetected()),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
+        // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
             new WaitCommand(0),
             new SequentialCommandGroup(
@@ -284,6 +284,7 @@ public class AutoCommandFactory {
               SmartDashboard.putBoolean("Has Target", hasTarget);
               return (deadline && hasTarget) || transfer.isOmronDetected();
             }),
+
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))

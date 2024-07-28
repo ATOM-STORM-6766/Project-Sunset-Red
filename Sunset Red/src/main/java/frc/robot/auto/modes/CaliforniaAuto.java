@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.AutoCommandFactory;
+import frc.robot.commands.FeedCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.subsystems.Arm;
@@ -86,7 +87,8 @@ public class CaliforniaAuto extends SequentialCommandGroup {
                                                 GamePieceProcessor.getInstance(), AutoBuilder
                                                                 .pathfindToPoseFlipped(FieldConstants.NOTE_54_POSITION,
                                                                                 PathfindConstants.constraints),
-                                                Rotation2d.fromDegrees(-90.0))
+                                                Rotation2d.fromDegrees(-90.0)),
+                                new FeedCommand(transfer)
 
                 );
         }
