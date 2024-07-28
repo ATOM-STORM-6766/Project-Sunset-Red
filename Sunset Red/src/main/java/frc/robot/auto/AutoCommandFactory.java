@@ -18,6 +18,7 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
+import frc.robot.commands.IntakeAndFeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
@@ -270,8 +271,7 @@ public class AutoCommandFactory {
                 new ParallelCommandGroup(
                     new SetArmAngleCommand(arm, shootParams.angle_deg),
                     new SetShooterTargetCommand(shooter, shootParams.speed_rps),
-                    new IntakeCommand(intake, transfer),
-                    new FeedCommand(transfer)).until(() -> !transfer.isOmronDetected()),
+                    new IntakeAndFeedCommand(intake, transfer)),
                 new ParallelCommandGroup(
                     new SetShooterTargetCommand(shooter, ShootingParameters.IDLE.speed_rps),
                     new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
