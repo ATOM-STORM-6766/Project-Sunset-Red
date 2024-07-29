@@ -8,7 +8,7 @@ public class ShootingParameters {
   // amp prep state
   public static final ShootingParameters AMP_INTERMEDIATE_POS = new ShootingParameters(35, 90);
   // trap shooting state
-  public static final ShootingParameters TRAP = new ShootingParameters(40, 62);
+  public static final ShootingParameters TRAP = new ShootingParameters(35, 64);
 
   public double speed_rps;
   public double angle_deg;
