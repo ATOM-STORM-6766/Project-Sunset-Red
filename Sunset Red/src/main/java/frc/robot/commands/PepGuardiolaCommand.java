@@ -38,7 +38,16 @@ public class PepGuardiolaCommand extends Command {
   private static final ShootingParameters kLowShootParam = new ShootingParameters(60.0, 30.0);
 
   // the speed for high shoot
-  private static final double kHighShootSpeed = 65.0;
+  private static final InterpolatingDoubleTreeMap kHighShootSpeedMap = new InterpolatingDoubleTreeMap();
+  static {
+    // TODO : TUNE
+    // distance meters <-> shooter speed rps
+    // the distance here is the distance from the robot to the landing position of note
+    // lowest allowable speed is ~10, lower then that will stuck note
+    // typical distance roughly 6-11m
+    kHighShootSpeedMap.put(6.0, 60.0);
+    kHighShootSpeedMap.put(10.0, 45.0);
+  }
 
   // the arm angle for high shoot
   private static final InterpolatingDoubleTreeMap kHighShootAngleMap = new InterpolatingDoubleTreeMap();
@@ -47,7 +56,7 @@ public class PepGuardiolaCommand extends Command {
     // distance meters <-> arm angle degrees
     // the distance here is the distance from the robot to the landing position of note
     // lowest allowable angle is 28, lower then that will hit camera
-    // typical distance roughly 6-10m
+    // typical distance roughly 6-11m
     kHighShootAngleMap.put(6.0, 60.0);
     kHighShootAngleMap.put(10.0, 45.0);
   }
@@ -137,7 +146,7 @@ public class PepGuardiolaCommand extends Command {
       shooterSpeed = kLowShootParam.speed_rps;
       armAngle = kLowShootParam.angle_deg;
     } else {
-      shooterSpeed = kHighShootSpeed;
+      shooterSpeed = kHighShootSpeedMap.get(targetDist);
       armAngle = kHighShootAngleMap.get(targetDist);
     }
 
