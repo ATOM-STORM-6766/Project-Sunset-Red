@@ -212,7 +212,7 @@ public class AutoCommandFactory {
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return (deadline && hasTarget) || transfer.isOmronDetected();
+                  return (deadline && hasTarget) ; // || transfer.isOmronDetected();
                 }),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
@@ -293,7 +293,7 @@ public class AutoCommandFactory {
               boolean hasTarget = target.isPresent();
               SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
               SmartDashboard.putBoolean("Has Target", hasTarget);
-              return (deadline && hasTarget) || transfer.isOmronDetected();
+              return (deadline && hasTarget);
             }),
 
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),

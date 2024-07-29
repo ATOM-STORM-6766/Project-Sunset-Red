@@ -17,7 +17,7 @@ import frc.robot.utils.ShootingParameters;
 public class DallasAuto extends SequentialCommandGroup {
 
     private static final String kStartPathName53 = "Dallas midTo53";
-    private static final String kStartPathName52 = "Dallas midTo52";
+    private static final String kStartPathName52 = "Dallas midTo5152";
     private static final ShootingParameters kShootParamUnderStage = new ShootingParameters(75, 32);
     private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 45);
     private static final Pose2d kShootPoseUnderStage = new Pose2d(4.5, 4.34, Rotation2d.fromDegrees(-14));
