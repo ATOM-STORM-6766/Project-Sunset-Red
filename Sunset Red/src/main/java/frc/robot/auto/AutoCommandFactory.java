@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.commands.ChaseNoteCommand;
@@ -154,7 +155,12 @@ public class AutoCommandFactory {
                 }),
         // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-            .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
+            .until(() -> {
+              boolean midbar = isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX);
+              if (midbar)
+                SmartDashboard.putString("Auto Status", "chase interrupt because midfield bar");
+              return midbar;
+            })
             // .until(() -> {
             //           if (intake.isOmronDetected()) {
             //               timer.start();
@@ -175,10 +181,18 @@ public class AutoCommandFactory {
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))),
+                    .until(() -> {
+                      boolean midbar = isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX);
+                      if (midbar)
+                        SmartDashboard.putString("Auto Status", "chase interrupt because midfield bar");
+                      return midbar;
+                    })),
             () -> {
-              boolean hasNote = transfer.isOmronDetected();
+              Boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
+              if (hasNote) {
+                SmartDashboard.putString("Auto Status", "hasnote="+hasNote.toString());
+              }
               return hasNote;
             }));
   }

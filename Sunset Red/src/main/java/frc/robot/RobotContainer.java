@@ -338,7 +338,7 @@ public class RobotContainer {
 
   public void moduleTestRoutine() {
     // FL, FR, BR, BL
-    var module = sDrivetrainSubsystem.getModuleArray()[3];
+    var module = sDrivetrainSubsystem.getModuleArray()[2];
 
     var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
     module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));

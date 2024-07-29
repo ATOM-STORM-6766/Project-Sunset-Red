@@ -2,7 +2,7 @@ package frc.robot.utils;
 
 public class ShootingParameters {
 
-  public static final ShootingParameters BELOW_SPEAKER = new ShootingParameters(75, 59.0);
+  public static final ShootingParameters BELOW_SPEAKER = new ShootingParameters(75, 56.0);
   // amp shooting angle and speed
   public static final ShootingParameters AMP_LOWSPEED = new ShootingParameters(11, 118);
   // amp prep state

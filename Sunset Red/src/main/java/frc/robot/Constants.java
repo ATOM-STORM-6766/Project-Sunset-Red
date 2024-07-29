@@ -97,7 +97,7 @@ public final class Constants {
       BR.driveID = 0;
       BR.azimuthID = 1;
       BR.azimuthBlockCenterDegree = 105.0;
-      BR.azimuthEncoderOffsetRotation = -1.041260;
+      BR.azimuthEncoderOffsetRotation = 0.010986;	
       BR.lightGateID = 2;
       BR.corner = ModuleCorner.Back_Right;
       BR.invertDrive = InvertedValue.Clockwise_Positive;
@@ -235,6 +235,6 @@ public final class Constants {
 
   public static final class PathfindConstants {
     public static final PathConstraints constraints =
-        new PathConstraints(4.0, 4.5, Units.degreesToRadians(540), Units.degreesToRadians(720));
+        new PathConstraints(4.0, 6.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
   }
 }
