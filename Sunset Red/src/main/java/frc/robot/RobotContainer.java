@@ -87,6 +87,7 @@ public class RobotContainer {
     SmartDashboard.putData(mArm);
     SmartDashboard.putData(mShooter);
     SmartDashboard.putData(mDriveWithRightStick);
+
     ApriltagCoprocessor.getInstance().setLoggingEnabled(true);
   }
 
@@ -307,6 +308,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
+    driverController.setTranslationDirection(true);
     return mChooser.getSelected();
   }
 
@@ -315,12 +317,21 @@ public class RobotContainer {
   }
 
   public void pushChooser() {
-    // init points
     mChooser = new SendableChooser<>();
-
-    mChooser.setDefaultOption(
-        "california",
-        new CaliforniaAutoCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake));
+    mChooser.setDefaultOption("California 51", new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, true));
+    mChooser.addOption(
+        "California - Start with 51",
+        new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, false));
+    mChooser.addOption(
+        "California - Start with 52",
+        new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, true));
+    mChooser.addOption("Dallas - Start with 53", 
+        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_53));
+    mChooser.addOption("Dallas - Start with 52", 
+        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_52));
+    mChooser.addOption("Dallas - Start 53 then Trap", 
+        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_53_THEN_TRAP));
+        SmartDashboard.putData("AUTO CHOICES", mChooser);
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
   }

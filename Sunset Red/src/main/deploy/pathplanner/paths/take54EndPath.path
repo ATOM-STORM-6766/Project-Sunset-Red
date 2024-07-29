@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.252865104020806,
+        "y": 2.6896555217611855
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.650466355063765,
+        "y": 2.4323841240275086
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.281950694955519,
+        "y": 2.4206899695850677
+      },
+      "prevControl": {
+        "x": 7.825878671700363,
+        "y": 2.385607506257749
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.2,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "California",
+  "previewStartingState": null,
+  "useDefaultConstraints": false
+}

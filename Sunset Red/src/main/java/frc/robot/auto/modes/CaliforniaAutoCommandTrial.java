@@ -16,7 +16,7 @@ import frc.robot.commands.VisionShootCommand;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 
-public class CaliforniaAutoCommand extends SequentialCommandGroup {
+public class CaliforniaAutoCommandTrial extends SequentialCommandGroup {
 
   // private static final Pose2d kNearStart = new Pose2d(1.28, 6.41,
   // Rotation2d.fromDegrees(30.0));
@@ -29,7 +29,7 @@ public class CaliforniaAutoCommand extends SequentialCommandGroup {
 
   // near 30.0 degree start, preload and go 51 (between 31 32)
   // shoot 51 and go 52
-  public CaliforniaAutoCommand(
+  public CaliforniaAutoCommandTrial(
       DrivetrainSubsystem drivetrainSubsystem,
       Arm arm,
       Shooter shooter,
