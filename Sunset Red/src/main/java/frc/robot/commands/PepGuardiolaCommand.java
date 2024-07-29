@@ -21,10 +21,10 @@ import com.pathplanner.lib.util.GeometryUtil;
 public class PepGuardiolaCommand extends Command {
 
   public enum GoalZone {
-    UP(new Translation2d(15.1, 1.5)),
-    DOWN(new Translation2d(1.7, 7.4)),
-    LEFT(new Translation2d(7.2, 6.7)),
-    RIGHT(new Translation2d(7.2, 4.1));
+    UP(new Translation2d(15.7, 0.6)),
+    DOWN(new Translation2d(1.2, 7.0)),
+    LEFT(new Translation2d(6.4, 7.6)),
+    RIGHT(new Translation2d(6.4, 4.0));
 
     // goal position in (blue-origin) field space
     // assuming we are blue alliance (NOTE THAT IN PPT WE ARE RED)
@@ -35,7 +35,7 @@ public class PepGuardiolaCommand extends Command {
   }
 
   // the param for low shoot
-  private static final ShootingParameters kLowShootParam = new ShootingParameters(60.0, 30.0);
+  private static final ShootingParameters kLowShootParam = new ShootingParameters(40.0, 30.0);
 
   // the speed for high shoot
   private static final InterpolatingDoubleTreeMap kHighShootSpeedMap = new InterpolatingDoubleTreeMap();
@@ -45,8 +45,25 @@ public class PepGuardiolaCommand extends Command {
     // the distance here is the distance from the robot to the landing position of note
     // lowest allowable speed is ~10, lower then that will stuck note
     // typical distance roughly 6-11m
-    kHighShootSpeedMap.put(6.0, 60.0);
-    kHighShootSpeedMap.put(10.0, 45.0);
+    kHighShootSpeedMap.put(11.35, 67.0);
+    kHighShootSpeedMap.put(11.25, 66.0);
+    kHighShootSpeedMap.put(11.05, 68.0);
+    kHighShootSpeedMap.put(10.85, 66.0);
+    kHighShootSpeedMap.put(10.55, 63.0);
+    
+    kHighShootSpeedMap.put(10.25, 64.0);
+    kHighShootSpeedMap.put(9.75, 59.0);
+    kHighShootSpeedMap.put(9.45, 57.0);
+    kHighShootSpeedMap.put(8.95, 53.0);
+    kHighShootSpeedMap.put(8.45, 53.0);
+
+    kHighShootSpeedMap.put(8.25, 53.0);
+
+
+    kHighShootSpeedMap.put(7.9, 54.0);
+    kHighShootSpeedMap.put(5.9, 45.0);
+    kHighShootSpeedMap.put(5.4, 43.0);
+
   }
 
   // the arm angle for high shoot
@@ -57,8 +74,23 @@ public class PepGuardiolaCommand extends Command {
     // the distance here is the distance from the robot to the landing position of note
     // lowest allowable angle is 28, lower then that will hit camera
     // typical distance roughly 6-11m
-    kHighShootAngleMap.put(6.0, 60.0);
-    kHighShootAngleMap.put(10.0, 45.0);
+    kHighShootAngleMap.put(11.35, 45.0);
+    
+    kHighShootAngleMap.put(11.25, 46.0);
+    kHighShootAngleMap.put(11.05, 50.0);
+    kHighShootAngleMap.put(10.85, 50.0);
+    kHighShootAngleMap.put(10.55, 50.0);
+    kHighShootAngleMap.put(10.25, 50.0);
+    kHighShootAngleMap.put(9.75, 50.0);
+    kHighShootAngleMap.put(9.45, 50.0);
+    kHighShootAngleMap.put(8.95, 50.0);
+    kHighShootAngleMap.put(8.45, 53.0);
+    kHighShootAngleMap.put(8.25, 54.0);
+    kHighShootAngleMap.put(7.9, 54.0);
+    kHighShootAngleMap.put(5.9, 54.0);
+    kHighShootAngleMap.put(5.4, 54.0);
+
+
   }
 
   private DrivetrainSubsystem sDrivetrainSubsystem;
@@ -111,7 +143,7 @@ public class PepGuardiolaCommand extends Command {
     mProfiledPID.reset(sDrivetrainSubsystem.getHeading().getRadians());
     mProfiledPID.enableContinuousInput(-Math.PI, Math.PI);
     mProfiledPID.setGoal(sDrivetrainSubsystem.getHeading().getRadians());
-    mProfiledPID.setTolerance(Math.toRadians(3.0));
+    mProfiledPID.setTolerance(Math.toRadians(1.0));
 
     mReadyToFeed = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 
       READY_TO_FEED_DELAY, EdgeType.RISING);
@@ -191,8 +223,8 @@ public class PepGuardiolaCommand extends Command {
       && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
       && mProfiledPID.atGoal();
     
-      return shootOk&&zoneOk;
-    // return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);
+      // return shootOk&&zoneOk;
+    return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);
   }
 
   private boolean checkLowShoot() {
@@ -209,7 +241,7 @@ public class PepGuardiolaCommand extends Command {
     return false;
   }
 
-  private static final double kLeftRightLineY = 3.0;
+  private static final double kLeftRightLineY = 6.0;
   private boolean inLeftRightField() {
     Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
     Pose2d robotPose = sDrivetrainSubsystem.getPose();
