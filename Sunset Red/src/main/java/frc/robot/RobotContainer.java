@@ -165,20 +165,23 @@ public class RobotContainer {
 
     // manual trap
     operatorController
-        .povUp()
+        .povUp().and(operatorController.rightBumper())
         .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
         .onFalse(
             new InstantCommand(() -> mShooter.stop())
                 .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
-
+    operatorController
+        .povUp().and(operatorController.rightBumper().negate()).whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake, mTransfer, mTrapFan))        .onFalse(
+            new InstantCommand(() -> mShooter.stop())
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
     // amp binding
     // navAmp
     buildNavAmpBinding(
-        driverController.povRight().and(driverController.rightBumper().negate()), isRedAlliance);
+        operatorController.povRight().and(operatorController.rightBumper().negate()), isRedAlliance);
 
     // manual amp
     buildAmpBinding(
-        driverController.povRight().and(driverController.rightBumper()),
+        operatorController.povRight().and(operatorController.rightBumper()),
         ShootingParameters.AMP_INTERMEDIATE_POS,
         ShootingParameters.AMP_LOWSPEED);
 

@@ -54,7 +54,7 @@ public class PepGuardiolaCommand extends Command {
     kHighShootSpeedMap.put(10.25, 64.0);
     kHighShootSpeedMap.put(9.75, 59.0);
     kHighShootSpeedMap.put(9.45, 57.0);
-    kHighShootSpeedMap.put(8.95, 53.0);
+    kHighShootSpeedMap.put(8.95, 55.0);
     kHighShootSpeedMap.put(8.45, 53.0);
 
     kHighShootSpeedMap.put(8.25, 53.0);
