@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -291,5 +292,13 @@ public class RobotContainer {
         new CaliforniaAutoCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
+  }
+
+  public void moduleTestRoutine() {
+    // FL, FR, BR, BL
+    var module = sDrivetrainSubsystem.getModuleArray()[3];
+
+    var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
+    module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));
   }
 }
