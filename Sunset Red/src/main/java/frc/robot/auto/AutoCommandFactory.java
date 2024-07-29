@@ -155,7 +155,15 @@ public class AutoCommandFactory {
         // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
-            .until(()->intake.isOmronDetected())
+            // .until(() -> {
+            //           if (intake.isOmronDetected()) {
+            //               timer.start();
+            //           } else {
+            //               timer.stop();
+            //               timer.reset();
+            //           }
+            //           return timer.hasElapsed(0.5);
+            //       })
             .unless(() -> transfer.isOmronDetected()),
         // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
         Commands.either(
@@ -167,16 +175,7 @@ public class AutoCommandFactory {
                 new InstantCommand(
                     () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX)))
-                    .until(() -> {
-                      if (intake.isOmronDetected()) {
-                          timer.start();
-                      } else {
-                          timer.stop();
-                          timer.reset();
-                      }
-                      return timer.hasElapsed(0.5);
-                  }),
+                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))),
             () -> {
               boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);

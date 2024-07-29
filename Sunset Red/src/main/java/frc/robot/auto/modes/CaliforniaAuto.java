@@ -26,7 +26,7 @@ public class CaliforniaAuto extends SequentialCommandGroup {
         // shooting pose for this auto, add as many as needed
         // todo: these are hardcoded for now, need to be updated for vision tracking
         private static final Pose2d kShootPoseNearPodium = new Pose2d(4.5, 6.46, Rotation2d.fromDegrees(14.0));
-        private static final Pose2d kShootPoseUnderStage = new Pose2d(4.5, 4.34, Rotation2d.fromDegrees(-14));
+        private static final Pose2d kShootPoseUnderStage = new Pose2d(4.5, 4.8, Rotation2d.fromDegrees(-14));
 
         // shooting parameters for this auto, we default at fastest speed
         // todo: these are hardcoded for now, need to be updated for vision tracking
