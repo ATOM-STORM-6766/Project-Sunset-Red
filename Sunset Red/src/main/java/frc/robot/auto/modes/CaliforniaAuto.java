@@ -39,7 +39,7 @@ public class CaliforniaAuto extends SequentialCommandGroup {
                         Intake intake,
                         boolean startWith52) {
                                 String initialPath = startWith52? kStartPathName52 : kStartPathName51;
-                                Rotation2d initialRotation = startWith52? Rotation2d.fromDegrees(-90.0) : Rotation2d.fromDegrees(90.0);
+                                Rotation2d initialRotation = startWith52? Rotation2d.fromDegrees(90.0) : Rotation2d.fromDegrees(-90.0);
                 addCommands(
                                 AutoCommandFactory.buildPrepCommand(drivetrainSubsystem,
                                                 ShootingParameters.BELOW_SPEAKER,

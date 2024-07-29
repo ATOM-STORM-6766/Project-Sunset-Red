@@ -12,9 +12,9 @@ import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 
 public class Intake extends SubsystemBase {
-  private static final double INTAKE_VOLTS = 3.0;
+  private static final double INTAKE_VOLTS = 9.0;
   private static final double OUTTAKE_VOLTS = -3.0;
-  private static final double EXTERNAL_ROLLER_VOLTS = -5.0;
+  private static final double EXTERNAL_ROLLER_VOLTS = -9.0;
 
   private final TalonFX mIntakeMotor;
   private final TalonFX mExternalRoller; // New motor

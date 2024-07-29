@@ -318,8 +318,7 @@ public class RobotContainer {
 
   public void pushChooser() {
     mChooser = new SendableChooser<>();
-    mChooser.setDefaultOption("California 51", new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, true));
-    mChooser.addOption(
+    mChooser.setDefaultOption(
         "California - Start with 51",
         new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, false));
     mChooser.addOption(
