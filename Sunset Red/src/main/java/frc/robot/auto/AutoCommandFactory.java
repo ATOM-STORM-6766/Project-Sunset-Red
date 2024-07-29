@@ -284,7 +284,7 @@ public class AutoCommandFactory {
                     new SetShooterTargetCommand(shooter, shootParams.speed_rps),
                     new IntakeAndFeedCommand(intake, transfer)),
                 new ParallelCommandGroup(
-                    new SetShooterTargetCommand(shooter, ShootingParameters.IDLE.speed_rps),
+                    new SetShooterTargetCommand(shooter, 0.0),
                     new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
                     new IntakeCommand(intake, transfer))))
             .until(() -> {
