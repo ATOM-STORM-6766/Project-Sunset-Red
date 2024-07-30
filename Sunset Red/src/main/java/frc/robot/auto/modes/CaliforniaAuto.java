@@ -5,6 +5,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
@@ -30,7 +31,7 @@ public class CaliforniaAuto extends SequentialCommandGroup {
 
         // shooting parameters for this auto, we default at fastest speed
         // todo: these are hardcoded for now, need to be updated for vision tracking
-        private static final ShootingParameters kShootParam = new ShootingParameters(75, 32);
+        private static final ShootingParameters kShootParam = new ShootingParameters(75, 33);
 
         public CaliforniaAuto(DrivetrainSubsystem drivetrainSubsystem,
                         Arm arm,
@@ -39,7 +40,11 @@ public class CaliforniaAuto extends SequentialCommandGroup {
                         Intake intake,
                         boolean startWith52) {
                                 String initialPath = startWith52? kStartPathName52 : kStartPathName51;
+                                Command secondPath = startWith52 ?
+                                        AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_51_POSITION, PathfindConstants.constraints) :
+                                        AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_52_POSITION, PathfindConstants.constraints);
                                 Rotation2d initialRotation = startWith52? Rotation2d.fromDegrees(90.0) : Rotation2d.fromDegrees(-90.0);
+                                Rotation2d secondRotation = startWith52? Rotation2d.fromDegrees(-90.0) : Rotation2d.fromDegrees(90.0);
                 addCommands(
                                 AutoCommandFactory.buildPrepCommand(drivetrainSubsystem,
                                                 ShootingParameters.BELOW_SPEAKER,
@@ -59,9 +64,8 @@ public class CaliforniaAuto extends SequentialCommandGroup {
                                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
                                                 transfer, intake,
                                                 GamePieceProcessor.getInstance(),
-                                                AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_52_POSITION,
-                                                                PathfindConstants.constraints),
-                                                Rotation2d.fromDegrees(-90.0)),
+                                                secondPath,
+                                                secondRotation),
                                 // shoot 52
                                 AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
                                                 .deadlineWith(new SetArmAngleCommand(arm, kShootParam.angle_deg),

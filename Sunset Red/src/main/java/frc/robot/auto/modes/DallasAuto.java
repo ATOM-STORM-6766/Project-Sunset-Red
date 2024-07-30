@@ -19,7 +19,7 @@ public class DallasAuto extends SequentialCommandGroup {
     private static final String kStartPathName53 = "Dallas midTo53";
     private static final String kStartPathName52 = "Dallas midTo5152";
     private static final ShootingParameters kShootParamUnderStage = new ShootingParameters(75, 32);
-    private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 45);
+    private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 36.5);
     private static final Pose2d kShootPoseUnderStage = new Pose2d(4.5, 4.34, Rotation2d.fromDegrees(-14));
 
     public enum DallasStrategy {
@@ -67,7 +67,7 @@ public class DallasAuto extends SequentialCommandGroup {
             // Move to 53, intaking and shooting 32 on the way
             AutoCommandFactory.buildIntakeShootWhileMovingCommand(
                 drivetrainSubsystem, arm, shooter, transfer, intake,GamePieceProcessor.getInstance(),
-                kStartPathName53, kShootParam32, Rotation2d.fromDegrees(90)
+                kStartPathName53, kShootParam32, Rotation2d.fromDegrees(-90)
             ),
             // Shoot 53
             AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
@@ -79,7 +79,7 @@ public class DallasAuto extends SequentialCommandGroup {
             AutoCommandFactory.buildPathThenChaseNoteCommand(
                 drivetrainSubsystem, arm, shooter, transfer, intake,GamePieceProcessor.getInstance(),
                 AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_54_POSITION, PathfindConstants.constraints),
-                Rotation2d.fromDegrees(90)
+                Rotation2d.fromDegrees(-90)
             ),
             AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
                 .deadlineWith(
@@ -100,7 +100,7 @@ public class DallasAuto extends SequentialCommandGroup {
             // Move to 52, intaking and shooting 32 on the way
             AutoCommandFactory.buildIntakeShootWhileMovingCommand(
                 drivetrainSubsystem, arm, shooter, transfer, intake, GamePieceProcessor.getInstance(),
-                kStartPathName52, kShootParam32, Rotation2d.fromDegrees(90)
+                kStartPathName52, kShootParam32, Rotation2d.fromDegrees(-90)
             ),
             // Shoot 52
             AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
@@ -112,7 +112,7 @@ public class DallasAuto extends SequentialCommandGroup {
             AutoCommandFactory.buildPathThenChaseNoteCommand(
                 drivetrainSubsystem, arm, shooter, transfer, intake, GamePieceProcessor.getInstance(),
                 AutoBuilder.pathfindToPoseFlipped(FieldConstants.NOTE_53_POSITION, PathfindConstants.constraints),
-                Rotation2d.fromDegrees(90)
+                Rotation2d.fromDegrees(-90)
             ),
             AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
                 .deadlineWith(
@@ -133,14 +133,8 @@ public class DallasAuto extends SequentialCommandGroup {
             // Move to 53, intaking and shooting 32 on the way
             AutoCommandFactory.buildIntakeShootWhileMovingCommand(
                 drivetrainSubsystem, arm, shooter, transfer, intake, GamePieceProcessor.getInstance(),
-                kStartPathName53, kShootParam32, Rotation2d.fromDegrees(90)
+                kStartPathName53, kShootParam32, Rotation2d.fromDegrees(-90)
             ),
-            // Shoot 53
-            AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
-                .deadlineWith(
-                    new SetArmAngleCommand(arm, kShootParamUnderStage.angle_deg),
-                    new SetShooterTargetCommand(shooter, kShootParamUnderStage.speed_rps)
-                ),
             // Go to trap and shoot
             new NavTrapCommand(drivetrainSubsystem, arm, shooter, intake, transfer, trapFan)
         );

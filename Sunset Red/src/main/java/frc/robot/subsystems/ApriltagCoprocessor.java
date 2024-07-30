@@ -30,8 +30,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final String INTAKE_CAMERA_NAME = "TagCamIntakeSide";
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.15;
   private static final double MULTI_TAG_DELAY = 0.5;
-  private static final double MIN_TARGET_AREA = 0.1;
-  private static final double MAX_TARGET_YAW = 25;
+  private static final double MIN_TARGET_AREA = 0.08;
+  private static final double MAX_TARGET_YAW = 30;
   private static final double MAX_TARGET_PITCH = 25;
   private static final double MAX_VELOCITY_DELTA = 0.5;
 
