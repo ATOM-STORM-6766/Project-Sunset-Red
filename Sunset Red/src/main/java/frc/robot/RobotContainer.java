@@ -8,8 +8,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,6 +38,11 @@ import java.util.Optional;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
+
+  //for tuning shooter
+  
+  private GenericEntry speedEntry;
+  private GenericEntry angleEntry;
 
   private SendableChooser<Command> mChooser = new SendableChooser<>();
 
@@ -76,6 +84,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    speedEntry =Shuffleboard.getTab("SmartDashboard").add("speed",75).getEntry();
+    angleEntry = Shuffleboard.getTab("SmartDashboard").add("angle",30).getEntry();
     sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
 
     sDrivetrainSubsystem.configureAutoBuilder();
@@ -204,13 +214,18 @@ public class RobotContainer {
 
       driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     }
+    driverController.x().whileTrue(new SetShooterTargetCommand(mShooter, speedEntry.getDouble(15))
+            .alongWith(new SetArmAngleCommand(mArm,angleEntry.getDouble(30) ))
+            .andThen(new FeedCommand(mTransfer)));
 
-    // Below Speaker
-    if (kDualController) {
-      buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
-    } else {
-      buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
-    }
+    //temporarily commented out for shooter tuning
+    // TODO 
+    // // Below Speaker
+    // if (kDualController) {
+    //   buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
+    // } else {
+    //   buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+    // }
     // seven zones transfer
     buildPepGBinding(new Trigger[]{driverController.povUp(),driverController.povDown(),driverController.povLeft(),driverController.povRight()});
   }
