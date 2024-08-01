@@ -22,7 +22,7 @@ public class DriveWithFollowHeadingCommand extends Command {
   // TODO : CHECK PID
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
-          0.5, 0, 0.0, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
+          5.0, 0, 0.0, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
 
   // accept drive supplier and target heading
   // use a profiled controller to do the heading following
@@ -50,7 +50,7 @@ public class DriveWithFollowHeadingCommand extends Command {
     mProfiledPID.reset(sDrivetrainSubsystem.getHeading().getRadians());
     mProfiledPID.enableContinuousInput(-Math.PI, Math.PI);
     mProfiledPID.setGoal(sDrivetrainSubsystem.getHeading().getRadians());
-    mProfiledPID.setTolerance(Math.toRadians(0.5));
+    mProfiledPID.setTolerance(Math.toRadians(1.0));
   }
 
   @Override
