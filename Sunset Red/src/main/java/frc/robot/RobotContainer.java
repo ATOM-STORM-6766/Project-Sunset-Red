@@ -166,19 +166,25 @@ public class RobotContainer {
 
     // manual trap
     operatorController
-        .povUp().and(operatorController.rightBumper())
+        .povUp()
+        .and(operatorController.rightBumper())
         .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
         .onFalse(
             new InstantCommand(() -> mShooter.stop())
                 .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
     operatorController
-        .povUp().and(operatorController.rightBumper().negate()).whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake, mTransfer, mTrapFan))        .onFalse(
+        .povUp()
+        .and(operatorController.rightBumper().negate())
+        .whileTrue(
+            new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake, mTransfer, mTrapFan))
+        .onFalse(
             new InstantCommand(() -> mShooter.stop())
                 .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
     // amp binding
     // navAmp
     buildNavAmpBinding(
-        operatorController.povRight().and(operatorController.rightBumper().negate()), isRedAlliance);
+        operatorController.povRight().and(operatorController.rightBumper().negate()),
+        isRedAlliance);
 
     // manual amp
     buildAmpBinding(
@@ -212,7 +218,13 @@ public class RobotContainer {
       buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
     }
     // seven zones transfer
-    buildPepGBinding(new Trigger[]{driverController.povUp(),driverController.povDown(),driverController.povLeft(),driverController.povRight()});
+    buildPepGBinding(
+        new Trigger[] {
+          driverController.povUp(),
+          driverController.povDown(),
+          driverController.povLeft(),
+          driverController.povRight()
+        });
   }
 
   private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
@@ -250,31 +262,61 @@ public class RobotContainer {
         .onFalse(stopShootingCommand);
   }
 
-  private void buildPepGBinding(Trigger[] triggers){
-    // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter, null, 
+  private void buildPepGBinding(Trigger[] triggers) {
+    // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer,
+    // mShooter, null,
     // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
-    Command pepGuardiolaCommandUP = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
-                    driverController
-                        .getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.UP);
-        Command pepGuardiolaCommandDOWN = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
-                    driverController
-                        .getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.DOWN);
-        Command pepGuardiolaCommandLEFT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
-                    driverController
-                        .getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.LEFT);
-        Command pepGuardiolaCommandRIGHT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm, mTransfer, mShooter,() ->
-                    driverController
-                        .getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond) , GoalZone.RIGHT);
-    
+    Command pepGuardiolaCommandUP =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.UP);
+    Command pepGuardiolaCommandDOWN =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.DOWN);
+    Command pepGuardiolaCommandLEFT =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.LEFT);
+    Command pepGuardiolaCommandRIGHT =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.RIGHT);
+
     triggers[0].onTrue(pepGuardiolaCommandUP);
     triggers[1].onTrue(pepGuardiolaCommandDOWN);
     triggers[2].onTrue(pepGuardiolaCommandLEFT);
     triggers[3].onTrue(pepGuardiolaCommandRIGHT);
   }
+
   private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
     Pose2d targetPose =
         isRedAlliance
@@ -324,13 +366,37 @@ public class RobotContainer {
     mChooser.addOption(
         "California - Start with 52",
         new CaliforniaAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, true));
-    mChooser.addOption("Dallas - Start with 53", 
-        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_53));
-    mChooser.addOption("Dallas - Start with 52", 
-        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_52));
-    mChooser.addOption("Dallas - Start 53 then Trap", 
-        new DallasAuto(sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake, mTrapFan, DallasAuto.DallasStrategy.START_53_THEN_TRAP));
-        SmartDashboard.putData("AUTO CHOICES", mChooser);
+    mChooser.addOption(
+        "Dallas - Start with 53",
+        new DallasAuto(
+            sDrivetrainSubsystem,
+            mArm,
+            mShooter,
+            mTransfer,
+            mIntake,
+            mTrapFan,
+            DallasAuto.DallasStrategy.START_53));
+    mChooser.addOption(
+        "Dallas - Start with 52",
+        new DallasAuto(
+            sDrivetrainSubsystem,
+            mArm,
+            mShooter,
+            mTransfer,
+            mIntake,
+            mTrapFan,
+            DallasAuto.DallasStrategy.START_52));
+    mChooser.addOption(
+        "Dallas - Start 53 then Trap",
+        new DallasAuto(
+            sDrivetrainSubsystem,
+            mArm,
+            mShooter,
+            mTransfer,
+            mIntake,
+            mTrapFan,
+            DallasAuto.DallasStrategy.START_53_THEN_TRAP));
+    SmartDashboard.putData("AUTO CHOICES", mChooser);
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
   }
