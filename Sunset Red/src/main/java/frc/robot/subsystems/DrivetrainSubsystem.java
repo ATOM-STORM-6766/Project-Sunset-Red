@@ -112,8 +112,8 @@ public class DrivetrainSubsystem extends SubsystemBase {
   private SwerveSetpointGenerator mSetpointGenerator;
   private SwerveKinematicLimits mKinematicLimits =
       new SwerveKinematicLimits(
-          DriveConstants.kPhysicalMaxSpeedMetersPerSecond * 0.95,
-          DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 0.3,
+          DriveConstants.kPhysicalMaxSpeedMetersPerSecond,
+          DriveConstants.kPhysicalMaxSpeedMetersPerSecond / 0.05,
           100);
 
   /*
