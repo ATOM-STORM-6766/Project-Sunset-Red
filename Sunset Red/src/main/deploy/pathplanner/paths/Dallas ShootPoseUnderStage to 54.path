@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.5,
+        "y": 4.63
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.1035626180841405,
+        "y": 4.253342890247425
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.2985793368847,
+        "y": 2.4123611260921156
+      },
+      "prevControl": {
+        "x": 7.548025233036768,
+        "y": 2.511490913392786
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -25.201123645475064,
+    "rotateFast": true
+  },
+  "reversed": false,
+  "folder": "Dallas",
+  "previewStartingState": {
+    "rotation": -15.241242210043815,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
