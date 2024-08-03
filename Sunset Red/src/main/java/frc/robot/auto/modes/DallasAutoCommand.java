@@ -89,21 +89,21 @@ public class DallasAutoCommand extends SequentialCommandGroup {
                                 addCommands(buildWingShot53GoForFarSide(drivetrainSubsystem, arm,
                                                 shooter, transfer, intake));
                                 break;
-                        case SCORE53_GO_NEAR_SIDE:
-                                addCommands(buildScore53GoForNearSide(drivetrainSubsystem, arm,
-                                                shooter, transfer, intake));
-                                break;
-                        case SCORE53_GO_NEAR_SIDE_FLIP:
-                                addCommands(buildScore53GoForNearSideFlip(drivetrainSubsystem, arm,
-                                                shooter, transfer, intake));
-                                break;
                         case SCORE53_GO_FAR_SIDE:
-                                addCommands(buildScore53GoForFarSide(drivetrainSubsystem, arm,
-                                                shooter, transfer, intake));
+                                addCommands(buildScore53Routine(drivetrainSubsystem, arm, shooter,
+                                                transfer, intake, false, false));
                                 break;
                         case SCORE53_GO_FAR_SIDE_FLIP:
-                                addCommands(buildScore53GoForFarSideFlip(drivetrainSubsystem, arm,
-                                                shooter, transfer, intake));
+                                addCommands(buildScore53Routine(drivetrainSubsystem, arm, shooter,
+                                                transfer, intake, false, true));
+                                break;
+                        case SCORE53_GO_NEAR_SIDE:
+                                addCommands(buildScore53Routine(drivetrainSubsystem, arm, shooter,
+                                                transfer, intake, true, false));
+                                break;
+                        case SCORE53_GO_NEAR_SIDE_FLIP:
+                                addCommands(buildScore53Routine(drivetrainSubsystem, arm, shooter,
+                                                transfer, intake, true, true));
                                 break;
                         case TRAP53:
                                 addCommands(buildTrap53(drivetrainSubsystem, arm, shooter, transfer,
@@ -114,144 +114,109 @@ public class DallasAutoCommand extends SequentialCommandGroup {
         }
 
         /**
-         * Build the command for the SCORE53_GO_FAR_SIDE_FLIP strategy Start at Dallas mid position,
-         * move to 53, shoot 32 along the way Then go get 55, score 55, then go get 54, score 54
+         * Build the command for the SCORE53 strategies (GO_FAR_SIDE, GO_FAR_SIDE_FLIP,
+         * GO_NEAR_SIDE, GO_NEAR_SIDE_FLIP) Start at Dallas mid position, move to 53, shoot 32 along
+         * the way Then go get and score two more game pieces based on the strategy
          * 
-         * Fallback strategy for 53 intake: go for 52 (90 degree), reason is that we need 54 and 55
-         * later The path to intake 55 should activate chase note at Pos 54.6 (A position that can
-         * see 54 and 55, with 55 preferred) The path to intake 54 should activate chase note at Pos
-         * 54.4 (A position that can see 54 and 55, with 54 preferred)
+         * Fallback strategies: - For 53 intake: - Near side: go for 54 (-90 degree) - Far side: go
+         * for 52 (90 degree) - For first note intake: - Near side: fallback is the second note -
+         * Far side: fallback is the second note - For second note intake: - Near side: fallback is
+         * the first note - Far side: fallback is the first note
          * 
-         * @param drivetrainSubsystem
-         * @param arm
-         * @param shooter
-         * @param transfer
-         * @param intake
-         * @return
-         */
-        private Command buildScore53GoForFarSideFlip(DrivetrainSubsystem drivetrainSubsystem,
-                        Arm arm, Shooter shooter, Transfer transfer, Intake intake) {
-                return new SequentialCommandGroup(
-                                // Move to 53, intaking and shooting 32 on the way, fallback for 53
-                                // intake is 52
-                                AutoCommandFactory.buildIntakeShootWhileMovingCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(), kStartPathDallas,
-                                                kShootParam32, Rotation2d.fromDegrees(90)),
-                                // Shoot 53, use pathfindToPose flipped to go to shooting position,
-                                // shooting position for 53 is under stage
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage,
-                                                PathfindConstants.constraints)
-                                                .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamUnderStage.angle_deg),
-                                                                new SetShooterTargetCommand(shooter,
-                                                                                kShootParamUnderStage.speed_rps)),
-                                // Get 55, use Pathfollow to go to 55 position, fallback for 55
-                                // intake is 54
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseUnderStageTo55Path)),
-                                                Rotation2d.fromDegrees(90)),
-                                // Score 55, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseFarSide,
-                                                PathfindConstants.constraints)
-                                                .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamFarSide.angle_deg),
-                                                                new SetShooterTargetCommand(shooter,
-                                                                                kShootParamFarSide.speed_rps)),
-                                // Get 54, use Pathfollow to go to 54 position, fallback for 54
-                                // intake is 55
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseFarSideTo54Path)),
-                                                Rotation2d.fromDegrees(-90)),
-                                // Score 54, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseFarSide,
-                                                PathfindConstants.constraints),
-                                // End, for now we just chase 55, it should be stopping at the
-                                // midline
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.pathfindToPoseFlipped(
-                                                                FieldConstants.NOTE_55_POSITION,
-                                                                PathfindConstants.constraints),
-                                                Rotation2d.fromDegrees(0)));
-        }
-
-        /**
-         * Build the command for the SCORE53_GO_NEAR_SIDE_FLIP strategy Start at Dallas mid
-         * position, move to 53, shoot 32 along the way Then go get 51, score 51, then go get 52,
-         * score 52
-         * 
-         * Fallback strategy for 53 intake: go for 54 (90 degree), reason is that we need 51 and 52
-         * later The path to intake 51 should activate chase note at Pos 51.4 (A position that can
-         * see 51 and 52, with 51 preferred)
+         * The path to intake notes should activate chase note at appropriate positions: - Near
+         * side: - First note (52): Pos 51.6 (can see 51 and 52, with 52 preferred) - Second note
+         * (51): Pos 51.4 (can see 51 and 52, with 51 preferred) - Far side: - First note (54): Pos
+         * 54.4 (can see 54 and 55, with 54 preferred) - Second note (55): Pos 54.6 (can see 54 and
+         * 55, with 55 preferred)
          * 
          * @param drivetrainSubsystem
          * @param arm
          * @param shooter
          * @param transfer
          * @param intake
+         * @param isNearSide
+         * @param isStartWithOuterNotes
          * @return
          */
-        private Command buildScore53GoForNearSideFlip(DrivetrainSubsystem drivetrainSubsystem,
-                        Arm arm, Shooter shooter, Transfer transfer, Intake intake) {
+        private Command buildScore53Routine(DrivetrainSubsystem drivetrainSubsystem, Arm arm,
+                        Shooter shooter, Transfer transfer, Intake intake, boolean isNearSide,
+                        boolean isStartWithOuterNotes) {
+                Pose2d firstShootPose = isNearSide ? kShootPoseNearSide : kShootPoseFarSide;
+                ShootingParameters firstShootParam =
+                                isNearSide ? kShootParamNearSide : kShootParamFarSide;
+
+                String firstNotePath = isNearSide
+                                ? (isStartWithOuterNotes ? kShootPoseUnderStageTo51Path
+                                                : kShootPoseUnderStageTo52Path)
+                                : (isStartWithOuterNotes ? kShootPoseUnderStageTo55Path
+                                                : kShootPoseUnderStageTo54Path);
+
+                String secondNotePath = isNearSide
+                                ? (isStartWithOuterNotes ? kShootPoseNearSideTo52Path
+                                                : kShootPoseNearSideTo51Path)
+                                : (isStartWithOuterNotes ? kShootPoseFarSideTo54Path
+                                                : kShootPoseFarSideTo55Path);
+
+                Rotation2d firstNoteRotation = Rotation2d.fromDegrees(isStartWithOuterNotes ? -90 : 90);
+                Rotation2d secondNoteRotation = Rotation2d.fromDegrees(isStartWithOuterNotes ? 90 : -90);
+
+                Pose2d endChasePose = isNearSide ? FieldConstants.NOTE_54_POSITION
+                                : FieldConstants.NOTE_55_POSITION;
+                Rotation2d endChaseRotation = Rotation2d.fromDegrees(isNearSide ? -90 : 0);
 
                 return new SequentialCommandGroup(
-                                // Move to 53, intaking and shooting 32 on the way, fallback for 53
-                                // intake is 54
+                                // Move to 53, intake and shoot 32
                                 AutoCommandFactory.buildIntakeShootWhileMovingCommand(
                                                 drivetrainSubsystem, arm, shooter, transfer, intake,
                                                 GamePieceProcessor.getInstance(), kStartPathDallas,
-                                                kShootParam32, Rotation2d.fromDegrees(-90)),
-                                // Shoot 53, use pathfindToPose flipped to go to shooting position
+                                                kShootParam32,
+                                                Rotation2d.fromDegrees(isNearSide ? -90 : 90)),
+
+                                // Shoot 53
                                 AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage,
                                                 PathfindConstants.constraints)
                                                 .deadlineWith(new SetArmAngleCommand(arm,
                                                                 kShootParamUnderStage.angle_deg),
                                                                 new SetShooterTargetCommand(shooter,
                                                                                 kShootParamUnderStage.speed_rps)),
-                                // Get 51, use Pathfollow to go to 51 position, fallback for 51
-                                // intake is 52
+
+                                // Get first note
                                 AutoCommandFactory.buildPathThenChaseNoteCommand(
                                                 drivetrainSubsystem, arm, shooter, transfer, intake,
                                                 GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseUnderStageTo51Path)),
-                                                Rotation2d.fromDegrees(-90)),
-                                // Score 51, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseNearSide,
+                                                AutoBuilder.followPath(PathPlannerPath
+                                                                .fromPathFile(firstNotePath)),
+                                                firstNoteRotation),
+
+                                // Score first note
+                                AutoBuilder.pathfindToPoseFlipped(firstShootPose,
                                                 PathfindConstants.constraints)
                                                 .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamNearSide.angle_deg),
+                                                                firstShootParam.angle_deg),
                                                                 new SetShooterTargetCommand(shooter,
-                                                                                kShootParamNearSide.speed_rps)),
-                                // Get 52, use Pathfollow to go to 52 position, fallback for 52
-                                // intake is 51
+                                                                                firstShootParam.speed_rps)),
+
+                                // Get second note
                                 AutoCommandFactory.buildPathThenChaseNoteCommand(
                                                 drivetrainSubsystem, arm, shooter, transfer, intake,
                                                 GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseNearSideTo52Path)),
-                                                Rotation2d.fromDegrees(90)),
-                                // Score 52, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseNearSide,
+                                                AutoBuilder.followPath(PathPlannerPath
+                                                                .fromPathFile(secondNotePath)),
+                                                secondNoteRotation),
+
+                                // Score second note
+                                AutoBuilder.pathfindToPoseFlipped(firstShootPose,
                                                 PathfindConstants.constraints),
-                                // End, for now we just chase 54, it should be stopping at the
-                                // midline
+
+                                // End chase
                                 AutoCommandFactory.buildPathThenChaseNoteCommand(
                                                 drivetrainSubsystem, arm, shooter, transfer, intake,
                                                 GamePieceProcessor.getInstance(),
-                                                AutoBuilder.pathfindToPoseFlipped(
-                                                                FieldConstants.NOTE_54_POSITION,
+                                                AutoBuilder.pathfindToPoseFlipped(endChasePose,
                                                                 PathfindConstants.constraints),
-                                                Rotation2d.fromDegrees(-90)));
+                                                endChaseRotation));
         }
+
 
         /**
          * Build the command for the TRAP53 strategy Start at Dallas mid position, move to 53, shoot
@@ -282,147 +247,7 @@ public class DallasAutoCommand extends SequentialCommandGroup {
                                                 transfer, trapFan));
         }
 
-        /**
-         * Build the command for the SCORE53_GO_FAR_SIDE strategy Start at Dallas mid position, move
-         * to 53, shoot 32 along the way Then go get 54, score 54, then go get 55, score 55
-         * 
-         * Fallback strategy for 53 intake: go for 52 (90 degree), reason is that we need 54 and 55
-         * later The path to intake 54 should activate chase note at Pos 54.4 (A position that can
-         * see 54 and 55, with 54 preferred) The path to intake 55 should activate chase note at Pos
-         * 54.6 (A position that can see 54 and 55, with 55 preferred)
-         * 
-         * @param drivetrainSubsystem
-         * @param arm
-         * @param shooter
-         * @param transfer
-         * @param intake
-         * @return
-         */
-        private Command buildScore53GoForFarSide(DrivetrainSubsystem drivetrainSubsystem, Arm arm,
-                        Shooter shooter, Transfer transfer, Intake intake) {
-                return new SequentialCommandGroup(
-                                // Move to 53, intaking and shooting 32 on the way, fallback for 53
-                                // intake is 52
-                                AutoCommandFactory.buildIntakeShootWhileMovingCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(), kStartPathDallas,
-                                                kShootParam32, Rotation2d.fromDegrees(90)),
-                                // Shoot 53, use pathfindToPose flipped to go to shooting position,
-                                // shooting
-                                // position for 53 is under stage
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage,
-                                                PathfindConstants.constraints)
-                                                .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamUnderStage.angle_deg),
-                                                                new SetShooterTargetCommand(shooter,
-                                                                                kShootParamUnderStage.speed_rps)),
-                                // Get 54, use Pathfollow to go to 54 position, fallback for 54
-                                // intake is 55
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseUnderStageTo54Path)),
-                                                Rotation2d.fromDegrees(-90)),
-                                // Score 54, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseFarSide,
-                                                PathfindConstants.constraints)
-                                                .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamFarSide.angle_deg),
-                                                                new SetShooterTargetCommand(shooter,
-                                                                                kShootParamFarSide.speed_rps)),
-                                // Get 55, use Pathfollow to go to 55 position, fallback for 55
-                                // intake is 54
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseFarSideTo55Path)),
-                                                Rotation2d.fromDegrees(90)),
-                                // Score 55, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseFarSide,
-                                                PathfindConstants.constraints),
 
-                                // End, for now we just chase 55, it should be stopping at the
-                                // midline
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.pathfindToPoseFlipped(
-                                                                FieldConstants.NOTE_55_POSITION,
-                                                                PathfindConstants.constraints),
-                                                Rotation2d.fromDegrees(0)));
-
-        }
-
-        /**
-         * Build the command for the SCORE53_GO_NEAR_SIDE strategy Start at Dallas mid position,
-         * move to 53, shoot 32 along the way Then go get 52, score 52, then go get 51, score 51
-         * 
-         * Fallback strategy for 53 intake: go for 54 (-90 degree), reason is that we need 51 and 52
-         * later The path to intake 52 should activate chase note at Pos 51.6 (A position that can
-         * see 51 and 52, with 52 preferred)\ The path to intake 51 should activate chase note at
-         * Pos 51.4 (A position that can see 51 and 52, with 51 preferred)
-         * 
-         * @param drivetrainSubsystem
-         * @param arm
-         * @param shooter
-         * @param transfer
-         * @param intake
-         * @return
-         */
-        private Command buildScore53GoForNearSide(DrivetrainSubsystem drivetrainSubsystem, Arm arm,
-                        Shooter shooter, Transfer transfer, Intake intake) {
-                return new SequentialCommandGroup(
-                                // Move to 53, intaking and shooting 32 on the way, fallback for 53
-                                // intake is 54
-                                AutoCommandFactory.buildIntakeShootWhileMovingCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(), kStartPathDallas,
-                                                kShootParam32, Rotation2d.fromDegrees(-90)),
-                                // Shoot 53, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage,
-                                                PathfindConstants.constraints)
-                                                .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamUnderStage.angle_deg),
-                                                                new SetShooterTargetCommand(shooter,
-                                                                                kShootParamUnderStage.speed_rps)),
-                                // Get 52, use Pathfollow to go to 52 position, fallback for 52
-                                // intake is 51
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseUnderStageTo52Path)),
-                                                Rotation2d.fromDegrees(90)),
-                                // Score 52, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseNearSide,
-                                                PathfindConstants.constraints)
-                                                .deadlineWith(new SetArmAngleCommand(arm,
-                                                                kShootParamNearSide.angle_deg),
-                                                                new SetShooterTargetCommand(shooter,
-                                                                                kShootParamNearSide.speed_rps)),
-                                // Get 51, use Pathfollow to go to 51 position, fallback for 51
-                                // intake is 52
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.followPath(PathPlannerPath.fromPathFile(
-                                                                kShootPoseNearSideTo51Path)),
-                                                Rotation2d.fromDegrees(-90)),
-                                // Score 51, use pathfindToPose flipped to go to shooting position
-                                AutoBuilder.pathfindToPoseFlipped(kShootPoseNearSide,
-                                                PathfindConstants.constraints),
-                                // End, for now we just chase 54, it should be stopping at the
-                                // midline
-                                AutoCommandFactory.buildPathThenChaseNoteCommand(
-                                                drivetrainSubsystem, arm, shooter, transfer, intake,
-                                                GamePieceProcessor.getInstance(),
-                                                AutoBuilder.pathfindToPoseFlipped(
-                                                                FieldConstants.NOTE_54_POSITION,
-                                                                PathfindConstants.constraints),
-                                                Rotation2d.fromDegrees(-90)));
-        }
 
         private Command buildWingShot53GoForFarSide(DrivetrainSubsystem drivetrainSubsystem,
                         Arm arm, Shooter shooter, Transfer transfer, Intake intake) {
