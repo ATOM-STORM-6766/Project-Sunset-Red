@@ -5,19 +5,32 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.AutoCommandFactory;
+import frc.robot.commands.FeedCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
-import frc.robot.subsystems.*;
+import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.DrivetrainSubsystem;
+import frc.robot.subsystems.GamePieceProcessor;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Transfer;
 import frc.robot.utils.ShootingParameters;
 
-public class DallasAutoScore53Routine {
-
-    public enum Score53Strategy {
-        NEAR_SIDE_MID_TO_OUTER, NEAR_SIDE_OUTER_TO_MID, FAR_SIDE_MID_TO_OUTER, FAR_SIDE_OUTER_TO_MID
+/**
+ * For Dallas Auto Drop 53 Routine, we have two strategies: NEAR_SIDE and FAR_SIDE For both
+ * strategies, we have the following: - Start at Dallas mid position - Move to 53, shoot 32 along
+ * the way - On the spot of 53, slowly eject 53 (drop 53) - Move to 52/54 depending on the strategy
+ * - Score 52/54 - Move to 51/55 depending on the strategy - Score 51/55 - Come back to 53 and pick
+ * up the dropped 53 - Score 53 - Move to midline, for now just put 54 Pose
+ */
+public class DallasAutoDrop53Routine {
+    public enum Drop53Strategy {
+        NEAR_SIDE, FAR_SIDE
     }
 
     private static final String kStartPathDallas = "Dallas StartPath";
@@ -36,17 +49,15 @@ public class DallasAutoScore53Routine {
     private static final ShootingParameters kShootParamNearSide = new ShootingParameters(75, 32.5);
     private static final ShootingParameters kShootParamFarSide = new ShootingParameters(75, 41);
     private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 36.5);
+    private static final ShootingParameters kShootParamDrop53 = new ShootingParameters(10, 36.5);
 
     // Paths
-    private static final String kShootPoseUnderStageTo51Path = "ShootPoseUnderStage to 51";
-    private static final String kShootPoseUnderStageTo52Path = "ShootPoseUnderStage to 52";
-    private static final String kShootPoseUnderStageTo54Path = "ShootPoseUnderStage to 54";
-    private static final String kShootPoseUnderStageTo55Path = "ShootPoseUnderStage to 55";
+    private static final String k53to52Path = "Dallas 53 to 52";
+    private static final String k53to54Path = "Dallas 53 to 54";
     private static final String kShootPoseNearSideTo51Path = "ShootPoseNearSide to 51";
-    private static final String kShootPoseNearSideTo52Path = "ShootPoseNearSide to 52";
-    private static final String kShootPoseFarSideTo54Path = "ShootPoseFarSide to 54";
     private static final String kShootPoseFarSideTo55Path = "ShootPoseFarSide to 55";
-
+    private static final String kShootPoseNearSideTo53Path = "ShootPoseNearSide to 53";
+    private static final String kShootPoseFarSideTo53Path = "ShootPoseFarSide to 53";
 
     private static class StrategyParams {
         final Pose2d shootPoseFirstNote;
@@ -57,12 +68,13 @@ public class DallasAutoScore53Routine {
         final String secondNotePath;
         final Rotation2d firstNoteRotation;
         final Rotation2d secondNoteRotation;
+        final String gotoDrop53Path;
         final Pose2d endChasePose;
 
         StrategyParams(Pose2d shootPoseFirstNote, Pose2d shootPoseSecondNote,
                 ShootingParameters shootParamsFirstNote, ShootingParameters shootParamsSecondNote,
                 String firstNotePath, String secondNotePath, Rotation2d firstNoteRotation,
-                Rotation2d secondNoteRotation, Pose2d endChasePose) {
+                Rotation2d secondNoteRotation, String gotoDrop53Path, Pose2d endChasePose) {
             this.shootPoseFirstNote = shootPoseFirstNote;
             this.shootPoseSecondNote = shootPoseSecondNote;
             this.shootParamsFirstNote = shootParamsFirstNote;
@@ -71,42 +83,35 @@ public class DallasAutoScore53Routine {
             this.secondNotePath = secondNotePath;
             this.firstNoteRotation = firstNoteRotation;
             this.secondNoteRotation = secondNoteRotation;
+            this.gotoDrop53Path = gotoDrop53Path;
             this.endChasePose = endChasePose;
         }
+
     }
 
-    private static StrategyParams getStrategyParams(Score53Strategy strategy) {
+    private static StrategyParams getStrategyParams(Drop53Strategy strategy) {
         switch (strategy) {
-            case NEAR_SIDE_MID_TO_OUTER:
+            case NEAR_SIDE:
                 return new StrategyParams(kShootPoseNearSide, kShootPoseNearSide,
-                        kShootParamNearSide, kShootParamNearSide, kShootPoseUnderStageTo52Path,
+                        kShootParamNearSide, kShootParamNearSide, k53to52Path,
                         kShootPoseNearSideTo51Path, Rotation2d.fromDegrees(90),
-                        Rotation2d.fromDegrees(-90), FieldConstants.NOTE_54_POSITION);
-            case NEAR_SIDE_OUTER_TO_MID:
-                return new StrategyParams(kShootPoseNearSide, kShootPoseNearSide,
-                        kShootParamNearSide, kShootParamNearSide, kShootPoseUnderStageTo51Path,
-                        kShootPoseNearSideTo52Path, Rotation2d.fromDegrees(-90),
-                        Rotation2d.fromDegrees(90), FieldConstants.NOTE_54_POSITION);
-            case FAR_SIDE_MID_TO_OUTER:
+                        Rotation2d.fromDegrees(-90), kShootPoseNearSideTo53Path,
+                        FieldConstants.NOTE_54_POSITION);
+
+            case FAR_SIDE:
                 return new StrategyParams(kShootPoseFarSide, kShootPoseFarSide, kShootParamFarSide,
-                        kShootParamFarSide, kShootPoseUnderStageTo54Path, kShootPoseFarSideTo55Path,
+                        kShootParamFarSide, k53to54Path, kShootPoseFarSideTo55Path,
                         Rotation2d.fromDegrees(-90), Rotation2d.fromDegrees(90),
-                        FieldConstants.NOTE_55_POSITION);
-            case FAR_SIDE_OUTER_TO_MID:
-                return new StrategyParams(kShootPoseFarSide, kShootPoseFarSide, kShootParamFarSide,
-                        kShootParamFarSide, kShootPoseUnderStageTo55Path, kShootPoseFarSideTo54Path,
-                        Rotation2d.fromDegrees(90), Rotation2d.fromDegrees(-90),
-                        FieldConstants.NOTE_55_POSITION);
+                        kShootPoseFarSideTo53Path, FieldConstants.NOTE_55_POSITION);
             default:
-                throw new IllegalArgumentException("Invalid strategy");
+                throw new IllegalArgumentException("Invalid strategy for DallasAutoDrop53Routine");
         }
     }
 
-    public static Command buildScore53Command(DrivetrainSubsystem drivetrainSubsystem, Arm arm,
-            Shooter shooter, Transfer transfer, Intake intake, Score53Strategy strategy,
-            Rotation2d fallbackRotation53) {
+    public static Command buildDrop53Command(DrivetrainSubsystem drivetrainSubsystem, Arm arm,
+            Shooter shooter, Transfer transfer, Intake intake,
+            Drop53Strategy strategy, Rotation2d fallbackRotation53) {
         StrategyParams params = getStrategyParams(strategy);
-
         return new SequentialCommandGroup(
                 // Prepare routine
                 AutoCommandFactory.buildPrepCommand(drivetrainSubsystem,
@@ -117,12 +122,12 @@ public class DallasAutoScore53Routine {
                         shooter, transfer, intake, GamePieceProcessor.getInstance(),
                         kStartPathDallas, kShootParam32, fallbackRotation53),
 
-                // Shoot 53
-                AutoBuilder
-                        .pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
-                        .deadlineWith(new SetArmAngleCommand(arm, kShootParamUnderStage.angle_deg),
-                                new SetShooterTargetCommand(shooter,
-                                        kShootParamUnderStage.speed_rps)),
+                // Drop 53, speed up and feed
+                new SequentialCommandGroup(
+                        new ParallelCommandGroup(
+                                new SetArmAngleCommand(arm, kShootParamDrop53.angle_deg),
+                                new SetShooterTargetCommand(shooter, kShootParamDrop53.speed_rps)),
+                        new FeedCommand(transfer)),
 
                 // Get first note
                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
@@ -154,11 +159,26 @@ public class DallasAutoScore53Routine {
                                 new SetShooterTargetCommand(shooter,
                                         params.shootParamsSecondNote.speed_rps)),
 
-                // End chase
+                // Go to dropped 53
+                AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
+                        transfer, intake, GamePieceProcessor.getInstance(),
+                        AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.gotoDrop53Path)),
+                        fallbackRotation53),
+
+                // Score 53
+                AutoBuilder
+                        .pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
+                        .deadlineWith(new SetArmAngleCommand(arm, kShootParamUnderStage.angle_deg),
+                                new SetShooterTargetCommand(shooter,
+                                        kShootParamUnderStage.speed_rps)),
+
+                // Move to midline
                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
                         transfer, intake, GamePieceProcessor.getInstance(),
                         AutoBuilder.pathfindToPoseFlipped(params.endChasePose,
                                 PathfindConstants.constraints),
-                        Rotation2d.fromDegrees(0)));
+                        Rotation2d.fromDegrees(0))
+
+        );
     }
 }

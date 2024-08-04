@@ -36,7 +36,7 @@ public class DallasAutoTrap53Routine {
      * @param trapFan
      * @return
      */
-    public static Command getTrap53Command(DrivetrainSubsystem drivetrainSubsystem, Arm arm, Shooter shooter,
+    public static Command buildTrap53Command(DrivetrainSubsystem drivetrainSubsystem, Arm arm, Shooter shooter,
             Transfer transfer, Intake intake, TrapFan trapFan, Rotation2d fallbackRotation53) {
         return new SequentialCommandGroup(
                 // Move to 53, intake and shoot 32 along the way

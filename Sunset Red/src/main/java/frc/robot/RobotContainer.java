@@ -20,8 +20,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.*;
 import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine;
+import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine;
 import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine.Score53Strategy;
 import frc.robot.auto.modes.Dallas.DallasAutoTrap53Routine;
+import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine.Drop53Strategy;
 import frc.robot.commands.*;
 import frc.robot.commands.PepGuardiolaCommand.GoalZone;
 import frc.robot.lib6907.CommandSwerveController;
@@ -42,6 +44,7 @@ public class RobotContainer {
     private SendableChooser<Command> mChooser = new SendableChooser<>();
     private final SendableChooser<Score53Strategy> mScore53StrategyChooser =
             new SendableChooser<>();
+    private final SendableChooser<Drop53Strategy> mDrop53StrategyChooser = new SendableChooser<>();
     private final SendableChooser<Rotation2d> mFallbackRotation53Chooser = new SendableChooser<>();
 
 
@@ -312,16 +315,26 @@ public class RobotContainer {
         mScore53StrategyChooser.addOption("Far Side Outer to Mid",
                 DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_OUTER_TO_MID);
 
+        // Configure Drop53Strategy chooser
+        mDrop53StrategyChooser.setDefaultOption("Near Side",
+                DallasAutoDrop53Routine.Drop53Strategy.NEAR_SIDE);
+        mDrop53StrategyChooser.addOption("Far Side",
+                DallasAutoDrop53Routine.Drop53Strategy.FAR_SIDE);
+
         // Configure fallbackRotation53 chooser
         mFallbackRotation53Chooser.setDefaultOption("90 degrees (intake near)",
                 Rotation2d.fromDegrees(90));
         mFallbackRotation53Chooser.addOption("-90 degrees (intake far)",
                 Rotation2d.fromDegrees(-90));
-        // Add Dallas Score 53 option
+       
+        // Add Dallas Auto
         mChooser.addOption("Dallas Score 53 (Configurable)",
                 new ProxyCommand(this::createDallasScore53Command));
         mChooser.addOption("Dallas Trap 53 (Configurable)",
                 new ProxyCommand(this::createDallasTrap53Command));
+        mChooser.addOption("Dallas Drop 53 (Configurable)",
+                new ProxyCommand(this::createDallasDrop53Command));
+        
 
 
         SmartDashboard.putData("AUTO CHOICES", mChooser);
@@ -330,14 +343,20 @@ public class RobotContainer {
     }
 
     private Command createDallasScore53Command() {
-        return DallasAutoScore53Routine.getScore53Command(sDrivetrainSubsystem, mArm, mShooter,
+        return DallasAutoScore53Routine.buildScore53Command(sDrivetrainSubsystem, mArm, mShooter,
                 mTransfer, mIntake, mScore53StrategyChooser.getSelected(),
                 mFallbackRotation53Chooser.getSelected());
     }
 
     private Command createDallasTrap53Command() {
-        return DallasAutoTrap53Routine.getTrap53Command(sDrivetrainSubsystem, mArm, mShooter,
+        return DallasAutoTrap53Routine.buildTrap53Command(sDrivetrainSubsystem, mArm, mShooter,
                 mTransfer, mIntake, mTrapFan, mFallbackRotation53Chooser.getSelected());
+    }
+
+    private Command createDallasDrop53Command() {
+        return DallasAutoDrop53Routine.buildDrop53Command(sDrivetrainSubsystem, mArm, mShooter,
+                mTransfer, mIntake, mDrop53StrategyChooser.getSelected(),
+                mFallbackRotation53Chooser.getSelected());
     }
 
     public void moduleTestRoutine() {
