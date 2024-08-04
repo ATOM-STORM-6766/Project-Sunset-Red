@@ -38,14 +38,14 @@ public class DallasAutoScore53Routine {
     private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 36.5);
 
     // Paths
-    private static final String kShootPoseUnderStageTo51Path = "Dallas ShootPoseUnderStage to 51";
-    private static final String kShootPoseUnderStageTo52Path = "Dallas ShootPoseUnderStage to 52";
-    private static final String kShootPoseUnderStageTo54Path = "Dallas ShootPoseUnderStage to 54";
-    private static final String kShootPoseUnderStageTo55Path = "Dallas ShootPoseUnderStage to 55";
-    private static final String kShootPoseNearSideTo51Path = "Dallas ShootPoseNearSide to 51";
-    private static final String kShootPoseNearSideTo52Path = "Dallas ShootPoseNearSide to 52";
-    private static final String kShootPoseFarSideTo54Path = "Dallas ShootPoseFarSide to 54";
-    private static final String kShootPoseFarSideTo55Path = "Dallas ShootPoseFarSide to 55";
+    private static final String kShootPoseUnderStageTo51Path = "ShootPoseUnderStage to 51";
+    private static final String kShootPoseUnderStageTo52Path = "ShootPoseUnderStage to 52";
+    private static final String kShootPoseUnderStageTo54Path = "ShootPoseUnderStage to 54";
+    private static final String kShootPoseUnderStageTo55Path = "ShootPoseUnderStage to 55";
+    private static final String kShootPoseNearSideTo51Path = "ShootPoseNearSide to 51";
+    private static final String kShootPoseNearSideTo52Path = "ShootPoseNearSide to 52";
+    private static final String kShootPoseFarSideTo54Path = "ShootPoseFarSide to 54";
+    private static final String kShootPoseFarSideTo55Path = "ShootPoseFarSide to 55";
 
 
     private static class StrategyParams {

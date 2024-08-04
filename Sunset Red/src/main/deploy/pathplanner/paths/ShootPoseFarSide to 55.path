@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.5,
-        "y": 4.63
+        "x": 4.0,
+        "y": 3.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.9523590297180595,
-        "y": 0.994866485103341
+        "x": 5.777850459810508,
+        "y": 0.9112529183962474
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.30499640165947,
-        "y": 0.75614128543072
+        "x": 8.2985793368847,
+        "y": 0.7696389365381469
       },
       "prevControl": {
-        "x": 6.766881626355846,
-        "y": 1.0179076237782105
+        "x": 6.315983590871292,
+        "y": 1.0670282984401587
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -1.5413899345137305,
+    "rotation": 0,
     "rotateFast": true
   },
   "reversed": false,
-  "folder": "Dallas",
+  "folder": null,
   "previewStartingState": {
-    "rotation": -15.241242210043815,
+    "rotation": -34.99202019855854,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.700262133976862,
-        "y": 3.9210771802581177
+        "x": 4.302073631925042,
+        "y": 7.008900601134536
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.284942222836145,
-        "y": 5.786158835287259
+        "x": 8.295257363662875,
+        "y": 7.4343302853272375
       },
       "prevControl": {
-        "x": 7.477229695067619,
-        "y": 4.758161072672772
+        "x": 7.078174535978702,
+        "y": 7.239193219127179
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 22.067899562410293,
+    "rotation": 0.27532259757692706,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Dallas",
+  "folder": null,
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -19.94557124697853,
     "velocity": 0
   },
   "useDefaultConstraints": true
