@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +30,8 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -41,9 +44,6 @@ public class RobotContainer {
 
   //for tuning shooter
   
-  private GenericEntry speedEntry;
-  private GenericEntry angleEntry;
-
   private SendableChooser<Command> mChooser = new SendableChooser<>();
 
   // * Controllers */
@@ -84,8 +84,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    speedEntry =Shuffleboard.getTab("SmartDashboard").add("speed",75).getEntry();
-    angleEntry = Shuffleboard.getTab("SmartDashboard").add("angle",30).getEntry();
     sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
 
     sDrivetrainSubsystem.configureAutoBuilder();
@@ -214,18 +212,19 @@ public class RobotContainer {
 
       driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
     }
-    driverController.x().whileTrue(new SetShooterTargetCommand(mShooter, speedEntry.getDouble(15))
-            .alongWith(new SetArmAngleCommand(mArm,angleEntry.getDouble(30) ))
-            .andThen(new FeedCommand(mTransfer)));
+    // driverController.x().whileTrue(new SetShooterTargetCommand(mShooter, ()->speedEntry.getDouble(15))
+    //         .alongWith(new SetArmAngleCommand(mArm,()->angleEntry.getDouble(30) ))
+    //         .andThen(new FeedCommand(mTransfer))).onFalse(new InstantCommand(() -> mShooter.stop())
+    //         .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
 
     //temporarily commented out for shooter tuning
     // TODO 
     // // Below Speaker
-    // if (kDualController) {
-    //   buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
-    // } else {
-    //   buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
-    // }
+    if (kDualController) {
+      buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
+    } else {
+      buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+    }
     // seven zones transfer
     buildPepGBinding(new Trigger[]{driverController.povUp(),driverController.povDown(),driverController.povLeft(),driverController.povRight()});
   }
@@ -352,9 +351,9 @@ public class RobotContainer {
 
   public void moduleTestRoutine() {
     // FL, FR, BR, BL
-    var module = sDrivetrainSubsystem.getModuleArray()[2];
+    var module = sDrivetrainSubsystem.getModuleArray()[0];
 
     var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
-    module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));
+    module.setDesiredState(new SwerveModuleState(dv.getNorm()*5, dv.getAngle()));
   }
 }
