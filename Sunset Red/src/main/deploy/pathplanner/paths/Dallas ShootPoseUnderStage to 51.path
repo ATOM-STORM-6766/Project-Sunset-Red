@@ -45,7 +45,7 @@
   "reversed": false,
   "folder": "Dallas",
   "previewStartingState": {
-    "rotation": 0,
+    "rotation": -19.94557124697853,
     "velocity": 0
   },
   "useDefaultConstraints": true
