@@ -84,7 +84,7 @@ public class AutoCommandFactory {
             new ParallelCommandGroup(
                 new SetArmAngleCommand(arm, shootingParameters.angle_deg),
                 new SetShooterTargetCommand(shooter, shootingParameters.speed_rps)),
-            new FeedCommand(transfer),
+            new FeedCommand(transfer, shooter),
             new InstantCommand(
                 () -> {
                   shooter.stop();
@@ -132,9 +132,9 @@ public class AutoCommandFactory {
             new SequentialCommandGroup(
                 // if note, it must be prepared, feed first
                 new SequentialCommandGroup(
-                    new FeedCommand(transfer), Commands.runOnce(() -> shooter.stop(), shooter)),
+                    new FeedCommand(transfer, shooter), Commands.runOnce(() -> shooter.stop(), shooter)),
                 new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
                     new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
@@ -216,11 +216,11 @@ public class AutoCommandFactory {
             new SequentialCommandGroup(
                 // if note, it must be prepared, feed first
                 new SequentialCommandGroup(
-                    new FeedCommand(transfer),
+                    new FeedCommand(transfer, shooter),
                     Commands.runOnce(() -> shooter.stop(), shooter))
                     .onlyIf(() -> transfer.isOmronDetected()),
                 new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
                     new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
@@ -303,7 +303,7 @@ public class AutoCommandFactory {
                     new IntakeAndFeedCommand(intake, transfer)),
                 new ParallelCommandGroup(
                     new SetShooterTargetCommand(shooter, 0.0),
-                    new SetArmAngleCommand(arm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE),
+                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
                     new IntakeCommand(intake, transfer))))
             .until(
                 () -> {

@@ -84,7 +84,8 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
-
+        mShooter.setDefaultCommand(new SetShooterTargetCommand(mShooter, 40)); // each motor should take only about 3A
+        
         sDrivetrainSubsystem.configureAutoBuilder();
         configureBindings();
         pushChooser();
@@ -153,21 +154,20 @@ public class RobotContainer {
                                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
                 .onFalse(new InstantCommand(() -> {
                     mShooter.stop();
-                    mArm.stop();
                     mTransfer.stop();
                     mIntake.stop();
-                }));
+                }).alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
 
         // manual trap
         operatorController.povUp().and(operatorController.rightBumper())
                 .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
                 .onFalse(new InstantCommand(() -> mShooter.stop())
-                        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
+                        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
         operatorController.povUp().and(operatorController.rightBumper().negate())
                 .whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake,
                         mTransfer, mTrapFan))
                 .onFalse(new InstantCommand(() -> mShooter.stop())
-                        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
+                        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
         // amp binding
         // navAmp
         buildNavAmpBinding(
@@ -207,10 +207,10 @@ public class RobotContainer {
     private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
         Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
                 .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
-                .andThen(new FeedCommand(mTransfer));
+                .andThen(new FeedCommand(mTransfer, mShooter));
 
         Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
         trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
     }
@@ -221,12 +221,11 @@ public class RobotContainer {
                 .alongWith(new SetArmAngleCommand(mArm, IntermediateParameter.angle_deg));
 
         Command swingBackAndReleaseCommand =
-                new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
-                        .alongWith(new SetArmAngleCommand(mArm, targetParameters.angle_deg))
-                        .alongWith(new FeedCommand(mTransfer));
+                new SetArmAngleCommand(mArm, targetParameters.angle_deg)
+                        .alongWith(new FeedCommand(mTransfer, mShooter));
 
         Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
         trigger.whileTrue(swingUpCommand.andThen(swingBackAndReleaseCommand))
                 .onFalse(stopShootingCommand);
@@ -276,12 +275,11 @@ public class RobotContainer {
                                 ShootingParameters.AMP_INTERMEDIATE_POS.angle_deg));
 
         Command swingBackAndReleaseCommand =
-                new SetShooterTargetCommand(mShooter, ShootingParameters.AMP_LOWSPEED.speed_rps)
-                        .alongWith(new SetArmAngleCommand(mArm,
-                                ShootingParameters.AMP_LOWSPEED.angle_deg))
-                        .alongWith(new FeedCommand(mTransfer));
+                new SetArmAngleCommand(mArm,
+                                ShootingParameters.AMP_LOWSPEED.angle_deg)
+                        .alongWith(new FeedCommand(mTransfer, mShooter));
         Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE));
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
         trigger.whileTrue(
                 pathfindToAmp.alongWith(swingUpCommand).andThen(swingBackAndReleaseCommand))

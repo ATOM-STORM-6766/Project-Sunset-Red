@@ -114,6 +114,6 @@ public class CaliforniaAuto extends SequentialCommandGroup {
                         AutoBuilder.pathfindToPoseFlipped(
                                 FieldConstants.NOTE_54_POSITION, PathfindConstants.constraints),
                         Rotation2d.fromDegrees(-90.0)),
-                new FeedCommand(transfer));
+                new FeedCommand(transfer, shooter));
     }
 }

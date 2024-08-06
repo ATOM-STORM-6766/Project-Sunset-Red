@@ -161,6 +161,8 @@ public final class Constants {
   public static final class ArmConstants {
     // ARM
     public static final int ARM_ID = 10;
+    // arm pitch when observing note on intake side
+    public static final double ARM_OBSERVE_ANGLE = 36.0;
     // arm pitch when resting in degrees
     public static final double ARM_REST_ANGLE = 23.0;
     // arm pitch when resting in rotations
@@ -171,7 +173,6 @@ public final class Constants {
     public static final double ARM_MAX_POSITION = ARM_MAX_ANGLE / 360.0;
     public static final double STABILIZE_TIME = 0.1;
 
-    public static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
   }
 
   public static final class ShooterConstants {

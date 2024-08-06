@@ -127,7 +127,7 @@ public class DallasAutoDrop53Routine {
                         new ParallelCommandGroup(
                                 new SetArmAngleCommand(arm, kShootParamDrop53.angle_deg),
                                 new SetShooterTargetCommand(shooter, kShootParamDrop53.speed_rps)),
-                        new FeedCommand(transfer)),
+                        new FeedCommand(transfer, shooter)),
 
                 // Get first note
                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,

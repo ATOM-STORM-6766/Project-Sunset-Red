@@ -68,7 +68,7 @@ public class ChaseNoteCommand extends Command {
         new PIDController(
             ROT_CONTROLLER_CONSTANTS[0], ROT_CONTROLLER_CONSTANTS[1], ROT_CONTROLLER_CONSTANTS[2]);
 
-    this.setArmAngleCommand = new SetArmAngleCommand(sArm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE);
+    this.setArmAngleCommand = new SetArmAngleCommand(sArm, ArmConstants.ARM_OBSERVE_ANGLE);
     stateTimer = new Timer();
 
     addRequirements(sDrivetrainSubsystem, sIntake, sTransfer, sArm);

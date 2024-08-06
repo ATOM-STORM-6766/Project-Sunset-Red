@@ -48,7 +48,7 @@ public class BlowTrapAndDropCommand extends SequentialCommandGroup {
             .alongWith(new SetArmAngleCommand(sArm, ShootingParameters.TRAP.angle_deg)),
         new SequentialCommandGroup(
                 new WaitCommand(2), // Wait for 2 seconds
-                new FeedCommand(sTransfer))
+                new FeedCommand(sTransfer, sShooter))
             .deadlineWith(blowTrapCommand),
         logFinished);
 
