@@ -1,18 +1,31 @@
 package frc.robot.auto.modes.Dallas;
 
+import java.util.Optional;
+
+import org.photonvision.targeting.PhotonTrackedTarget;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.AutoCommandFactory;
+import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
+import frc.robot.commands.TurnToHeadingCommand;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import frc.robot.subsystems.GamePieceProcessor;
@@ -122,14 +135,8 @@ public class DallasAutoDrop53Routine {
                         shooter, transfer, intake, GamePieceProcessor.getInstance(),
                         kStartPathDallas, kShootParam32, fallbackRotation53),
 
-                // Drop 53, speed up and feed
-                new SequentialCommandGroup(
-                        new ParallelCommandGroup(
-                                new SetArmAngleCommand(arm, kShootParamDrop53.angle_deg),
-                                new SetShooterTargetCommand(shooter, kShootParamDrop53.speed_rps)),
-                        new FeedCommand(transfer, shooter)),
 
-                // Get first note
+                // Drop 53 and Get first note
                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
                         transfer, intake, GamePieceProcessor.getInstance(),
                         AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.firstNotePath)),
@@ -181,4 +188,91 @@ public class DallasAutoDrop53Routine {
 
         );
     }
+
+    public static Command drop53ThenBuildPathThenChaseNoteCommand(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Transfer transfer,
+      Intake intake,
+      GamePieceProcessor gamePieceProcessor,
+      Command pathCommand,
+      Rotation2d findNoteHeading) {
+    return new SequentialCommandGroup(
+        new ParallelDeadlineGroup(
+            pathCommand,
+            new SequentialCommandGroup(
+                // if note, it must be prepared, feed first
+
+                new ParallelCommandGroup(
+                        new SetArmAngleCommand(arm, kShootParamDrop53.angle_deg),
+                        new SetShooterTargetCommand(shooter, kShootParamDrop53.speed_rps)),
+                new FeedCommand(transfer, shooter),
+                Commands.runOnce(() -> shooter.stop(), shooter),
+                new ParallelCommandGroup(
+                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
+                    new IntakeCommand(intake, transfer))))
+            .until(
+                () -> {
+                  /*
+                   * Chase conditions
+                   * 1. Deadline is whether we are far enough the field to 54
+                   * 2. Has target is whether we have a target to chase
+                   * 3. If we have a note, 53 has not been shot yet, we need to wait
+                   */
+                  boolean deadline = AutoCommandFactory.isFieldPositionReached(drivetrainSubsystem, AutoCommandFactory.kChaseNoteDeadlineX);
+                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+                  boolean hasTarget = target.isPresent();
+                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+                  SmartDashboard.putBoolean("Has Target", hasTarget);
+                  return (deadline && hasTarget && !transfer.isOmronDetected());
+                }),
+        // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing
+        // note")),
+        new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+            .until(
+                () -> {
+                  boolean midbar = AutoCommandFactory.isFieldPositionReached(drivetrainSubsystem, AutoCommandFactory.kMidFieldFenceX);
+                  if (midbar)
+                    SmartDashboard.putString("Auto Status", "chase interrupt because midfield bar");
+                  return midbar;
+                })
+            // .until(() -> {
+            // if (intake.isOmronDetected()) {
+            // timer.start();
+            // } else {
+            // timer.stop();
+            // timer.reset();
+            // }
+            // return timer.hasElapsed(0.5);
+            // })
+            .unless(() -> transfer.isOmronDetected()),
+        // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking
+        // for note")),
+        Commands.either(
+            new WaitCommand(0),
+            new SequentialCommandGroup(
+                new InstantCommand(
+                    () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
+                new TurnToHeadingCommand(drivetrainSubsystem, findNoteHeading),
+                new InstantCommand(
+                    () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
+                new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+                    .until(
+                        () -> {
+                          boolean midbar = AutoCommandFactory.isFieldPositionReached(drivetrainSubsystem, AutoCommandFactory.kMidFieldFenceX);
+                          if (midbar)
+                            SmartDashboard.putString(
+                                "Auto Status", "chase interrupt because midfield bar");
+                          return midbar;
+                        })),
+            () -> {
+              Boolean hasNote = transfer.isOmronDetected();
+              SmartDashboard.putBoolean("Has Note", hasNote);
+              if (hasNote) {
+                SmartDashboard.putString("Auto Status", "hasnote=" + hasNote.toString());
+              }
+              return hasNote;
+            }));
+  }
 }

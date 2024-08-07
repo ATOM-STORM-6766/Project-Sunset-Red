@@ -36,12 +36,12 @@ public class AutoCommandFactory {
   // upon robot pose x reach kChaseNoteDeadlineX we start chase note
   // for reference: wing line ~5.8m
   // TODO: THIS SHOULD BE 6.5-7.0
-  private static final double kChaseNoteDeadlineX = 6.3;
+  public static final double kChaseNoteDeadlineX = 6.3;
 
   // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield
   // completely
   // which is likely to violate rules, so chase note will be cancelled.
-  private static final double kMidFieldFenceX = 8.5;
+  public static final double kMidFieldFenceX = 8.5;
 
   /**
    * This is the start command for any auto routine. It zeroes the drivetrain and
