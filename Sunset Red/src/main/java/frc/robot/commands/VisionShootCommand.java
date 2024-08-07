@@ -35,7 +35,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
   private DualEdgeDelayedBoolean goShoot =
       new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1, EdgeType.RISING);
 
-  private SnapToAngleCommand driveCommand;
+  private DriveWithFollowHeadingCommand driveCommand;
 
   private StructPublisher<Translation2d> aimingTargetPublisher =
       NetworkTableInstance.getDefault()
@@ -59,7 +59,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
     mDrivetrain = drivetrain;
     mIntake = intake;
     driveCommand =
-        new SnapToAngleCommand(
+        new DriveWithFollowHeadingCommand(
             drivetrain,
             driveVectorSupplier,
             () -> getRotationTarget(mDrivetrain),
@@ -134,7 +134,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
                                  && Math.abs(mShooter.getMainMotorVelocity() - mShooter.getTargetVelocity()) < 2.0
                                  && Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 1.0
                                  && */
-        driveCommand.isAligned());
+        driveCommand.headingAligned());
   }
 
   /**

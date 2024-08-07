@@ -73,6 +73,11 @@ public class DriveWithFollowHeadingCommand extends Command {
         !mRobotCentricSupplier.getAsBoolean());
   }
 
+  public boolean headingAligned() {
+    return mProfiledPID.getGoal().position - sDrivetrainSubsystem.getHeading().getRadians()
+        < Math.toRadians(1.0);
+  }
+
   @Override
   public void end(boolean interrupted) {
     sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
