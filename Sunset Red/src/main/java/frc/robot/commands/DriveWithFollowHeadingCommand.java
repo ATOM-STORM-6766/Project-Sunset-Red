@@ -22,7 +22,7 @@ public class DriveWithFollowHeadingCommand extends Command {
   // TODO : CHECK PID
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
-          3.0, 0, 1.0, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
+          0.5, 0, 1.0, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
 
   // accept drive supplier and target heading
   // use a profiled controller to do the heading following
