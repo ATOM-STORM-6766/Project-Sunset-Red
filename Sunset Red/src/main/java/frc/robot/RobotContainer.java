@@ -16,6 +16,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.*;
@@ -179,10 +181,8 @@ public class RobotContainer {
                 ShootingParameters.AMP_INTERMEDIATE_POS, ShootingParameters.AMP_LOWSPEED);
 
         // intake system bindings
-        if (kDualController) {
             operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
             operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-        } else {
             // chase note inake
             driverController.a().and(driverController.rightBumper().negate()).whileTrue(
                     new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
@@ -191,14 +191,23 @@ public class RobotContainer {
                     .whileTrue(new IntakeCommand(mIntake, mTransfer));
 
             driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-        }
 
         // Below Speaker
-        if (kDualController) {
-            buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER);
-        } else {
-            buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
-        }
+        
+        buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER_REVERSE);
+        buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+
+        operatorController.y().whileTrue(
+                (
+                        new SetShooterTargetCommand(mShooter, -10)
+                        .alongWith(new SetArmAngleCommand(mArm, 101.0))
+                ).until(()->mTransfer.isOmronDetected())
+                .andThen(new InstantCommand(()->mTransfer.setVoltage(-1))
+                .andThen(new WaitUntilCommand(()->!mTransfer.isOmronDetected()).raceWith(new WaitCommand(0.3)))) // note got in
+                .andThen(new InstantCommand(()->mTransfer.stop()))
+        ).onFalse(
+                new InstantCommand(()->mTransfer.stop())
+                .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
         // seven zones transfer
         buildPepGBinding(new Trigger[] {driverController.povUp(), driverController.povDown(),
                 driverController.povLeft(), driverController.povRight()});
