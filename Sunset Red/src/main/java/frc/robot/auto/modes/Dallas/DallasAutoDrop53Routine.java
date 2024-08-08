@@ -22,6 +22,7 @@ import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.AutoCommandFactory;
 import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
+import frc.robot.commands.IntakeAndFeedCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
@@ -121,6 +122,7 @@ public class DallasAutoDrop53Routine {
         }
     }
 
+
     public static Command buildDrop53Command(DrivetrainSubsystem drivetrainSubsystem, Arm arm,
             Shooter shooter, Transfer transfer, Intake intake,
             Drop53Strategy strategy, Rotation2d fallbackRotation53) {
@@ -131,7 +133,7 @@ public class DallasAutoDrop53Routine {
                         ShootingParameters.BELOW_SPEAKER, kStartPathDallas, arm, shooter, transfer),
 
                 // Move to 53, intake and shoot 32 along the way
-                AutoCommandFactory.buildIntakeShootWhileMovingCommand(drivetrainSubsystem, arm,
+                buildIntakeShootWhileMovingCommandWithIntake53(drivetrainSubsystem, arm,
                         shooter, transfer, intake, GamePieceProcessor.getInstance(),
                         kStartPathDallas, kShootParam32, fallbackRotation53),
 
@@ -189,6 +191,48 @@ public class DallasAutoDrop53Routine {
         );
     }
 
+    public static Command buildIntakeShootWhileMovingCommandWithIntake53(
+      DrivetrainSubsystem drivetrainSubsystem,
+      Arm arm,
+      Shooter shooter,
+      Transfer transfer,
+      Intake intake,
+      GamePieceProcessor gamePieceProcessor,
+      String pathName,
+      ShootingParameters shootParams,
+      Rotation2d findNoteHeading) {
+    return new SequentialCommandGroup(
+        new ParallelDeadlineGroup(
+            AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
+            new SequentialCommandGroup(
+                new ParallelCommandGroup(
+                    new SetArmAngleCommand(arm, shootParams.angle_deg),
+                    new SetShooterTargetCommand(shooter, shootParams.speed_rps),
+                    new IntakeAndFeedCommand(intake, transfer)),
+                new ParallelCommandGroup(
+                    new SetShooterTargetCommand(shooter, 0.0),
+                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
+                    new IntakeCommand(intake, transfer))))
+            .until(
+                () -> {
+                  boolean deadline = AutoCommandFactory.isFieldPositionReached(drivetrainSubsystem, AutoCommandFactory.kChaseNoteDeadlineX);
+                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+                  boolean hasTarget = target.isPresent();
+                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
+                  SmartDashboard.putBoolean("Has Target", hasTarget);
+                  return (deadline && hasTarget);
+                }),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
+        new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
+            .until(() -> AutoCommandFactory.isFieldPositionReached(drivetrainSubsystem, AutoCommandFactory.kMidFieldFenceX))
+            .until(() -> transfer.isOmronDetected())
+            .alongWith(new SetShooterTargetCommand(shooter, 25)),
+        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note"))
+        );
+  }
+
+
+
     public static Command drop53ThenBuildPathThenChaseNoteCommand(
       DrivetrainSubsystem drivetrainSubsystem,
       Arm arm,
@@ -203,10 +247,6 @@ public class DallasAutoDrop53Routine {
             pathCommand,
             new SequentialCommandGroup(
                 // if note, it must be prepared, feed first
-
-                new ParallelCommandGroup(
-                        new SetArmAngleCommand(arm, kShootParamDrop53.angle_deg),
-                        new SetShooterTargetCommand(shooter, kShootParamDrop53.speed_rps)),
                 new FeedCommand(transfer, shooter),
                 
                 Commands.runOnce(() -> {shooter.stop(); SmartDashboard.putString("Auto Status", "dropped 53");}, shooter),

@@ -66,23 +66,22 @@ public class AutoCommandFactory {
       Arm arm,
       Shooter shooter,
       Transfer transfer) {
+      Optional<Alliance> currentAlliance = DriverStation.getAlliance();
+    PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
+    if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
+      firstPath = firstPath.flipPath();
+    }
+
     return new ParallelCommandGroup(
         new SequentialCommandGroup(
             drivetrainSubsystem.runZeroingCommand(),
-            new InstantCommand(
-                () -> {
-                  Optional<Alliance> currentAlliance = DriverStation.getAlliance();
-                  PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
-                  if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
-                    firstPath = firstPath.flipPath();
-                  }
-                  drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
-                  SmartDashboard.putString("Auto Status", "Finished prepare command");
-                })),
+            AutoBuilder.pathfindToPose(firstPath.getPreviewStartingHolonomicPose(),PathfindConstants.constraints)
+            ),
         new SequentialCommandGroup(
             new ParallelCommandGroup(
                 new SetArmAngleCommand(arm, shootingParameters.angle_deg),
                 new SetShooterTargetCommand(shooter, shootingParameters.speed_rps)),
+
             new FeedCommand(transfer, shooter),
             new InstantCommand(
                 () -> {
