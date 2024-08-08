@@ -1,14 +1,11 @@
 package frc.robot.commands;
 
-import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.lib6907.DualEdgeDelayedBoolean;
 import frc.robot.lib6907.DualEdgeDelayedBoolean.EdgeType;
 import frc.robot.subsystems.Shooter;
-import java.util.Map;
+
 /**
  * Set a single velocity target for the shooter subsystem, finishes when the target is reached.
  * velocity target = 0 means stop shooter.
@@ -17,7 +14,6 @@ public class SetShooterTargetCommand extends Command {
   private final Shooter mShooter;
   private final double shooterTargetRPS;
   private boolean isFinished;
-  private static GenericEntry speedEntry= Shuffleboard.getTab("SmartDashboard").add("speed",30).withWidget(BuiltInWidgets.kNumberSlider).withProperties(Map.of("min",30,"max",80)).getEntry();
 
   private static final double STABLIZE_TIME = 0.1;
   private DualEdgeDelayedBoolean spinStablized =
@@ -39,7 +35,7 @@ public class SetShooterTargetCommand extends Command {
 
   @Override
   public void initialize() {
-    mShooter.setTargetVelocity(speedEntry.getDouble(30));
+    mShooter.setTargetVelocity(shooterTargetRPS);
     isFinished = false; // this has to be here otherwise it will not reset on every trigger
   }
 
@@ -54,8 +50,8 @@ public class SetShooterTargetCommand extends Command {
         Timer.getFPGATimestamp(),
         mShooter.getMainMotorVelocity() > SHOOT_THRESHOLD_RPS
             && mShooter.getFollowerVelocity() > SHOOT_THRESHOLD_RPS
-            && Math.abs(mainMotorVelocity - speedEntry.getDouble(30)) < ERR_TOL
-            && Math.abs(followerVelocity - speedEntry.getDouble(30)) < ERR_TOL)) {
+            && Math.abs(mainMotorVelocity - shooterTargetRPS) < ERR_TOL
+            && Math.abs(followerVelocity - shooterTargetRPS) < ERR_TOL)) {
       // ready to shoot
       isFinished = true;
     }
