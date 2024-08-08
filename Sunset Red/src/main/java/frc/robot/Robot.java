@@ -8,6 +8,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -38,6 +39,9 @@ public class Robot extends TimedRobot {
     FollowPathCommand.warmupCommand().schedule();
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
+
+    // for tune shooter
+    
   }
 
   /**

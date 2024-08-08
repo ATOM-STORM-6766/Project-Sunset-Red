@@ -8,8 +8,12 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -33,6 +37,8 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
+import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -190,7 +196,12 @@ public class RobotContainer {
             driverController.a().and(driverController.rightBumper())
                     .whileTrue(new IntakeCommand(mIntake, mTransfer));
 
-            driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+      driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+    
+    // driverController.x().whileTrue(new SetShooterTargetCommand(mShooter, ()->speedEntry.getDouble(15))
+    //         .alongWith(new SetArmAngleCommand(mArm,()->angleEntry.getDouble(30) ))
+    //         .andThen(new FeedCommand(mTransfer))).onFalse(new InstantCommand(() -> mShooter.stop())
+    //         .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_REST_ANGLE)));
 
         // Below Speaker
         
