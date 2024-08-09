@@ -4,6 +4,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.DrivetrainSubsystem;
 import java.util.Optional;
@@ -22,7 +23,7 @@ public class DriveWithFollowHeadingCommand extends Command {
   // TODO : CHECK PID
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
-          0.5, 0, 1.0, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
+          1.0,2.0, 0.3, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
 
   // accept drive supplier and target heading
   // use a profiled controller to do the heading following
@@ -38,6 +39,8 @@ public class DriveWithFollowHeadingCommand extends Command {
     mTargetHeadingSupplier = targetHeadingSupplier;
     mRobotCentricSupplier = robotCentricSupplier;
     addRequirements(sDrivetrainSubsystem);
+
+    mProfiledPID.setIZone(0.1);
   }
 
   public DriveWithFollowHeadingCommand withPID(double kP, double kI, double kD) {
@@ -71,11 +74,14 @@ public class DriveWithFollowHeadingCommand extends Command {
         driveVector,
         turnspeed, // output is in radians per second
         !mRobotCentricSupplier.getAsBoolean());
+
+    SmartDashboard.putNumber("Heading Goal", mProfiledPID.getGoal().position);
+    SmartDashboard.putNumber("Heading Current Angle", sDrivetrainSubsystem.getHeading().getRadians());
   }
 
   public boolean headingAligned() {
     return mProfiledPID.getGoal().position - sDrivetrainSubsystem.getHeading().getRadians()
-        < Math.toRadians(1.0);
+        < Math.toRadians(3.0);
   }
 
   @Override

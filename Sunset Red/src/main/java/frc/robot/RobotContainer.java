@@ -86,7 +86,7 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
-        mShooter.setDefaultCommand(new SetShooterTargetCommand(mShooter, 40)); // each motor should take only about 3A
+        mShooter.setDefaultCommand(new SetShooterTargetCommand(mShooter, 0)); // each motor should take only about 3A
         
         sDrivetrainSubsystem.configureAutoBuilder();
         configureBindings();

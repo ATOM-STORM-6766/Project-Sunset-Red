@@ -62,7 +62,7 @@ public class DallasAutoDrop53Routine {
             new ShootingParameters(75, 32.5);
     private static final ShootingParameters kShootParamNearSide = new ShootingParameters(75, 32.5);
     private static final ShootingParameters kShootParamFarSide = new ShootingParameters(75, 41);
-    private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 36.5);
+    private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 32);
     private static final ShootingParameters kShootParamDrop53 = new ShootingParameters(10, 36.5);
 
     // Paths
@@ -247,7 +247,8 @@ public class DallasAutoDrop53Routine {
             pathCommand,
             new SequentialCommandGroup(
                 // if note, it must be prepared, feed first
-                new FeedCommand(transfer, shooter),
+
+                new WaitCommand(1.0).andThen(new FeedCommand(transfer, shooter)),
                 
                 Commands.runOnce(() -> {shooter.stop(); SmartDashboard.putString("Auto Status", "dropped 53");}, shooter),
                 new ParallelCommandGroup(
