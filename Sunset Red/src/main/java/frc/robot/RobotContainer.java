@@ -60,6 +60,7 @@ public class RobotContainer {
     private final Shooter mShooter = new Shooter();
     private final Arm mArm = new Arm();
     private final TrapFan mTrapFan = new TrapFan();
+    private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
 
     private static final boolean kDualController = false;
     private static final boolean isRedAlliance =
@@ -97,8 +98,6 @@ public class RobotContainer {
         SmartDashboard.putData(mArm);
         SmartDashboard.putData(mShooter);
         SmartDashboard.putData(mDriveWithRightStick);
-
-        ApriltagCoprocessor.getInstance().setLoggingEnabled(true);
     }
 
     /**

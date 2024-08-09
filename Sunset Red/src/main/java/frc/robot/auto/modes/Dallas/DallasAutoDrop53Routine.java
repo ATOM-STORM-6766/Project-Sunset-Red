@@ -1,5 +1,6 @@
 package frc.robot.auto.modes.Dallas;
 
+import java.sql.Driver;
 import java.util.Optional;
 
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -8,6 +9,8 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -137,6 +140,10 @@ public class DallasAutoDrop53Routine {
                         shooter, transfer, intake, GamePieceProcessor.getInstance(),
                         kStartPathDallas, kShootParam32, fallbackRotation53),
 
+                Commands.either(
+                        new TurnToHeadingCommand(drivetrainSubsystem, new Rotation2d()), 
+                        new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(180)), 
+                        ()-> DriverStation.getAlliance().isEmpty() || DriverStation.getAlliance().get()==Alliance.Blue),
 
                 // Drop 53 and Get first note
                 drop53ThenBuildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
@@ -157,7 +164,7 @@ public class DallasAutoDrop53Routine {
                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
                         transfer, intake, GamePieceProcessor.getInstance(),
                         AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.secondNotePath)),
-                        params.secondNoteRotation),
+                        null),
 
                 // Score second note
                 AutoBuilder
@@ -172,7 +179,7 @@ public class DallasAutoDrop53Routine {
                 AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter,
                         transfer, intake, GamePieceProcessor.getInstance(),
                         AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.gotoDrop53Path)),
-                        fallbackRotation53),
+                        null),
 
                 // Score 53
                 AutoBuilder
@@ -226,7 +233,7 @@ public class DallasAutoDrop53Routine {
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(() -> AutoCommandFactory.isFieldPositionReached(drivetrainSubsystem, AutoCommandFactory.kMidFieldFenceX))
             .until(() -> transfer.isOmronDetected())
-            .alongWith(new SetShooterTargetCommand(shooter, 25)),
+            .alongWith(new SetShooterTargetCommand(shooter, 17)),
         new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note"))
         );
   }
@@ -248,7 +255,7 @@ public class DallasAutoDrop53Routine {
             new SequentialCommandGroup(
                 // if note, it must be prepared, feed first
 
-                new WaitCommand(1.0).andThen(new FeedCommand(transfer, shooter)),
+                new WaitCommand(0.0).andThen(new FeedCommand(transfer, shooter)),
                 
                 Commands.runOnce(() -> {shooter.stop(); SmartDashboard.putString("Auto Status", "dropped 53");}, shooter),
                 new ParallelCommandGroup(
