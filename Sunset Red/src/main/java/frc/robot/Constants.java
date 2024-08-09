@@ -62,7 +62,7 @@ public final class Constants {
       FR.azimuthID = 7;
       FR.azimuthBlockCenterDegree = 105.0;
       FR.azimuthEncoderOffsetRotation = 0.075928;
-      FR.lightGateID = 3;
+      FR.lightGateID = 5;
       FR.corner = ModuleCorner.Front_Right;
       FR.invertDrive = InvertedValue.CounterClockwise_Positive;
       FR.invertAzimuth = InvertedValue.CounterClockwise_Positive;
