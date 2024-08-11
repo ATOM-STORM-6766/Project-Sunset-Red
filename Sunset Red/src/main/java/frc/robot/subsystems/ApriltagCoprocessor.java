@@ -52,11 +52,11 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
   private Transform3d kRobotToCameraForIntakeSide =
       new Transform3d(
-          0.22,
-          -0.075,
-          0.08,
+          0.42,
+          0.12,
+          0.20,
           new Rotation3d(
-              Units.degreesToRadians(180), Units.degreesToRadians(-37), Units.degreesToRadians(0)));
+              Units.degreesToRadians(180), Units.degreesToRadians(-44), Units.degreesToRadians(0)));
 
   public final AprilTagFieldLayout aprilTagFieldLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);

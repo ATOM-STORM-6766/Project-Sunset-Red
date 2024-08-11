@@ -171,9 +171,7 @@ public class RobotContainer {
                         .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
         // amp binding
         // navAmp
-        buildNavAmpBinding(
-                operatorController.povRight().and(operatorController.rightBumper().negate()),
-                isRedAlliance);
+        operatorController.povRight().and(operatorController.rightBumper().negate()).whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer));
 
         // manual amp
         buildAmpBinding(operatorController.povRight().and(operatorController.rightBumper()),

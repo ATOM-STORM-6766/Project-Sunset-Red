@@ -23,7 +23,7 @@ public class DriveToAmpCommand extends Command {
   private final ProfiledPIDController rotationController;
 
   private Pose2d mTargetPose;
-  private static final double DISTANCE_OFFSET = 0.50; // tag wall to robot center in meters.
+  private static final double DISTANCE_OFFSET = 0.55; // tag wall to robot center in meters.
 
   private static final int RED_TAG_ID = 5; // Amp tag ID
   private static final int BLUE_TAG_ID = 6; // Amp tag ID
@@ -36,9 +36,9 @@ public class DriveToAmpCommand extends Command {
             DriveConstants.kTeleDriveMaxAccelerationUnitsPerSecond);
 
     xController = new ProfiledPIDController(4.0, 0, 0, constraints);
-    xController.setTolerance(0.05);
+    xController.setTolerance(0.02);
     yController = new ProfiledPIDController(4.0, 0, 0, constraints);
-    yController.setTolerance(0.05);
+    yController.setTolerance(0.02);
     rotationController =
         new ProfiledPIDController(
             4.0,
