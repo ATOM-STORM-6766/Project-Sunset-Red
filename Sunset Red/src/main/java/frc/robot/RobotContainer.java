@@ -13,9 +13,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -33,6 +35,8 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
+
+import javax.swing.text.html.Option;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -72,16 +76,9 @@ public class RobotContainer {
             new DriveWithFollowHeadingCommand(sDrivetrainSubsystem,
                     () -> driverController.getDriveTranslation(driverController.isRobotRelative())
                             .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                    () -> readDriveHeading(), // amp heading
+                    () -> Optional.empty(), // no more drive with right stick heading
                     () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED);
 
-    private Optional<Rotation2d> readDriveHeading() {
-        Optional<Rotation2d> rightStickHeading = driverController.getDriveRotationAngle();
-
-        // TODO : HEADING KEY BINDINGS HERE
-
-        return rightStickHeading;
-    }
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -212,21 +209,24 @@ public class RobotContainer {
                 new InstantCommand(()->mTransfer.stop())
                 .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
 
+        Trigger rightStickAngle = new Trigger(()->true);
+        rightStickAngle.whileTrue(new RepeatCommand(new InstantCommand(()->SmartDashboard.putNumber("Rotation Angle", driverController.getDriveRotationAngle().orElse(new Rotation2d(Math.PI/4)).getDegrees()))));
+
         // seven zones transfer
         Trigger rightStickUp = new Trigger(()->
-                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == 0.0
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(Math.PI/4)).getDegrees() == 0.0
         );
 
         Trigger rightStickLeft = new Trigger(()->
-                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == 90.0
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(Math.PI/4)).getDegrees() == 90.0
         );
 
         Trigger rightStickRight = new Trigger(()->
-                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == -90.0
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(Math.PI/4)).getDegrees() == -90.0
         );
 
         Trigger rightStickDown = new Trigger(()->
-                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == 180.0
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(Math.PI/4)).getDegrees() == 180.0
         );
 
 
@@ -287,10 +287,10 @@ public class RobotContainer {
                         .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
                 GoalZone.RIGHT);
 
-        triggers[0].onTrue(pepGuardiolaCommandUP);
-        triggers[1].onTrue(pepGuardiolaCommandDOWN);
-        triggers[2].onTrue(pepGuardiolaCommandLEFT);
-        triggers[3].onTrue(pepGuardiolaCommandRIGHT);
+        triggers[0].whileTrue(pepGuardiolaCommandUP.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 0)));
+        triggers[1].whileTrue(pepGuardiolaCommandDOWN.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 180)));
+        triggers[2].whileTrue(pepGuardiolaCommandLEFT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 90)));
+        triggers[3].whileTrue(pepGuardiolaCommandRIGHT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 270)));
     }
 
     /**

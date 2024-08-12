@@ -17,7 +17,7 @@ public class CommandSwerveController extends CommandXboxController {
   private static final double TRANSLATION_DEADBAND = 0.1; // percent
   private static final double ROTATION_DEADBAND = 0.85; // percent
   private static final double NEAR_POLE_DRIVE_DEGREES = 7;
-  private static final double NEAR_POLE_TURN_DEGREES = 7;
+  private static final double NEAR_POLE_TURN_DEGREES = 20;
 
   private final SlewRateLimiter translationXRateLimiter = new SlewRateLimiter(5); // (1 /
   // seconds_from_neutral_to_full)
