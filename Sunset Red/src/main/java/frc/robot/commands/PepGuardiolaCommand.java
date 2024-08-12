@@ -98,6 +98,7 @@ public class PepGuardiolaCommand extends Command {
   private Arm sArm;
   private Transfer sTransfer;
   private Shooter sShooter;
+  private Intake sIntake;
   private Supplier<Translation2d> mDriveVectorSupplier;
   private GoalZone mGoalZone;
 
@@ -125,12 +126,14 @@ public class PepGuardiolaCommand extends Command {
       Arm arm,
       Transfer transfer,
       Shooter shooter,
+      Intake intake,
       Supplier<Translation2d> driveVectorSupplier,
       GoalZone goalZone) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
     sTransfer = transfer;
     sShooter = shooter;
+    sIntake = intake;
     mDriveVectorSupplier = driveVectorSupplier;
     mGoalZone = Objects.requireNonNull(goalZone);
 
@@ -155,6 +158,11 @@ public class PepGuardiolaCommand extends Command {
 
   @Override
   public void execute() {
+    if(!sTransfer.isOmronDetected()){
+      sIntake.setIntake();
+    }else{
+      sIntake.stop();
+    }
     switch (mDeliverState) {
       case AIMING:
         handleAiming();
@@ -224,7 +232,7 @@ public class PepGuardiolaCommand extends Command {
     boolean shootOk =
         Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 3.0
             && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
-            && mProfiledPID.atGoal();
+            && Math.abs(sDrivetrainSubsystem.getHeading().minus(new Rotation2d(mProfiledPID.getGoal().position)).getDegrees()) < 3.0;
 
     // return shootOk&&zoneOk;
     return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);

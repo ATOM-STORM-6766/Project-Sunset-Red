@@ -62,7 +62,6 @@ public class RobotContainer {
     private final TrapFan mTrapFan = new TrapFan();
     private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
 
-    private static final boolean kDualController = false;
     private static final boolean isRedAlliance =
             DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
 
@@ -149,10 +148,11 @@ public class RobotContainer {
         // Vision Shoot
         Trigger visionShootTrigger = driverController.y();
         visionShootTrigger
-                .whileTrue(new VisionShootCommand(mShooter, mArm, mTransfer, sDrivetrainSubsystem,
-                        mIntake,
+                .whileTrue(
+                        new VisionShootCommand(mShooter, mArm, mTransfer, sDrivetrainSubsystem, mIntake,
                         () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
+                        )
                 .onFalse(new InstantCommand(() -> {
                     mShooter.stop();
                     mTransfer.stop();
@@ -160,40 +160,46 @@ public class RobotContainer {
                 }).alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
 
         // manual trap
-        operatorController.povUp().and(operatorController.rightBumper())
+        driverController.povUp().and(driverController.rightBumper())
                 .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
                 .onFalse(new InstantCommand(() -> mShooter.stop())
                         .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
-        operatorController.povUp().and(operatorController.rightBumper().negate())
+        // nav trap
+        driverController.povUp().and(driverController.rightBumper().negate())
                 .whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake,
                         mTransfer, mTrapFan))
                 .onFalse(new InstantCommand(() -> mShooter.stop())
                         .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
+        
         // amp binding
         // navAmp
-        operatorController.povRight().and(operatorController.rightBumper().negate()).whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer));
+        driverController.povRight().and(driverController.rightBumper().negate()).whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer));
 
         // manual amp
-        buildAmpBinding(operatorController.povRight().and(operatorController.rightBumper()),
+        buildAmpBinding(driverController.povRight().and(driverController.rightBumper()),
                 ShootingParameters.AMP_INTERMEDIATE_POS, ShootingParameters.AMP_LOWSPEED);
 
         // intake system bindings
-            operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
-            operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-            // chase note inake
-            driverController.a().and(driverController.rightBumper().negate()).whileTrue(
-                    new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
-            // manual intake
-            driverController.a().and(driverController.rightBumper())
-                    .whileTrue(new IntakeCommand(mIntake, mTransfer));
 
-            driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+        // chase note inake, press left bumper and not pressing right bumper
+        driverController.leftBumper().and(driverController.rightBumper().negate()).whileTrue(
+                new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
+        // manual intake, press both left and right bumper
+        driverController.leftBumper().and(driverController.rightBumper())
+                .whileTrue(new IntakeCommand(mIntake, mTransfer));
+        // outtake
+        driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+
+        operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+        operatorController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
+
 
         // Below Speaker
         
-        buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER_REVERSE);
         buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
+        buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER_REVERSE);
 
+        // Get note from source
         operatorController.y().whileTrue(
                 (
                         new SetShooterTargetCommand(mShooter, -10)
@@ -205,9 +211,27 @@ public class RobotContainer {
         ).onFalse(
                 new InstantCommand(()->mTransfer.stop())
                 .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
+
         // seven zones transfer
-        buildPepGBinding(new Trigger[] {driverController.povUp(), driverController.povDown(),
-                driverController.povLeft(), driverController.povRight()});
+        Trigger rightStickUp = new Trigger(()->
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == 0.0
+        );
+
+        Trigger rightStickLeft = new Trigger(()->
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == 90.0
+        );
+
+        Trigger rightStickRight = new Trigger(()->
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == -90.0
+        );
+
+        Trigger rightStickDown = new Trigger(()->
+                driverController.getDriveRotationAngle().orElse(new Rotation2d(180.0)).getDegrees() == 180.0
+        );
+
+
+        buildPepGBinding(new Trigger[] {rightStickUp, rightStickDown,
+                rightStickLeft, rightStickRight});
     }
 
     private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
@@ -243,22 +267,22 @@ public class RobotContainer {
         // mShooter, null,
         // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
         Command pepGuardiolaCommandUP = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter,
+                mTransfer, mShooter, mIntake,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative())
                         .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
                 GoalZone.UP);
         Command pepGuardiolaCommandDOWN = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter,
+                mTransfer, mShooter, mIntake,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative())
                         .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
                 GoalZone.DOWN);
         Command pepGuardiolaCommandLEFT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter,
+                mTransfer, mShooter, mIntake,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative())
                         .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
                 GoalZone.LEFT);
         Command pepGuardiolaCommandRIGHT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter,
+                mTransfer, mShooter, mIntake,
                 () -> driverController.getDriveTranslation(driverController.isRobotRelative())
                         .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
                 GoalZone.RIGHT);
@@ -269,6 +293,9 @@ public class RobotContainer {
         triggers[3].onTrue(pepGuardiolaCommandRIGHT);
     }
 
+    /**
+     * @deprecated use new NavAmpCommand() instead
+     */
     private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
         Pose2d targetPose = isRedAlliance ? FieldConstants.IN_FRONT_AMP_POSITION_RED
                 : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
