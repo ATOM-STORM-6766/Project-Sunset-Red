@@ -44,6 +44,9 @@ public class ApriltagCoprocessor extends SubsystemBase {
     photonPoseEstimatorForShooterSide.setMultiTagFallbackStrategy(
         PoseStrategy.AVERAGE_BEST_TARGETS);
     photonPoseEstimatorForIntakeSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    photonPoseEstimatorForShooterLeftSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    photonPoseEstimatorForShooterRightSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+
     double currentTime = Timer.getFPGATimestamp();
     multiTagDelayedBoolean =
         new DualEdgeDelayedBoolean(currentTime, MULTI_TAG_DELAY, EdgeType.RISING);
@@ -56,7 +59,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
 
   private Transform3d kRobotToCameraForShooterSide =
-      new Transform3d(-0.28, -0.06, 0.25, new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
+      new Transform3d(-0.28, -0.06, 0.25, new Rotation3d(0, -40.0 / 180 * Math.PI, Math.PI));
 
   private Transform3d kRobotToCameraForIntakeSide =
       new Transform3d(
@@ -66,10 +69,10 @@ public class ApriltagCoprocessor extends SubsystemBase {
           new Rotation3d(
               Units.degreesToRadians(180), Units.degreesToRadians(-44), Units.degreesToRadians(0)));
   private Transform3d kRobotToCameraForShooterLeftSide = 
-      new Transform3d(-0.28, -0.06, 0.25, new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
+      new Transform3d(-0.28, -0.28, 0.245, new Rotation3d(Math.PI, -27.0 / 180 * Math.PI, -98.0/180*Math.PI));
   
   private Transform3d kRobotToCameraForShooterRightSide = 
-      new Transform3d(-0.28, -0.06, 0.25, new Rotation3d(0, 220.0 / 180 * Math.PI, 0));
+      new Transform3d(-0.28, 0.28, 0.245, new Rotation3d(Math.PI, -33.0 / 180 * Math.PI, 95.0/180*Math.PI));
 
   public final AprilTagFieldLayout aprilTagFieldLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
