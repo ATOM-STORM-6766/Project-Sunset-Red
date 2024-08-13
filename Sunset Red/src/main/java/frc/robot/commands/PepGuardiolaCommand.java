@@ -300,7 +300,9 @@ public class PepGuardiolaCommand extends Command {
   }
 
   private void handleFeeding() {
-    sTransfer.setVoltage(Transfer.FEED_VOLTS);
+      sTransfer.setVoltage(Transfer.FEED_VOLTS);
+      sDrivetrainSubsystem.drive(mDriveVectorSupplier.get(), 0, true);
+
     if (stateTimer.hasElapsed(0.5)) {
       // restart
       mDeliverState = DeliverState.AIMING;

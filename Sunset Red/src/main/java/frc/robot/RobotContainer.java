@@ -127,7 +127,7 @@ public class RobotContainer {
         Command resetHeadingCommand = new InstantCommand(() -> {
             sDrivetrainSubsystem.zeroHeading();
             driverController.setTranslationDirection(true);
-        });
+        }).alongWith(new WaitCommand(0.2));
         resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
         driverController.start().onTrue(resetHeadingCommand);
 
