@@ -396,7 +396,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return Rotation2d.fromDegrees(
         -mPigeon
             .getAngle()); // pigeon 2 uses NED tradition, clockwise is positive rotation, but we use
-                          // yaw tradition
+    // yaw tradition
   }
 
   double lastVisionOdomUpdateTime = Timer.getFPGATimestamp();

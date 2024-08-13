@@ -16,7 +16,7 @@ public class FeedCommand extends Command {
     addRequirements(mTransfer);
     addRequirements(
         shooter); // we add this because we don't want default command to slow down shooter while
-                  // feeding
+    // feeding
     // but this require further testing because sequential command will add all command
     // requirements.
   }
