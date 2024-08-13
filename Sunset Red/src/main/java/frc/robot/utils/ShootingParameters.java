@@ -11,6 +11,8 @@ public class ShootingParameters {
   // trap shooting state
   public static final ShootingParameters TRAP = new ShootingParameters(35, 64);
 
+  public static final ShootingParameters DROP = new ShootingParameters(20, 36);
+
   public double speed_rps;
   public double angle_deg;
 

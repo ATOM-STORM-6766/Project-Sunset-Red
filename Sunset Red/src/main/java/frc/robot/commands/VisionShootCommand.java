@@ -215,8 +215,4 @@ public class VisionShootCommand extends ParallelCommandGroup {
     return ;
   }
 
-  @Override
-  public InterruptionBehavior getInterruptionBehavior() {
-    return InterruptionBehavior.kCancelIncoming;
-  }
 }

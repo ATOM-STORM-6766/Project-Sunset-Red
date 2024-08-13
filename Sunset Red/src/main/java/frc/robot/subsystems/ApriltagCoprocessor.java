@@ -61,7 +61,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
   // new camera and old camera are inverse (due to different manufacturer), so roll is 0 and 180 degrees
   private Transform3d kRobotToCameraForShooterLongFocal = 
-      new Transform3d(-0.28, 0.28, 0.25, 
+      new Transform3d(-0.28, -0.04, 0.25, 
         new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-20), Units.degreesToRadians(180)));
   
   // private Transform3d kRobotToCameraForShooterRightSide = 
@@ -224,7 +224,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
         return shooterSideResult;
       }else if(intakeArea > shooterLongFocal){
         return intakeSideResult;
-      }else if(shooterLongFocal > 0){
+      }else if(shooterLongFocal > 0.35){
         return shooterLongFocalResult;
       }else{
         return Optional.empty();

@@ -101,6 +101,29 @@ public class CommandSwerveController extends CommandXboxController {
   }
 
   /**
+   * Returns an Optional containing the target angle for rotating the swerve drive, if available.
+   *
+   * @return An Optional containing the target angle in degrees, or an empty Optional if the
+   *     rotation is below the deadband.
+   */
+  public Optional<Rotation2d> getRightStickToNearestPole() {
+
+    Translation2d rotationVector = new Translation2d(-getRightY(), -getRightX());
+
+    if (rotationVector.getNorm() < ROTATION_DEADBAND) {
+      return Optional.empty();
+    }
+
+    Rotation2d rotationAngle = rotationVector.getAngle();
+    Rotation2d nearestPole = nearestPole(rotationAngle);
+
+    if (Math.abs(rotationAngle.minus(nearestPole).getDegrees()) < 45) {
+      rotationAngle = nearestPole;
+    }
+    return Optional.of(rotationAngle);
+  }
+
+  /**
    * Returns the raw rotation rate from the controller triggers.
    *
    * @return The rotation rate.
@@ -186,6 +209,6 @@ public class CommandSwerveController extends CommandXboxController {
    * @return True if the swerve drive should be in robot-relative mode, false otherwise.
    */
   public DriveMode isRobotRelative() {
-    return getHID().getLeftBumper() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
+    return DriveMode.FIELD_ORIENTED; // now we don't want to have robot relative mode, use this for now
   }
 }

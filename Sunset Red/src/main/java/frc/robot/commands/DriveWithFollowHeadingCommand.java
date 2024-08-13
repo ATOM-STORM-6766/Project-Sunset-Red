@@ -80,7 +80,7 @@ public class DriveWithFollowHeadingCommand extends Command {
   }
 
   public boolean headingAligned() {
-    return mProfiledPID.getGoal().position - sDrivetrainSubsystem.getHeading().getRadians()
+    return Math.abs(mProfiledPID.getGoal().position - sDrivetrainSubsystem.getHeading().getRadians())
         < Math.toRadians(3.0);
   }
 
