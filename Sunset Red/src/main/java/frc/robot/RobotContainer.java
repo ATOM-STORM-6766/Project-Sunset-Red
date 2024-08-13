@@ -170,7 +170,7 @@ public class RobotContainer {
         
         // amp binding
         // navAmp
-        driverController.povRight().and(driverController.rightBumper().negate()).whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer));
+        driverController.povRight().and(driverController.rightBumper().negate()).whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer)).onFalse(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
         // manual amp
         buildAmpBinding(driverController.povRight().and(driverController.rightBumper()),
