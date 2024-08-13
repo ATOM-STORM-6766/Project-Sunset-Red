@@ -36,9 +36,11 @@ public class ApriltagCoprocessor extends SubsystemBase {
   }
 
   private ApriltagCoprocessor() {
-    photonPoseEstimatorForShooterSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    photonPoseEstimatorForShooterSide.setMultiTagFallbackStrategy(
+        PoseStrategy.AVERAGE_BEST_TARGETS);
     photonPoseEstimatorForIntakeSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
-    photonPoseEstimatorForShooterLongFocal.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    photonPoseEstimatorForShooterLongFocal.setMultiTagFallbackStrategy(
+        PoseStrategy.AVERAGE_BEST_TARGETS);
     // photonPoseEstimatorForShooterRightSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
 
     double currentTime = Timer.getFPGATimestamp();
@@ -52,20 +54,36 @@ public class ApriltagCoprocessor extends SubsystemBase {
   // private PhotonCamera ApriltagCamShooterRightSide = new PhotonCamera("TagCamShooterRightSide");
 
   private Transform3d kRobotToCameraForShooterSide =
-      new Transform3d(-0.28, -0.105, 0.25, 
-        new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-40), Units.degreesToRadians(180)));
+      new Transform3d(
+          -0.28,
+          -0.105,
+          0.25,
+          new Rotation3d(
+              Units.degreesToRadians(180),
+              Units.degreesToRadians(-40),
+              Units.degreesToRadians(180)));
 
   private Transform3d kRobotToCameraForIntakeSide =
-      new Transform3d(0.42,  0.12,0.20,
-        new Rotation3d(Units.degreesToRadians(180), Units.degreesToRadians(-45), Units.degreesToRadians(0)));
+      new Transform3d(
+          0.42,
+          0.12,
+          0.20,
+          new Rotation3d(
+              Units.degreesToRadians(180), Units.degreesToRadians(-45), Units.degreesToRadians(0)));
 
-  // new camera and old camera are inverse (due to different manufacturer), so roll is 0 and 180 degrees
-  private Transform3d kRobotToCameraForShooterLongFocal = 
-      new Transform3d(-0.28, -0.04, 0.25, 
-        new Rotation3d(Units.degreesToRadians(0), Units.degreesToRadians(-20), Units.degreesToRadians(180)));
-  
-  // private Transform3d kRobotToCameraForShooterRightSide = 
-  //     new Transform3d(-0.28, 0.28, 0.245, new Rotation3d(Math.PI, -33.0 / 180 * Math.PI, 95.0/180*Math.PI));
+  // new camera and old camera are inverse (due to different manufacturer), so roll is 0 and 180
+  // degrees
+  private Transform3d kRobotToCameraForShooterLongFocal =
+      new Transform3d(
+          -0.28,
+          -0.04,
+          0.25,
+          new Rotation3d(
+              Units.degreesToRadians(0), Units.degreesToRadians(-20), Units.degreesToRadians(180)));
+
+  // private Transform3d kRobotToCameraForShooterRightSide =
+  //     new Transform3d(-0.28, 0.28, 0.245, new Rotation3d(Math.PI, -33.0 / 180 * Math.PI,
+  // 95.0/180*Math.PI));
 
   public final AprilTagFieldLayout aprilTagFieldLayout =
       AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
@@ -81,13 +99,13 @@ public class ApriltagCoprocessor extends SubsystemBase {
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           ApriltagCamIntakeSide,
           kRobotToCameraForIntakeSide);
-  PhotonPoseEstimator photonPoseEstimatorForShooterLongFocal = 
+  PhotonPoseEstimator photonPoseEstimatorForShooterLongFocal =
       new PhotonPoseEstimator(
           aprilTagFieldLayout,
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
           ApriltagCamShooterLongFocal,
           kRobotToCameraForShooterLongFocal);
-  // PhotonPoseEstimator photonPoseEstimatorForShooterRightSide = 
+  // PhotonPoseEstimator photonPoseEstimatorForShooterRightSide =
   //     new PhotonPoseEstimator(
   //         aprilTagFieldLayout,
   //         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -116,7 +134,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
           .getTable("SmartDashboard")
           .getStructTopic("Shooter Side Estimated Pose", Pose3d.struct)
           .publish();
-        
+
   StructPublisher<Pose3d> shooterLongFocalPublisher =
       NetworkTableInstance.getDefault()
           .getTable("SmartDashboard")
@@ -174,7 +192,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
       SmartDashboard.putString(
           "Vision Estimation Mode (" + camera.getName() + ")",
           newEstimatedRobotPose.get().strategy.toString());
-      switch(camera.getName()){
+      switch (camera.getName()) {
         case "TagCamShooterSide":
           shooterSidePublisher.set(newEstimatedRobotPose.get().estimatedPose);
           break;
@@ -202,33 +220,49 @@ public class ApriltagCoprocessor extends SubsystemBase {
     SmartDashboard.putNumber("Total Tag Area (" + cameraName + ")", totalArea);
   }
 
-  private Optional<EstimatedRobotPose> selectBestResult(Optional<EstimatedRobotPose> shooterSideResult,
-      Optional<EstimatedRobotPose> intakeSideResult, Optional<EstimatedRobotPose> shooterLongFocalResult) {
+  private Optional<EstimatedRobotPose> selectBestResult(
+      Optional<EstimatedRobotPose> shooterSideResult,
+      Optional<EstimatedRobotPose> intakeSideResult,
+      Optional<EstimatedRobotPose> shooterLongFocalResult) {
 
-      // should we care about strategy? now its proven that multitag can be more inaccurate sometimes
-      // PoseStrategy shooterStrategy = shooterSideResult.isPresent()? shooterSideResult.get().strategy : null;
-      // PoseStrategy intakeStrategy = intakeSideResult.isPresent()? intakeSideResult.get().strategy : null;
-      // PoseStrategy shooterLeftStrategy = shooterLeftSideResult.isPresent()? shooterLeftSideResult.get().strategy : null;
-      // PoseStrategy shooterRiStrategy = shooterRightSideResult.isPresent()? shooterRightSideResult.get().strategy : null;
+    // should we care about strategy? now its proven that multitag can be more inaccurate sometimes
+    // PoseStrategy shooterStrategy = shooterSideResult.isPresent()?
+    // shooterSideResult.get().strategy : null;
+    // PoseStrategy intakeStrategy = intakeSideResult.isPresent()? intakeSideResult.get().strategy :
+    // null;
+    // PoseStrategy shooterLeftStrategy = shooterLeftSideResult.isPresent()?
+    // shooterLeftSideResult.get().strategy : null;
+    // PoseStrategy shooterRiStrategy = shooterRightSideResult.isPresent()?
+    // shooterRightSideResult.get().strategy : null;
 
-      double shooterTotalArea = shooterSideResult.isPresent()? 
-            SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamShooterSide.getName() + ")", 0) : 0;
-      double intakeArea = intakeSideResult.isPresent()?
-            SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamIntakeSide.getName() + ")", 0) : 0;
-      double shooterLongFocal = shooterLongFocalResult.isPresent()?
-            SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamShooterLongFocal.getName() + ")", 0) : 0;
-      // double shooterRightTotalArea = shooterRightSideResult.isPresent() ?
-      //       SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamShooterRightSide.getName() + ")", 0) : 0;
+    double shooterTotalArea =
+        shooterSideResult.isPresent()
+            ? SmartDashboard.getNumber(
+                "Total Tag Area (" + ApriltagCamShooterSide.getName() + ")", 0)
+            : 0;
+    double intakeArea =
+        intakeSideResult.isPresent()
+            ? SmartDashboard.getNumber(
+                "Total Tag Area (" + ApriltagCamIntakeSide.getName() + ")", 0)
+            : 0;
+    double shooterLongFocal =
+        shooterLongFocalResult.isPresent()
+            ? SmartDashboard.getNumber(
+                "Total Tag Area (" + ApriltagCamShooterLongFocal.getName() + ")", 0)
+            : 0;
+    // double shooterRightTotalArea = shooterRightSideResult.isPresent() ?
+    //       SmartDashboard.getNumber("Total Tag Area (" + ApriltagCamShooterRightSide.getName() +
+    // ")", 0) : 0;
 
-      if(shooterTotalArea > intakeArea && shooterTotalArea > shooterLongFocal){
-        return shooterSideResult;
-      }else if(intakeArea > shooterLongFocal){
-        return intakeSideResult;
-      }else if(shooterLongFocal > 0.35){
-        return shooterLongFocalResult;
-      }else{
-        return Optional.empty();
-      }
+    if (shooterTotalArea > intakeArea && shooterTotalArea > shooterLongFocal) {
+      return shooterSideResult;
+    } else if (intakeArea > shooterLongFocal) {
+      return intakeSideResult;
+    } else if (shooterLongFocal > 0.35) {
+      return shooterLongFocalResult;
+    } else {
+      return Optional.empty();
+    }
   }
 
   public Optional<EstimatedRobotPose> updateEstimatedGlobalPose(
@@ -241,9 +275,12 @@ public class ApriltagCoprocessor extends SubsystemBase {
             ApriltagCamIntakeSide, photonPoseEstimatorForIntakeSide, prevEstimatedRobotPose);
     Optional<EstimatedRobotPose> shooterLongFocal =
         processCameraResult(
-            ApriltagCamShooterLongFocal, photonPoseEstimatorForShooterLongFocal, prevEstimatedRobotPose);
+            ApriltagCamShooterLongFocal,
+            photonPoseEstimatorForShooterLongFocal,
+            prevEstimatedRobotPose);
 
-    Optional<EstimatedRobotPose> bestResult = selectBestResult(shooterSideResult, intakeSideResult, shooterLongFocal);
+    Optional<EstimatedRobotPose> bestResult =
+        selectBestResult(shooterSideResult, intakeSideResult, shooterLongFocal);
 
     var return_pose = bestResult;
 
@@ -342,7 +379,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
     SmartDashboard.putStringArray("Accepted Tags (" + cameraName + ")", acceptedTagsInfo);
   }
 
-    /**
+  /**
    * Get the pose of an AprilTag from the field layout
    *
    * @param tagId The ID of the tag
@@ -351,6 +388,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   public Optional<Pose3d> getAprilTagPose(int tagId) {
     return aprilTagFieldLayout.getTagPose(tagId);
   }
+
   public PhotonPipelineResult getShooterSideLatestResult() {
     return ApriltagCamShooterSide.getLatestResult();
   }

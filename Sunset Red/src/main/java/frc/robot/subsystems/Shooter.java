@@ -84,7 +84,12 @@ public class Shooter extends SubsystemBase {
     builder.addDoubleProperty("Shooter Main Velocity", () -> getMainMotorVelocity(), null);
     builder.addDoubleProperty("Shooter Follower Velocity", () -> getFollowerVelocity(), null);
     builder.addDoubleProperty("Shooter Target RPS", () -> shooterTargetVelocity.Velocity, null);
-    builder.addDoubleProperty("Shooter Total Current", ()-> mShooterTalon.getSupplyCurrent().getValueAsDouble() + mShooterFollower.getSupplyCurrent().getValueAsDouble(), null);
+    builder.addDoubleProperty(
+        "Shooter Total Current",
+        () ->
+            mShooterTalon.getSupplyCurrent().getValueAsDouble()
+                + mShooterFollower.getSupplyCurrent().getValueAsDouble(),
+        null);
   }
 
   /** */

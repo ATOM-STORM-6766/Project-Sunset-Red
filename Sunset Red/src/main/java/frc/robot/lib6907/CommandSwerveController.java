@@ -209,6 +209,7 @@ public class CommandSwerveController extends CommandXboxController {
    * @return True if the swerve drive should be in robot-relative mode, false otherwise.
    */
   public DriveMode isRobotRelative() {
-    return DriveMode.FIELD_ORIENTED; // now we don't want to have robot relative mode, use this for now
+    return DriveMode
+        .FIELD_ORIENTED; // now we don't want to have robot relative mode, use this for now
   }
 }

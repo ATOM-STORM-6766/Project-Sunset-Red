@@ -157,9 +157,9 @@ public class PepGuardiolaCommand extends Command {
 
   @Override
   public void execute() {
-    if(!sTransfer.isOmronDetected()){
+    if (!sTransfer.isOmronDetected()) {
       sIntake.setIntake();
-    }else{
+    } else {
       sIntake.stop();
     }
     switch (mDeliverState) {
@@ -231,7 +231,12 @@ public class PepGuardiolaCommand extends Command {
     boolean shootOk =
         Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 3.0
             && Math.abs(sArm.getAngleDeg() - armAngle) < 3.0
-            && Math.abs(sDrivetrainSubsystem.getHeading().minus(new Rotation2d(mProfiledPID.getGoal().position)).getDegrees()) < 5.0;
+            && Math.abs(
+                    sDrivetrainSubsystem
+                        .getHeading()
+                        .minus(new Rotation2d(mProfiledPID.getGoal().position))
+                        .getDegrees())
+                < 5.0;
 
     // return shootOk&&zoneOk;
     return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);
@@ -300,8 +305,8 @@ public class PepGuardiolaCommand extends Command {
   }
 
   private void handleFeeding() {
-      sTransfer.setVoltage(Transfer.FEED_VOLTS);
-      sDrivetrainSubsystem.drive(mDriveVectorSupplier.get(), 0, true);
+    sTransfer.setVoltage(Transfer.FEED_VOLTS);
+    sDrivetrainSubsystem.drive(mDriveVectorSupplier.get(), 0, true);
 
     if (stateTimer.hasElapsed(0.5)) {
       // restart

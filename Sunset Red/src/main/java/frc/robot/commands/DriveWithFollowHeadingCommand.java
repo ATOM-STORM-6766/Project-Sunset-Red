@@ -23,7 +23,10 @@ public class DriveWithFollowHeadingCommand extends Command {
   // TODO : CHECK PID
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
-          1.0,2.0, 0.3, new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
+          1.0,
+          2.0,
+          0.3,
+          new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
 
   // accept drive supplier and target heading
   // use a profiled controller to do the heading following
@@ -76,11 +79,13 @@ public class DriveWithFollowHeadingCommand extends Command {
         !mRobotCentricSupplier.getAsBoolean());
 
     SmartDashboard.putNumber("Heading Goal", mProfiledPID.getGoal().position);
-    SmartDashboard.putNumber("Heading Current Angle", sDrivetrainSubsystem.getHeading().getRadians());
+    SmartDashboard.putNumber(
+        "Heading Current Angle", sDrivetrainSubsystem.getHeading().getRadians());
   }
 
   public boolean headingAligned() {
-    return Math.abs(mProfiledPID.getGoal().position - sDrivetrainSubsystem.getHeading().getRadians())
+    return Math.abs(
+            mProfiledPID.getGoal().position - sDrivetrainSubsystem.getHeading().getRadians())
         < Math.toRadians(3.0);
   }
 

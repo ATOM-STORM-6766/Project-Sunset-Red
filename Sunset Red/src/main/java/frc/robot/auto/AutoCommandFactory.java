@@ -44,16 +44,13 @@ public class AutoCommandFactory {
   public static final double kMidFieldFenceX = 8.5;
 
   /**
-   * This is the start command for any auto routine. It zeroes the drivetrain and
-   * set initial pose
-   * along with shooting the preload. This command has proper logging for command
-   * scheduling.
+   * This is the start command for any auto routine. It zeroes the drivetrain and set initial pose
+   * along with shooting the preload. This command has proper logging for command scheduling.
    *
    * @param drivetrainSubsystem
-   * @param shootingParameters  the preload shooting parameter
-   * @param startPathName       the path file name that used as the start of the
-   *                            path (to set initial
-   *                            pose)
+   * @param shootingParameters the preload shooting parameter
+   * @param startPathName the path file name that used as the start of the path (to set initial
+   *     pose)
    * @param arm
    * @param shooter
    * @param transfer
@@ -66,7 +63,7 @@ public class AutoCommandFactory {
       Arm arm,
       Shooter shooter,
       Transfer transfer) {
-      Optional<Alliance> currentAlliance = DriverStation.getAlliance();
+    Optional<Alliance> currentAlliance = DriverStation.getAlliance();
     PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
     if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
       firstPath = firstPath.flipPath();
@@ -75,13 +72,12 @@ public class AutoCommandFactory {
     return new ParallelCommandGroup(
         new SequentialCommandGroup(
             drivetrainSubsystem.runZeroingCommand(),
-            AutoBuilder.pathfindToPose(firstPath.getPreviewStartingHolonomicPose(),PathfindConstants.constraints)
-            ),
+            AutoBuilder.pathfindToPose(
+                firstPath.getPreviewStartingHolonomicPose(), PathfindConstants.constraints)),
         new SequentialCommandGroup(
             new ParallelCommandGroup(
                 new SetArmAngleCommand(arm, shootingParameters.angle_deg),
                 new SetShooterTargetCommand(shooter, shootingParameters.speed_rps)),
-
             new FeedCommand(transfer, shooter),
             new InstantCommand(
                 () -> {
@@ -90,14 +86,10 @@ public class AutoCommandFactory {
   }
 
   /**
-   * This is the standard command for finding and chasing note in auto routine. It
-   * follows the
-   * pathCommand until note is seen, then chase note. If the first chase attempt
-   * failed (no note in
-   * transfer) we do a findNoteHeading turn and then chase again. This command
-   * takes care of mid
-   * field fencing. After this command you can do what you want with the note (if
-   * you have it!)
+   * This is the standard command for finding and chasing note in auto routine. It follows the
+   * pathCommand until note is seen, then chase note. If the first chase attempt failed (no note in
+   * transfer) we do a findNoteHeading turn and then chase again. This command takes care of mid
+   * field fencing. After this command you can do what you want with the note (if you have it!)
    *
    * @param drivetrainSubsystem
    * @param arm
@@ -105,13 +97,10 @@ public class AutoCommandFactory {
    * @param transfer
    * @param intake
    * @param gamePieceProcessor
-   * @param pathCommand         the command for finding the path to a specific
-   *                            note. Can be pathfollow or
-   *                            pathfind or followthenfind, whatever you want.
-   * @param findNoteHeading     the heading for finding note. For example with
-   *                            near-side auto
-   *                            (california) give me -90.0 degree and for far-side
-   *                            auto(southern-cross) give 90.0 degrees.
+   * @param pathCommand the command for finding the path to a specific note. Can be pathfollow or
+   *     pathfind or followthenfind, whatever you want.
+   * @param findNoteHeading the heading for finding note. For example with near-side auto
+   *     (california) give me -90.0 degree and for far-side auto(southern-cross) give 90.0 degrees.
    * @return
    */
   public static Command buildPathThenChaseNoteCommand(
@@ -125,14 +114,15 @@ public class AutoCommandFactory {
       Rotation2d findNoteHeading) {
     return new SequentialCommandGroup(
         new ParallelDeadlineGroup(
-            pathCommand,
-            new SequentialCommandGroup(
-                // if note, it must be prepared, feed first
+                pathCommand,
                 new SequentialCommandGroup(
-                    new FeedCommand(transfer, shooter), Commands.runOnce(() -> shooter.stop(), shooter)),
-                new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
-                    new IntakeCommand(intake, transfer))))
+                    // if note, it must be prepared, feed first
+                    new SequentialCommandGroup(
+                        new FeedCommand(transfer, shooter),
+                        Commands.runOnce(() -> shooter.stop(), shooter)),
+                    new ParallelCommandGroup(
+                        new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
+                        new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
                   /*
@@ -141,8 +131,10 @@ public class AutoCommandFactory {
                    * 2. Has target is whether we have a target to chase
                    * 3. If we have a note, we can stop chasing
                    */
-                  boolean deadline = isFieldPositionReached(drivetrainSubsystem, kChaseNoteDeadlineX);
-                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+                  boolean deadline =
+                      isFieldPositionReached(drivetrainSubsystem, kChaseNoteDeadlineX);
+                  Optional<PhotonTrackedTarget> target =
+                      gamePieceProcessor.getClosestGamePieceInfo();
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
@@ -181,7 +173,8 @@ public class AutoCommandFactory {
                 new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
                     .until(
                         () -> {
-                          boolean midbar = isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX);
+                          boolean midbar =
+                              isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX);
                           if (midbar)
                             SmartDashboard.putString(
                                 "Auto Status", "chase interrupt because midfield bar");
@@ -208,22 +201,23 @@ public class AutoCommandFactory {
       GamePieceProcessor gamePieceProcessor) {
     return new SequentialCommandGroup(
         new ParallelDeadlineGroup(
-            AutoBuilder.pathfindThenFollowPath(
-                PathPlannerPath.fromPathFile("take54EndPath"), PathfindConstants.constraints),
-            new SequentialCommandGroup(
-                // if note, it must be prepared, feed first
+                AutoBuilder.pathfindThenFollowPath(
+                    PathPlannerPath.fromPathFile("take54EndPath"), PathfindConstants.constraints),
                 new SequentialCommandGroup(
-                    new FeedCommand(transfer, shooter),
-                    Commands.runOnce(() -> shooter.stop(), shooter))
-                    .onlyIf(() -> transfer.isOmronDetected()),
-                new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
-                    new IntakeCommand(intake, transfer))))
+                    // if note, it must be prepared, feed first
+                    new SequentialCommandGroup(
+                            new FeedCommand(transfer, shooter),
+                            Commands.runOnce(() -> shooter.stop(), shooter))
+                        .onlyIf(() -> transfer.isOmronDetected()),
+                    new ParallelCommandGroup(
+                        new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
+                        new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
                   // deadline is whether we are far enough the field to 54
                   boolean deadline = (drivetrainSubsystem.getPose().getY() < 3.0);
-                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+                  Optional<PhotonTrackedTarget> target =
+                      gamePieceProcessor.getClosestGamePieceInfo();
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
@@ -265,8 +259,7 @@ public class AutoCommandFactory {
   }
 
   /**
-   * This command is almost only for the OP-Robotics mid start auto. i.e. Dallas
-   * Auto we follow path
+   * This command is almost only for the OP-Robotics mid start auto. i.e. Dallas Auto we follow path
    * and shoot 32 on the fly
    *
    * @param drivetrainSubsystem
@@ -292,20 +285,22 @@ public class AutoCommandFactory {
       Rotation2d findNoteHeading) {
     return new SequentialCommandGroup(
         new ParallelDeadlineGroup(
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
-            new SequentialCommandGroup(
-                new ParallelCommandGroup(
-                    new SetArmAngleCommand(arm, shootParams.angle_deg),
-                    new SetShooterTargetCommand(shooter, shootParams.speed_rps),
-                    new IntakeAndFeedCommand(intake, transfer)),
-                new ParallelCommandGroup(
-                    new SetShooterTargetCommand(shooter, 0.0),
-                    new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
-                    new IntakeCommand(intake, transfer))))
+                AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
+                new SequentialCommandGroup(
+                    new ParallelCommandGroup(
+                        new SetArmAngleCommand(arm, shootParams.angle_deg),
+                        new SetShooterTargetCommand(shooter, shootParams.speed_rps),
+                        new IntakeAndFeedCommand(intake, transfer)),
+                    new ParallelCommandGroup(
+                        new SetShooterTargetCommand(shooter, 0.0),
+                        new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
+                        new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
-                  boolean deadline = isFieldPositionReached(drivetrainSubsystem, kChaseNoteDeadlineX);
-                  Optional<PhotonTrackedTarget> target = gamePieceProcessor.getClosestGamePieceInfo();
+                  boolean deadline =
+                      isFieldPositionReached(drivetrainSubsystem, kChaseNoteDeadlineX);
+                  Optional<PhotonTrackedTarget> target =
+                      gamePieceProcessor.getClosestGamePieceInfo();
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
@@ -332,5 +327,4 @@ public class AutoCommandFactory {
               return hasNote;
             }));
   }
-
 }

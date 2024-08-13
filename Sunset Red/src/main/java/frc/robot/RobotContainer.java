@@ -22,11 +22,11 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.*;
-import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine;
 import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine;
+import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine.Drop53Strategy;
+import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine;
 import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine.Score53Strategy;
 import frc.robot.auto.modes.Dallas.DallasAutoTrap53Routine;
-import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine.Drop53Strategy;
 import frc.robot.commands.*;
 import frc.robot.commands.PepGuardiolaCommand.GoalZone;
 import frc.robot.lib6907.CommandSwerveController;
@@ -42,359 +42,480 @@ import java.util.Optional;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-    // The robot's subsystems and commands are defined here...
+  // The robot's subsystems and commands are defined here...
 
-    private SendableChooser<Command> mChooser = new SendableChooser<>();
-    private final SendableChooser<Score53Strategy> mScore53StrategyChooser =
-            new SendableChooser<>();
-    private final SendableChooser<Drop53Strategy> mDrop53StrategyChooser = new SendableChooser<>();
-    private final SendableChooser<Rotation2d> mFallbackRotation53Chooser = new SendableChooser<>();
+  private SendableChooser<Command> mChooser = new SendableChooser<>();
+  private final SendableChooser<Score53Strategy> mScore53StrategyChooser = new SendableChooser<>();
+  private final SendableChooser<Drop53Strategy> mDrop53StrategyChooser = new SendableChooser<>();
+  private final SendableChooser<Rotation2d> mFallbackRotation53Chooser = new SendableChooser<>();
 
+  // * Controllers */
+  private final CommandSwerveController driverController = new CommandSwerveController(0);
+  private final CommandXboxController operatorController = new CommandXboxController(1);
+  /* Subsystems */
+  private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
+  private final Intake mIntake = new Intake();
+  private final Transfer mTransfer = new Transfer();
+  private final Shooter mShooter = new Shooter();
+  private final Arm mArm = new Arm();
+  private final TrapFan mTrapFan = new TrapFan();
+  private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
 
-    // * Controllers */
-    private final CommandSwerveController driverController = new CommandSwerveController(0);
-    private final CommandXboxController operatorController = new CommandXboxController(1);
-    /* Subsystems */
-    private final DrivetrainSubsystem sDrivetrainSubsystem = new DrivetrainSubsystem();
-    private final Intake mIntake = new Intake();
-    private final Transfer mTransfer = new Transfer();
-    private final Shooter mShooter = new Shooter();
-    private final Arm mArm = new Arm();
-    private final TrapFan mTrapFan = new TrapFan();
-    private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
+  private static final boolean isRedAlliance =
+      DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
 
-    private static final boolean isRedAlliance =
-            DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
+  /* pre-constructed commands */
+  private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
 
-    /* pre-constructed commands */
-    private final Command mZeroingCommand = sDrivetrainSubsystem.runZeroingCommand();
+  private final DriveWithFollowHeadingCommand mDriveWithRightStick =
+      new DriveWithFollowHeadingCommand(
+          sDrivetrainSubsystem,
+          () ->
+              driverController
+                  .getDriveTranslation(driverController.isRobotRelative())
+                  .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+          () -> Optional.empty(), // no more drive with right stick heading
+          () -> false);
 
-    private final DriveWithFollowHeadingCommand mDriveWithRightStick =
-            new DriveWithFollowHeadingCommand(sDrivetrainSubsystem,
-                    () -> driverController.getDriveTranslation(driverController.isRobotRelative())
-                            .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                    () -> Optional.empty(), // no more drive with right stick heading
-                    () -> false);
+  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  public RobotContainer() {
+    sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
+    mShooter.setDefaultCommand(
+        new SetShooterTargetCommand(mShooter, 0)); // each motor should take only about 3A
 
+    sDrivetrainSubsystem.configureAutoBuilder();
+    configureBindings();
+    pushChooser();
+    SmartDashboard.putData(sDrivetrainSubsystem);
+    SmartDashboard.putData(mIntake);
+    SmartDashboard.putData(mTransfer);
+    SmartDashboard.putData(mArm);
+    SmartDashboard.putData(mShooter);
+    SmartDashboard.putData(mDriveWithRightStick);
+  }
 
-    /** The container for the robot. Contains subsystems, OI devices, and commands. */
-    public RobotContainer() {
-        sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
-        mShooter.setDefaultCommand(new SetShooterTargetCommand(mShooter, 0)); // each motor should take only about 3A
-        
-        sDrivetrainSubsystem.configureAutoBuilder();
-        configureBindings();
-        pushChooser();
-        SmartDashboard.putData(sDrivetrainSubsystem);
-        SmartDashboard.putData(mIntake);
-        SmartDashboard.putData(mTransfer);
-        SmartDashboard.putData(mArm);
-        SmartDashboard.putData(mShooter);
-        SmartDashboard.putData(mDriveWithRightStick);
-    }
+  /**
+   * Use this method to define your trigger->command mappings. Triggers can be created via the
+   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
+   * predicate, or via the named factories in {@link
+   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
+   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
+   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
+   * joysticks}.
+   */
+  private void configureBindings() {
 
-    /**
-     * Use this method to define your trigger->command mappings. Triggers can be created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-     * predicate, or via the named factories in
-     * {@link edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-     * {@link CommandXboxController
-     * Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller PS4} controllers or
-     * {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight joysticks}.
+    /*
+     * // Schedule `ExampleCommand` when `exampleCondition` changes to `true` new
+     * Trigger(m_exampleSubsystem::exampleCondition) .onTrue(new
+     * ExampleCommand(m_exampleSubsystem));
+     *
+     * // Schedule `exampleMethodCommand` when the Xbox controller's B button is // pressed, //
+     * cancelling on release.
+     * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      */
-    private void configureBindings() {
 
-        /*
-         * // Schedule `ExampleCommand` when `exampleCondition` changes to `true` new
-         * Trigger(m_exampleSubsystem::exampleCondition) .onTrue(new
-         * ExampleCommand(m_exampleSubsystem));
-         *
-         * // Schedule `exampleMethodCommand` when the Xbox controller's B button is // pressed, //
-         * cancelling on release.
-         * m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
-         */
+    /*
+     * Swerve
+     */
 
-        /*
-         * Swerve
-         */
+    // Default Command: Drive with right stick
 
-        // Default Command: Drive with right stick
+    // reset heading
+    Command resetHeadingCommand =
+        new InstantCommand(
+                () -> {
+                  sDrivetrainSubsystem.zeroHeading();
+                  driverController.setTranslationDirection(true);
+                })
+            .alongWith(new WaitCommand(0.2));
+    resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
+    driverController.start().onTrue(resetHeadingCommand);
 
-        // reset heading
-        Command resetHeadingCommand = new InstantCommand(() -> {
-            sDrivetrainSubsystem.zeroHeading();
-            driverController.setTranslationDirection(true);
-        }).alongWith(new WaitCommand(0.2));
-        resetHeadingCommand.addRequirements(sDrivetrainSubsystem);
-        driverController.start().onTrue(resetHeadingCommand);
+    // Trigger Rotate
+    new Trigger(() -> driverController.getRawRotationRate() != 0.0)
+        .onTrue(
+            new DriveWithTriggerCommand(
+                sDrivetrainSubsystem,
+                () ->
+                    driverController
+                        .getDriveTranslation(driverController.isRobotRelative())
+                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+                () ->
+                    driverController.getRawRotationRate()
+                        * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond, // amp
+                // heading
+                () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED));
 
-        // Trigger Rotate
-        new Trigger(() -> driverController.getRawRotationRate() != 0.0)
-                .onTrue(new DriveWithTriggerCommand(sDrivetrainSubsystem,
-                        () -> driverController
-                                .getDriveTranslation(driverController.isRobotRelative())
-                                .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                        () -> driverController.getRawRotationRate()
-                                * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond, // amp
-                        // heading
-                        () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED));
-
-        // Vision Shoot
-        Trigger visionShootTrigger = driverController.y();
-        visionShootTrigger
-                .whileTrue(
-                        new VisionShootCommand(mShooter, mArm, mTransfer, sDrivetrainSubsystem, mIntake,
-                        () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
-                                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming)
-                        )
-                .onFalse(new InstantCommand(() -> {
-                    mShooter.stop();
-                    mTransfer.stop();
-                    mIntake.stop();
-                }).alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
-
-        // manual trap
-        driverController.povUp().and(driverController.rightBumper())
-                .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
-                .onFalse(new InstantCommand(() -> mShooter.stop())
-                        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
-        // nav trap
-        driverController.povUp().and(driverController.rightBumper().negate())
-                .whileTrue(new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake,
-                        mTransfer, mTrapFan))
-                .onFalse(new InstantCommand(() -> mShooter.stop())
-                        .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
-        
-        // amp binding
-        // navAmp
-        driverController.povRight().and(driverController.rightBumper().negate()).whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer)).onFalse(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
-
-        // manual amp
-        buildAmpBinding(driverController.povRight().and(driverController.rightBumper()),
-                ShootingParameters.AMP_INTERMEDIATE_POS, ShootingParameters.AMP_LOWSPEED);
-
-        // intake system bindings
-
-        // chase note inake, press left bumper and not pressing right bumper
-        driverController.leftBumper().and(driverController.rightBumper().negate()).whileTrue(
-                new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
-        // manual intake, press both left and right bumper
-        (driverController.leftBumper().and(driverController.rightBumper()))
-                .or(operatorController.leftBumper())
-                .whileTrue(new IntakeCommand(mIntake, mTransfer));
-        // outtake
-        driverController.b().or(operatorController.rightBumper()).whileTrue(new OuttakeCommand(mIntake, mTransfer));
-
-        // Shooter Drop
-        buildShootBinding(operatorController.b(), ShootingParameters.DROP);
-
-
-        // Below Speaker
-        
-        buildShootBinding(driverController.x().or(operatorController.x()), ShootingParameters.BELOW_SPEAKER);
-        buildShootBinding(driverController.a().or(operatorController.a()), ShootingParameters.BELOW_SPEAKER_REVERSE);
-
-        
-
-        // Get note from source
-        operatorController.y().whileTrue(
-                (
-                        new SetShooterTargetCommand(mShooter, -10)
-                        .alongWith(new SetArmAngleCommand(mArm, 101.0))
-                ).until(()->mTransfer.isOmronDetected())
-                .andThen(new InstantCommand(()->mTransfer.setVoltage(-1))
-                .andThen(new WaitUntilCommand(()->!mTransfer.isOmronDetected()).raceWith(new WaitCommand(0.3)))) // note got in
-                .andThen(new InstantCommand(()->mTransfer.stop()))
-        ).onFalse(
-                new InstantCommand(()->mTransfer.stop())
+    // Vision Shoot
+    Trigger visionShootTrigger = driverController.y();
+    visionShootTrigger
+        .whileTrue(
+            new VisionShootCommand(
+                    mShooter,
+                    mArm,
+                    mTransfer,
+                    sDrivetrainSubsystem,
+                    mIntake,
+                    () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
+                .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+        .onFalse(
+            new InstantCommand(
+                    () -> {
+                      mShooter.stop();
+                      mTransfer.stop();
+                      mIntake.stop();
+                    })
                 .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
 
-        Trigger rightStickAngle = new Trigger(()->true);
-        rightStickAngle.whileTrue(new RepeatCommand(new InstantCommand(()->SmartDashboard.putNumber("Right Stick Angle", driverController.getRightStickToNearestPole().orElse(new Rotation2d(Math.PI/4)).getDegrees()))));
+    // manual trap
+    driverController
+        .povUp()
+        .and(driverController.rightBumper())
+        .whileTrue(new BlowTrapAndDropCommand(mTrapFan, mShooter, mArm, mTransfer))
+        .onFalse(
+            new InstantCommand(() -> mShooter.stop())
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
+    // nav trap
+    driverController
+        .povUp()
+        .and(driverController.rightBumper().negate())
+        .whileTrue(
+            new NavTrapCommand(sDrivetrainSubsystem, mArm, mShooter, mIntake, mTransfer, mTrapFan))
+        .onFalse(
+            new InstantCommand(() -> mShooter.stop())
+                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
 
-        // seven zones transfer
-        Trigger rightStickUp = new Trigger(()->
-                driverController.getRightStickToNearestPole().orElse(new Rotation2d(Math.PI/4)).getDegrees() == 0.0
-        );
+    // amp binding
+    // navAmp
+    driverController
+        .povRight()
+        .and(driverController.rightBumper().negate())
+        .whileTrue(new NavAmpCommand(sDrivetrainSubsystem, mArm, mShooter, mTransfer))
+        .onFalse(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
-        Trigger rightStickLeft = new Trigger(()->
-                driverController.getRightStickToNearestPole().orElse(new Rotation2d(Math.PI/4)).getDegrees() == 90.0
-        );
+    // manual amp
+    buildAmpBinding(
+        driverController.povRight().and(driverController.rightBumper()),
+        ShootingParameters.AMP_INTERMEDIATE_POS,
+        ShootingParameters.AMP_LOWSPEED);
 
-        Trigger rightStickRight = new Trigger(()->
-                driverController.getRightStickToNearestPole().orElse(new Rotation2d(Math.PI/4)).getDegrees() == -90.0
-        );
+    // intake system bindings
 
-        Trigger rightStickDown = new Trigger(()->
-                driverController.getRightStickToNearestPole().orElse(new Rotation2d(Math.PI/4)).getDegrees() == 180.0
-        );
+    // chase note inake, press left bumper and not pressing right bumper
+    driverController
+        .leftBumper()
+        .and(driverController.rightBumper().negate())
+        .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
+    // manual intake, press both left and right bumper
+    (driverController.leftBumper().and(driverController.rightBumper()))
+        .or(operatorController.leftBumper())
+        .whileTrue(new IntakeCommand(mIntake, mTransfer));
+    // outtake
+    driverController
+        .b()
+        .or(operatorController.rightBumper())
+        .whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
+    // Shooter Drop
+    buildShootBinding(operatorController.b(), ShootingParameters.DROP);
 
-        buildPepGBinding(new Trigger[] {rightStickUp, rightStickDown,
-                rightStickLeft, rightStickRight});
-    }
+    // Below Speaker
 
-    private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
-        Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
-                .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
-                .andThen(new FeedCommand(mTransfer, mShooter));
+    buildShootBinding(
+        driverController.x().or(operatorController.x()), ShootingParameters.BELOW_SPEAKER);
+    buildShootBinding(
+        driverController.a().or(operatorController.a()), ShootingParameters.BELOW_SPEAKER_REVERSE);
 
-        Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
+    // Get note from source
+    operatorController
+        .y()
+        .whileTrue(
+            (new SetShooterTargetCommand(mShooter, -10)
+                    .alongWith(new SetArmAngleCommand(mArm, 101.0)))
+                .until(() -> mTransfer.isOmronDetected())
+                .andThen(
+                    new InstantCommand(() -> mTransfer.setVoltage(-1))
+                        .andThen(
+                            new WaitUntilCommand(() -> !mTransfer.isOmronDetected())
+                                .raceWith(new WaitCommand(0.3)))) // note got in
+                .andThen(new InstantCommand(() -> mTransfer.stop())))
+        .onFalse(
+            new InstantCommand(() -> mTransfer.stop())
+                .alongWith(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE)));
 
-        trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
-    }
+    Trigger rightStickAngle = new Trigger(() -> true);
+    rightStickAngle.whileTrue(
+        new RepeatCommand(
+            new InstantCommand(
+                () ->
+                    SmartDashboard.putNumber(
+                        "Right Stick Angle",
+                        driverController
+                            .getRightStickToNearestPole()
+                            .orElse(new Rotation2d(Math.PI / 4))
+                            .getDegrees()))));
 
-    private void buildAmpBinding(Trigger trigger, ShootingParameters IntermediateParameter,
-            ShootingParameters targetParameters) {
-        Command swingUpCommand = new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
-                .alongWith(new SetArmAngleCommand(mArm, IntermediateParameter.angle_deg));
+    // seven zones transfer
+    Trigger rightStickUp =
+        new Trigger(
+            () ->
+                driverController
+                        .getRightStickToNearestPole()
+                        .orElse(new Rotation2d(Math.PI / 4))
+                        .getDegrees()
+                    == 0.0);
 
-        Command swingBackAndReleaseCommand =
-                new SetArmAngleCommand(mArm, targetParameters.angle_deg)
-                        .alongWith(new FeedCommand(mTransfer, mShooter));
+    Trigger rightStickLeft =
+        new Trigger(
+            () ->
+                driverController
+                        .getRightStickToNearestPole()
+                        .orElse(new Rotation2d(Math.PI / 4))
+                        .getDegrees()
+                    == 90.0);
 
-        Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
+    Trigger rightStickRight =
+        new Trigger(
+            () ->
+                driverController
+                        .getRightStickToNearestPole()
+                        .orElse(new Rotation2d(Math.PI / 4))
+                        .getDegrees()
+                    == -90.0);
 
-        trigger.whileTrue(swingUpCommand.andThen(swingBackAndReleaseCommand))
-                .onFalse(stopShootingCommand);
-    }
+    Trigger rightStickDown =
+        new Trigger(
+            () ->
+                driverController
+                        .getRightStickToNearestPole()
+                        .orElse(new Rotation2d(Math.PI / 4))
+                        .getDegrees()
+                    == 180.0);
 
-    private void buildPepGBinding(Trigger[] triggers) {
-        // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-        // mTransfer,
-        // mShooter, null,
-        // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
-        Command pepGuardiolaCommandUP = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter, mIntake,
-                () -> driverController.getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                GoalZone.UP);
-        Command pepGuardiolaCommandDOWN = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter, mIntake,
-                () -> driverController.getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                GoalZone.DOWN);
-        Command pepGuardiolaCommandLEFT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter, mIntake,
-                () -> driverController.getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                GoalZone.LEFT);
-        Command pepGuardiolaCommandRIGHT = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-                mTransfer, mShooter, mIntake,
-                () -> driverController.getDriveTranslation(driverController.isRobotRelative())
-                        .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                GoalZone.RIGHT);
+    buildPepGBinding(new Trigger[] {rightStickUp, rightStickDown, rightStickLeft, rightStickRight});
+  }
 
-        triggers[0].whileTrue(pepGuardiolaCommandUP.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 0)));
-        triggers[1].whileTrue(pepGuardiolaCommandDOWN.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 180)));
-        triggers[2].whileTrue(pepGuardiolaCommandLEFT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 90)));
-        triggers[3].whileTrue(pepGuardiolaCommandRIGHT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming)).onFalse(new InstantCommand(()->SmartDashboard.putNumber("Last RightStick", 270)));
-    }
+  private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
+    Command shootCommand =
+        new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+            .andThen(new FeedCommand(mTransfer, mShooter));
 
-    /**
-     * @deprecated use new NavAmpCommand() instead
-     */
-    private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
-        Pose2d targetPose = isRedAlliance ? FieldConstants.IN_FRONT_AMP_POSITION_RED
-                : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
-        Command pathfindToAmp =
-                AutoBuilder.pathfindToPose(targetPose, PathfindConstants.constraints, 0, 0.5);
+    Command stopShootingCommand =
+        new InstantCommand(() -> mShooter.stop())
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
-        Command swingUpCommand =
-                new SetShooterTargetCommand(mShooter, ShootingParameters.AMP_LOWSPEED.speed_rps)
-                        .alongWith(new SetArmAngleCommand(mArm,
-                                ShootingParameters.AMP_INTERMEDIATE_POS.angle_deg));
+    trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
+  }
 
-        Command swingBackAndReleaseCommand =
-                new SetArmAngleCommand(mArm,
-                                ShootingParameters.AMP_LOWSPEED.angle_deg)
-                        .alongWith(new FeedCommand(mTransfer, mShooter));
-        Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
+  private void buildAmpBinding(
+      Trigger trigger,
+      ShootingParameters IntermediateParameter,
+      ShootingParameters targetParameters) {
+    Command swingUpCommand =
+        new SetShooterTargetCommand(mShooter, targetParameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, IntermediateParameter.angle_deg));
 
-        trigger.whileTrue(
-                pathfindToAmp.alongWith(swingUpCommand).andThen(swingBackAndReleaseCommand))
-                .onFalse(stopShootingCommand);
-    }
+    Command swingBackAndReleaseCommand =
+        new SetArmAngleCommand(mArm, targetParameters.angle_deg)
+            .alongWith(new FeedCommand(mTransfer, mShooter));
 
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
-    public Command getAutonomousCommand() {
-        // An example command will be run in autonomous
-        driverController.setTranslationDirection(true);
-        return mChooser.getSelected();
-    }
+    Command stopShootingCommand =
+        new InstantCommand(() -> mShooter.stop())
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
-    public void checkDrivetrainZeroing() {
-        mZeroingCommand.schedule();
-    }
+    trigger
+        .whileTrue(swingUpCommand.andThen(swingBackAndReleaseCommand))
+        .onFalse(stopShootingCommand);
+  }
 
-    public void pushChooser() {
-        mChooser = new SendableChooser<>();
-        // Configure Score53Strategy chooser
-        mScore53StrategyChooser.setDefaultOption("Near Side Mid to Outer",
-                DallasAutoScore53Routine.Score53Strategy.NEAR_SIDE_MID_TO_OUTER);
-        mScore53StrategyChooser.addOption("Near Side Outer to Mid",
-                DallasAutoScore53Routine.Score53Strategy.NEAR_SIDE_OUTER_TO_MID);
-        mScore53StrategyChooser.addOption("Far Side Mid to Outer",
-                DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_MID_TO_OUTER);
-        mScore53StrategyChooser.addOption("Far Side Outer to Mid",
-                DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_OUTER_TO_MID);
+  private void buildPepGBinding(Trigger[] triggers) {
+    // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
+    // mTransfer,
+    // mShooter, null,
+    // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
+    Command pepGuardiolaCommandUP =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            mIntake,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.UP);
+    Command pepGuardiolaCommandDOWN =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            mIntake,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.DOWN);
+    Command pepGuardiolaCommandLEFT =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            mIntake,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.LEFT);
+    Command pepGuardiolaCommandRIGHT =
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            mIntake,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            GoalZone.RIGHT);
 
-        // Configure Drop53Strategy chooser
-        mDrop53StrategyChooser.setDefaultOption("Near Side",
-                DallasAutoDrop53Routine.Drop53Strategy.NEAR_SIDE);
-        mDrop53StrategyChooser.addOption("Far Side",
-                DallasAutoDrop53Routine.Drop53Strategy.FAR_SIDE);
+    triggers[0]
+        .whileTrue(
+            pepGuardiolaCommandUP.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 0)));
+    triggers[1]
+        .whileTrue(
+            pepGuardiolaCommandDOWN.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
+    triggers[2]
+        .whileTrue(
+            pepGuardiolaCommandLEFT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 90)));
+    triggers[3]
+        .whileTrue(
+            pepGuardiolaCommandRIGHT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 270)));
+  }
 
-        // Configure fallbackRotation53 chooser
-        mFallbackRotation53Chooser.setDefaultOption("90 degrees (intake near)",
-                Rotation2d.fromDegrees(90));
-        mFallbackRotation53Chooser.addOption("-90 degrees (intake far)",
-                Rotation2d.fromDegrees(-90));
-       
-        // Add Dallas Auto
-        mChooser.addOption("Dallas Score 53 (Configurable)",
-                new ProxyCommand(this::createDallasScore53Command));
-        mChooser.addOption("Dallas Trap 53 (Configurable)",
-                new ProxyCommand(this::createDallasTrap53Command));
-        mChooser.addOption("Dallas Drop 53 (Configurable)",
-                new ProxyCommand(this::createDallasDrop53Command));
-        
+  /** @deprecated use new NavAmpCommand() instead */
+  private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
+    Pose2d targetPose =
+        isRedAlliance
+            ? FieldConstants.IN_FRONT_AMP_POSITION_RED
+            : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
+    Command pathfindToAmp =
+        AutoBuilder.pathfindToPose(targetPose, PathfindConstants.constraints, 0, 0.5);
 
+    Command swingUpCommand =
+        new SetShooterTargetCommand(mShooter, ShootingParameters.AMP_LOWSPEED.speed_rps)
+            .alongWith(
+                new SetArmAngleCommand(mArm, ShootingParameters.AMP_INTERMEDIATE_POS.angle_deg));
 
-        SmartDashboard.putData("AUTO CHOICES", mChooser);
-        SmartDashboard.putData("Score 53 Strategy", mScore53StrategyChooser);
-        SmartDashboard.putData("Fallback Rotation 53", mFallbackRotation53Chooser);
-    }
+    Command swingBackAndReleaseCommand =
+        new SetArmAngleCommand(mArm, ShootingParameters.AMP_LOWSPEED.angle_deg)
+            .alongWith(new FeedCommand(mTransfer, mShooter));
+    Command stopShootingCommand =
+        new InstantCommand(() -> mShooter.stop())
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
-    private Command createDallasScore53Command() {
-        return DallasAutoScore53Routine.buildScore53Command(sDrivetrainSubsystem, mArm, mShooter,
-                mTransfer, mIntake, mScore53StrategyChooser.getSelected(),
-                mFallbackRotation53Chooser.getSelected());
-    }
+    trigger
+        .whileTrue(pathfindToAmp.alongWith(swingUpCommand).andThen(swingBackAndReleaseCommand))
+        .onFalse(stopShootingCommand);
+  }
 
-    private Command createDallasTrap53Command() {
-        return DallasAutoTrap53Routine.buildTrap53Command(sDrivetrainSubsystem, mArm, mShooter,
-                mTransfer, mIntake, mTrapFan, mFallbackRotation53Chooser.getSelected());
-    }
+  /**
+   * Use this to pass the autonomous command to the main {@link Robot} class.
+   *
+   * @return the command to run in autonomous
+   */
+  public Command getAutonomousCommand() {
+    // An example command will be run in autonomous
+    driverController.setTranslationDirection(true);
+    return mChooser.getSelected();
+  }
 
-    private Command createDallasDrop53Command() {
-        return DallasAutoDrop53Routine.buildDrop53Command(sDrivetrainSubsystem, mArm, mShooter,
-                mTransfer, mIntake, mDrop53StrategyChooser.getSelected(),
-                mFallbackRotation53Chooser.getSelected());
-    }
+  public void checkDrivetrainZeroing() {
+    mZeroingCommand.schedule();
+  }
 
-    public void moduleTestRoutine() {
-        // FL, FR, BR, BL
-        var module = sDrivetrainSubsystem.getModuleArray()[2];
+  public void pushChooser() {
+    mChooser = new SendableChooser<>();
+    // Configure Score53Strategy chooser
+    mScore53StrategyChooser.setDefaultOption(
+        "Near Side Mid to Outer", DallasAutoScore53Routine.Score53Strategy.NEAR_SIDE_MID_TO_OUTER);
+    mScore53StrategyChooser.addOption(
+        "Near Side Outer to Mid", DallasAutoScore53Routine.Score53Strategy.NEAR_SIDE_OUTER_TO_MID);
+    mScore53StrategyChooser.addOption(
+        "Far Side Mid to Outer", DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_MID_TO_OUTER);
+    mScore53StrategyChooser.addOption(
+        "Far Side Outer to Mid", DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_OUTER_TO_MID);
 
-        var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
-        module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));
-    }
+    // Configure Drop53Strategy chooser
+    mDrop53StrategyChooser.setDefaultOption(
+        "Near Side", DallasAutoDrop53Routine.Drop53Strategy.NEAR_SIDE);
+    mDrop53StrategyChooser.addOption("Far Side", DallasAutoDrop53Routine.Drop53Strategy.FAR_SIDE);
+
+    // Configure fallbackRotation53 chooser
+    mFallbackRotation53Chooser.setDefaultOption(
+        "90 degrees (intake near)", Rotation2d.fromDegrees(90));
+    mFallbackRotation53Chooser.addOption("-90 degrees (intake far)", Rotation2d.fromDegrees(-90));
+
+    // Add Dallas Auto
+    mChooser.addOption(
+        "Dallas Score 53 (Configurable)", new ProxyCommand(this::createDallasScore53Command));
+    mChooser.addOption(
+        "Dallas Trap 53 (Configurable)", new ProxyCommand(this::createDallasTrap53Command));
+    mChooser.addOption(
+        "Dallas Drop 53 (Configurable)", new ProxyCommand(this::createDallasDrop53Command));
+
+    SmartDashboard.putData("AUTO CHOICES", mChooser);
+    SmartDashboard.putData("Score 53 Strategy", mScore53StrategyChooser);
+    SmartDashboard.putData("Fallback Rotation 53", mFallbackRotation53Chooser);
+  }
+
+  private Command createDallasScore53Command() {
+    return DallasAutoScore53Routine.buildScore53Command(
+        sDrivetrainSubsystem,
+        mArm,
+        mShooter,
+        mTransfer,
+        mIntake,
+        mScore53StrategyChooser.getSelected(),
+        mFallbackRotation53Chooser.getSelected());
+  }
+
+  private Command createDallasTrap53Command() {
+    return DallasAutoTrap53Routine.buildTrap53Command(
+        sDrivetrainSubsystem,
+        mArm,
+        mShooter,
+        mTransfer,
+        mIntake,
+        mTrapFan,
+        mFallbackRotation53Chooser.getSelected());
+  }
+
+  private Command createDallasDrop53Command() {
+    return DallasAutoDrop53Routine.buildDrop53Command(
+        sDrivetrainSubsystem,
+        mArm,
+        mShooter,
+        mTransfer,
+        mIntake,
+        mDrop53StrategyChooser.getSelected(),
+        mFallbackRotation53Chooser.getSelected());
+  }
+
+  public void moduleTestRoutine() {
+    // FL, FR, BR, BL
+    var module = sDrivetrainSubsystem.getModuleArray()[2];
+
+    var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
+    module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));
+  }
 }

@@ -393,7 +393,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @return the yaw angle of the gyro
    */
   public Rotation2d getGyroYaw() {
-    return Rotation2d.fromDegrees(-mPigeon.getAngle()); // pigeon 2 uses NED tradition, clockwise is positive rotation, but we use yaw tradition
+    return Rotation2d.fromDegrees(
+        -mPigeon
+            .getAngle()); // pigeon 2 uses NED tradition, clockwise is positive rotation, but we use
+                          // yaw tradition
   }
 
   double lastVisionOdomUpdateTime = Timer.getFPGATimestamp();

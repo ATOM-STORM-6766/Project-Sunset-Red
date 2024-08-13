@@ -34,7 +34,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
 
   private DualEdgeDelayedBoolean goShoot =
       new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1, EdgeType.RISING);
-  
+
   private Optional<ShootingParameters> shootingParameters_ = Optional.empty();
   private Optional<Translation2d> goalToRobot_ = Optional.empty();
   private Optional<Rotation2d> rotationTarget_ = Optional.empty();
@@ -69,8 +69,10 @@ public class VisionShootCommand extends ParallelCommandGroup {
     addCommands(
         // drivetrain
         driveCommand,
-
-        new InstantCommand(()->goShoot = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1, EdgeType.RISING)),
+        new InstantCommand(
+            () ->
+                goShoot =
+                    new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1, EdgeType.RISING)),
 
         // shooter and arm
         new RepeatCommand(
@@ -135,12 +137,11 @@ public class VisionShootCommand extends ParallelCommandGroup {
   // no delayed boolean for filter yet, need to verify whether needed
   private boolean readyToShoot() {
     return goShoot.update(
-        Timer
-            .getFPGATimestamp(), 
-            Math.abs(mShooter.getFollowerVelocity() - mShooter.getTargetVelocity()) < 2.0 &&
-            Math.abs(mShooter.getMainMotorVelocity() - mShooter.getTargetVelocity()) < 2.0 &&
-            Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 2.0 &&                     
-        driveCommand.headingAligned());
+        Timer.getFPGATimestamp(),
+        Math.abs(mShooter.getFollowerVelocity() - mShooter.getTargetVelocity()) < 2.0
+            && Math.abs(mShooter.getMainMotorVelocity() - mShooter.getTargetVelocity()) < 2.0
+            && Math.abs(mArm.getAngleDeg() - mArm.getTargetAngleDeg()) < 2.0
+            && driveCommand.headingAligned());
   }
 
   /**
@@ -150,7 +151,8 @@ public class VisionShootCommand extends ParallelCommandGroup {
    *
    * @return goal position relative to robot, in field's coordinate system, unit is meter.
    */
-  private Optional<Translation2d> getGoalToRobot(DrivetrainSubsystem drivetrainSubsystem, double shooter_pitch_degree, double shooter_rps) {
+  private Optional<Translation2d> getGoalToRobot(
+      DrivetrainSubsystem drivetrainSubsystem, double shooter_pitch_degree, double shooter_rps) {
     Translation2d robotToField = drivetrainSubsystem.getPose().getTranslation();
     Optional<Alliance> a = DriverStation.getAlliance();
     if (a.isEmpty()) {
@@ -178,28 +180,36 @@ public class VisionShootCommand extends ParallelCommandGroup {
    * @param goalToRobot
    * @return
    */
-  private double getTimeOfFly(Translation2d goalToRobot, double shooter_pitch_degree, double shooter_rps) {
+  private double getTimeOfFly(
+      Translation2d goalToRobot, double shooter_pitch_degree, double shooter_rps) {
     // 100 rotations/s * 0.021PI m/rotation * 45degree shoot angle
 
-    double noteFlySpeed = shooter_rps * 5.0 / 3.0 * 0.8 * Math.PI * 0.021 * Math.cos(Math.toRadians(shooter_pitch_degree));
+    double noteFlySpeed =
+        shooter_rps
+            * 5.0
+            / 3.0
+            * 0.8
+            * Math.PI
+            * 0.021
+            * Math.cos(Math.toRadians(shooter_pitch_degree));
     return goalToRobot.getNorm()
         / noteFlySpeed; // TODO: assumed note fly speed projection on the xy-plane is constant,
     // verify accuracy
   }
 
   /**
-   * Calculate shooting parameters and rotation target from robot pose.
-   * Use iterative approach to get the time of fly of the game piece.
-   * Do not return value but store result in member variables.
+   * Calculate shooting parameters and rotation target from robot pose. Use iterative approach to
+   * get the time of fly of the game piece. Do not return value but store result in member
+   * variables.
    *
    * @param drivetrainSubsystem
    */
-  private void calculateVisionAimingParameters(DrivetrainSubsystem drivetrainSubsystem){
+  private void calculateVisionAimingParameters(DrivetrainSubsystem drivetrainSubsystem) {
     double shooter_pitch_degree = 45;
     double shooter_rps = 53;
     Optional<Translation2d> finalGoalToRobot = Optional.empty();
     // iterative approach to get the goal to robot vector
-    for(int i = 0; i < 5; i++){
+    for (int i = 0; i < 5; i++) {
       var goalToRobot = getGoalToRobot(drivetrainSubsystem, shooter_pitch_degree, shooter_rps);
       if (goalToRobot.isEmpty()) {
         return;
@@ -210,9 +220,9 @@ public class VisionShootCommand extends ParallelCommandGroup {
     }
 
     shootingParameters_ = Optional.of(new ShootingParameters(shooter_rps, shooter_pitch_degree));
-    rotationTarget_ = Optional.of(finalGoalToRobot.get().getAngle().rotateBy(Rotation2d.fromDegrees(180)));
+    rotationTarget_ =
+        Optional.of(finalGoalToRobot.get().getAngle().rotateBy(Rotation2d.fromDegrees(180)));
 
-    return ;
+    return;
   }
-
 }
