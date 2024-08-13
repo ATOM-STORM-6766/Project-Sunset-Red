@@ -182,12 +182,11 @@ public class RobotContainer {
         driverController.leftBumper().and(driverController.rightBumper().negate()).whileTrue(
                 new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
         // manual intake, press both left and right bumper
-        driverController.leftBumper().and(driverController.rightBumper())
+        (driverController.leftBumper().and(driverController.rightBumper()))
+                .or(operatorController.leftBumper())
                 .whileTrue(new IntakeCommand(mIntake, mTransfer));
         // outtake
-        driverController.b().whileTrue(new OuttakeCommand(mIntake, mTransfer));
-
-        operatorController.a().whileTrue(new IntakeCommand(mIntake, mTransfer));
+        driverController.b().or(operatorController.rightBumper()).whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
         // Shooter Drop
         buildShootBinding(operatorController.b(), ShootingParameters.DROP);
@@ -195,8 +194,8 @@ public class RobotContainer {
 
         // Below Speaker
         
-        buildShootBinding(driverController.x(), ShootingParameters.BELOW_SPEAKER);
-        buildShootBinding(operatorController.x(), ShootingParameters.BELOW_SPEAKER_REVERSE);
+        buildShootBinding(driverController.x().or(operatorController.x()), ShootingParameters.BELOW_SPEAKER);
+        buildShootBinding(driverController.a().or(operatorController.a()), ShootingParameters.BELOW_SPEAKER_REVERSE);
 
         
 
