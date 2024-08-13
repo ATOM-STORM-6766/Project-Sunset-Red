@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
@@ -35,8 +34,6 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
-
-import javax.swing.text.html.Option;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
