@@ -1,8 +1,9 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.configs.Pigeon2Configuration;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
@@ -52,7 +53,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class DrivetrainSubsystem extends SubsystemBase {
 
-  private final PigeonIMU mPigeon;
+  private final Pigeon2 mPigeon;
   private final CircularInterpolatingTreeMap<Double, Rotation2d> mHeading =
       new CircularInterpolatingTreeMap<>(
           100, // Adjust this size as needed
@@ -121,9 +122,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
    */
   public DrivetrainSubsystem() {
 
-    mPigeon = new PigeonIMU(DriveConstants.kPigeonPort);
-    mPigeon.configFactoryDefault();
-    // mPigeon.setYaw(0);
+    mPigeon = new Pigeon2(DriveConstants.kPigeonPort);
+    Pigeon2Configuration mPigeonConfigurator = new Pigeon2Configuration();
+    mPigeon.getConfigurator().apply(mPigeonConfigurator, 10);
 
     mSwerveModules =
         new SwerveDriveModule[] {
@@ -392,7 +393,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
    * @return the yaw angle of the gyro
    */
   public Rotation2d getGyroYaw() {
-    return Rotation2d.fromDegrees(mPigeon.getFusedHeading());
+    return Rotation2d.fromDegrees(-mPigeon.getAngle()); // pigeon 2 uses NED tradition, clockwise is positive rotation, but we use yaw tradition
   }
 
   double lastVisionOdomUpdateTime = Timer.getFPGATimestamp();

@@ -47,7 +47,9 @@ public class TurnToHeadingCommand extends Command {
   public void initialize() {
     mProfiledPID.reset(sDrivetrainSubsystem.getHeading().getRadians());
     mProfiledPID.enableContinuousInput(-Math.PI, Math.PI);
-    mProfiledPID.setGoal(mTargetHeading.getRadians());
+    if(mTargetHeading != null){
+      mProfiledPID.setGoal(mTargetHeading.getRadians());
+    }
     mProfiledPID.setTolerance(mTolerance);
   }
 
@@ -71,7 +73,7 @@ public class TurnToHeadingCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return mProfiledPID.atGoal();
+    return mTargetHeading == null || mProfiledPID.atGoal();
   }
 
   @Override

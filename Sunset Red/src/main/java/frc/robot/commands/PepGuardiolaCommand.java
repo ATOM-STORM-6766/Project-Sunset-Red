@@ -98,6 +98,7 @@ public class PepGuardiolaCommand extends Command {
   private Arm sArm;
   private Transfer sTransfer;
   private Shooter sShooter;
+  private Intake sIntake;
   private Supplier<Translation2d> mDriveVectorSupplier;
   private GoalZone mGoalZone;
 
@@ -125,16 +126,17 @@ public class PepGuardiolaCommand extends Command {
       Arm arm,
       Transfer transfer,
       Shooter shooter,
+      Intake intake,
       Supplier<Translation2d> driveVectorSupplier,
       GoalZone goalZone) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
     sTransfer = transfer;
     sShooter = shooter;
+    sIntake = intake;
     mDriveVectorSupplier = driveVectorSupplier;
     mGoalZone = Objects.requireNonNull(goalZone);
-
-    addRequirements(drivetrainSubsystem, arm, transfer, shooter);
+    addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
   }
 
   @Override
@@ -155,6 +157,11 @@ public class PepGuardiolaCommand extends Command {
 
   @Override
   public void execute() {
+    if(!sTransfer.isOmronDetected()){
+      sIntake.setIntake();
+    }else{
+      sIntake.stop();
+    }
     switch (mDeliverState) {
       case AIMING:
         handleAiming();
@@ -199,7 +206,7 @@ public class PepGuardiolaCommand extends Command {
     // detect time to feed
     if (decideToFeed()) {
       mDeliverState = DeliverState.FEEDING;
-      sDrivetrainSubsystem.drive(new Translation2d(0, 0), 0, true);
+      sDrivetrainSubsystem.drive(mDriveVectorSupplier.get(), turnspeed, true);
       stateTimer.start();
     }
   }
@@ -223,8 +230,8 @@ public class PepGuardiolaCommand extends Command {
     // find if superstruct ok
     boolean shootOk =
         Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 3.0
-            && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
-            && mProfiledPID.atGoal();
+            && Math.abs(sArm.getAngleDeg() - armAngle) < 3.0
+            && Math.abs(sDrivetrainSubsystem.getHeading().minus(new Rotation2d(mProfiledPID.getGoal().position)).getDegrees()) < 5.0;
 
     // return shootOk&&zoneOk;
     return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk && zoneOk);
@@ -293,9 +300,12 @@ public class PepGuardiolaCommand extends Command {
   }
 
   private void handleFeeding() {
-    sTransfer.setVoltage(Transfer.FEED_VOLTS);
+      sTransfer.setVoltage(Transfer.FEED_VOLTS);
+      sDrivetrainSubsystem.drive(mDriveVectorSupplier.get(), 0, true);
+
     if (stateTimer.hasElapsed(0.5)) {
-      mDeliverState = DeliverState.END;
+      // restart
+      mDeliverState = DeliverState.AIMING;
     }
   }
 
@@ -305,11 +315,12 @@ public class PepGuardiolaCommand extends Command {
     sArm.stop();
     sShooter.stop();
     sTransfer.stop();
+    sIntake.stop();
     stateTimer.stop();
   }
 
   @Override
   public boolean isFinished() {
-    return mDeliverState == DeliverState.END;
+    return false;
   }
 }

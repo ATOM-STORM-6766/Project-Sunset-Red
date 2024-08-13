@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -11,6 +12,7 @@ public class TrapFan extends SubsystemBase {
 
   public TrapFan() {
     mFanMotor = new VictorSPX(FanConstants.FAN_ID);
+    mFanMotor.setNeutralMode(NeutralMode.Coast);
   }
 
   public void setFanSpeed(double speed) {

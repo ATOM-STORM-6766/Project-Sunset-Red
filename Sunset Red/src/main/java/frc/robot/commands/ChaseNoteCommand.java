@@ -49,7 +49,7 @@ public class ChaseNoteCommand extends Command {
       3; // todo: measure this during field measurement
   private static final double CLOSE_YAW_THRESHOLD =
       5; // todo: measure this during field measurement
-  private static final double TARGET_PITCH = 0;
+  private static final double TARGET_PITCH = -10;
 
   public ChaseNoteCommand(
       DrivetrainSubsystem sDrivetrainSubsystem, Intake sIntake, Transfer sTransfer, Arm sArm) {
@@ -68,7 +68,7 @@ public class ChaseNoteCommand extends Command {
         new PIDController(
             ROT_CONTROLLER_CONSTANTS[0], ROT_CONTROLLER_CONSTANTS[1], ROT_CONTROLLER_CONSTANTS[2]);
 
-    this.setArmAngleCommand = new SetArmAngleCommand(sArm, ArmConstants.INTAKE_OBSERVE_ARM_ANGLE);
+    this.setArmAngleCommand = new SetArmAngleCommand(sArm, ArmConstants.ARM_OBSERVE_ANGLE);
     stateTimer = new Timer();
 
     addRequirements(sDrivetrainSubsystem, sIntake, sTransfer, sArm);
