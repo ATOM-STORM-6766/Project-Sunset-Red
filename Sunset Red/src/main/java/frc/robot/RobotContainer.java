@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -289,15 +288,14 @@ public class RobotContainer {
 
     Trigger rightStickAngle = new Trigger(() -> true);
     rightStickAngle.whileTrue(
-        new RepeatCommand(
-            new InstantCommand(
+        Commands.run(
                 () ->
                     SmartDashboard.putNumber(
                         "Right Stick Angle",
                         driverController
                             .getRightStickToNearestPole()
                             .orElse(new Rotation2d(Math.PI / 4))
-                            .getDegrees()))));
+                            .getDegrees())));
 
     // seven zones transfer
     Trigger rightStickUp =
@@ -358,13 +356,13 @@ public class RobotContainer {
             .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
             .andThen(new InstantCommand(()->mTransfer.setVoltage(Transfer.FEED_VOLTS)));
     
-    Command intakeCommand = new RepeatCommand(new InstantCommand(()->{
+    Command intakeCommand = Commands.run(()->{
             if(!mTransfer.isOmronDetected()){
                     mIntake.setIntake();
             }else{
                     mIntake.stop();
             }
-    }));
+    });
     
     Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();})
             .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));

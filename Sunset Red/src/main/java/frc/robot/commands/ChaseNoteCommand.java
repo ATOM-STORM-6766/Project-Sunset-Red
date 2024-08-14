@@ -46,9 +46,9 @@ public class ChaseNoteCommand extends Command {
   private static final double[] ROT_CONTROLLER_CONSTANTS = {0.15, 0.0, 0.0};
   private static final double INTAKE_STATE_DRIVE_SPEED = 1.75; // adjust as needed
   private static final double CLOSE_PITCH_THRESHOLD =
-      3; // todo: measure this during field measurement
+      3; // TODO: measure this during field measurement
   private static final double CLOSE_YAW_THRESHOLD =
-      5; // todo: measure this during field measurement
+      5; // TODO: measure this during field measurement
   private static final double TARGET_PITCH = -10;
 
   public ChaseNoteCommand(
