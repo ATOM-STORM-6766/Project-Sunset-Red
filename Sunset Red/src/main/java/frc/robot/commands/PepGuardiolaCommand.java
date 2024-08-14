@@ -25,7 +25,7 @@ public class PepGuardiolaCommand extends Command {
   private static final double kManualAngleOffsetScalar = 1.0;
 
   public enum GoalZone {
-    UP(new Translation2d(15.7, 0.6)),
+    UP(new Translation2d(9.5, 1.4)),
     DOWN(new Translation2d(1.2, 7.0)),
     LEFT(new Translation2d(6.4, 7.6)),
     RIGHT(new Translation2d(6.4, 4.0));
@@ -253,10 +253,6 @@ public class PepGuardiolaCommand extends Command {
   }
 
   private boolean checkLowShoot() {
-    if (mGoalZone == GoalZone.UP && inFrontField()) {
-      // front field low-shoot to up zone
-      return true;
-    }
     if (mGoalZone == GoalZone.DOWN && inLeftRightField()) {
       // leftright field low-shoot to down zone
       return true;
