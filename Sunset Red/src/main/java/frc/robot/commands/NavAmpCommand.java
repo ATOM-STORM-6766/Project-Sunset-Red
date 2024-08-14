@@ -21,9 +21,9 @@ public class NavAmpCommand extends SequentialCommandGroup {
             new SetShooterTargetCommand(shooter, ShootingParameters.AMP_LOWSPEED.speed_rps)),
         new ParallelCommandGroup(
             new SetArmAngleCommand(arm, ShootingParameters.AMP_LOWSPEED.angle_deg),
-            new FeedCommand(transfer)),
+            new FeedCommand(transfer, shooter)),
         new InstantCommand(() -> shooter.stop()),
         // TODO : IF WE JUST GET ARM BACK A LITTLE WE CAN MOVE
-        new SetArmAngleCommand(arm, ArmConstants.ARM_REST_ANGLE));
+        new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE));
   }
 }

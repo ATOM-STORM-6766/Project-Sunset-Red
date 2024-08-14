@@ -62,7 +62,7 @@ public final class Constants {
       FR.azimuthID = 7;
       FR.azimuthBlockCenterDegree = 105.0;
       FR.azimuthEncoderOffsetRotation = 0.075928;
-      FR.lightGateID = 3;
+      FR.lightGateID = 5;
       FR.corner = ModuleCorner.Front_Right;
       FR.invertDrive = InvertedValue.CounterClockwise_Positive;
       FR.invertAzimuth = InvertedValue.CounterClockwise_Positive;
@@ -97,7 +97,7 @@ public final class Constants {
       BR.driveID = 0;
       BR.azimuthID = 1;
       BR.azimuthBlockCenterDegree = 105.0;
-      BR.azimuthEncoderOffsetRotation = 0.010986;	
+      BR.azimuthEncoderOffsetRotation = 0.010986;
       BR.lightGateID = 2;
       BR.corner = ModuleCorner.Back_Right;
       BR.invertDrive = InvertedValue.Clockwise_Positive;
@@ -161,6 +161,8 @@ public final class Constants {
   public static final class ArmConstants {
     // ARM
     public static final int ARM_ID = 10;
+    // arm pitch when observing note on intake side
+    public static final double ARM_OBSERVE_ANGLE = 36.0;
     // arm pitch when resting in degrees
     public static final double ARM_REST_ANGLE = 23.0;
     // arm pitch when resting in rotations
@@ -170,8 +172,6 @@ public final class Constants {
     // arm pitch when in max pitch in rotations
     public static final double ARM_MAX_POSITION = ARM_MAX_ANGLE / 360.0;
     public static final double STABILIZE_TIME = 0.1;
-
-    public static final double INTAKE_OBSERVE_ARM_ANGLE = 36;
   }
 
   public static final class ShooterConstants {
@@ -193,19 +193,57 @@ public final class Constants {
        * These values below are based on Speaker wall to frame front measurement with some of the
        * bold guesses 0724
        */
-      kSpeakerAngleMap.put(0.93, 60.0);
-      kSpeakerAngleMap.put(1.22, 55.0);
-      kSpeakerAngleMap.put(1.55, 48.0);
-      kSpeakerAngleMap.put(1.81, 44.0);
-      kSpeakerAngleMap.put(2.18, 41.0);
-      kSpeakerAngleMap.put(2.57, 41.0);
-      kSpeakerAngleMap.put(2.91, 38.0);
-      kSpeakerAngleMap.put(3.25, 36.0);
-      kSpeakerAngleMap.put(3.4, 34.0);
-      kSpeakerAngleMap.put(4.5, 30.0);
+      kSpeakerAngleMap.put(0.98 - 0.35, 60.0);
+      kSpeakerAngleMap.put(1.04 - 0.35, 60.0);
+      kSpeakerAngleMap.put(1.105 - 0.35, 59.0);
+      kSpeakerAngleMap.put(1.205 - 0.35, 57.0);
+      kSpeakerAngleMap.put(1.305 - 0.35, 56.0);
+      kSpeakerAngleMap.put(1.40 - 0.35, 56.0);
+      kSpeakerAngleMap.put(1.50 - 0.35, 55.0);
+      kSpeakerAngleMap.put(1.58 - 0.35, 54.0);
+      kSpeakerAngleMap.put(1.70 - 0.35, 53.0);
+      kSpeakerAngleMap.put(1.83 - 0.35, 52.3);
+      kSpeakerAngleMap.put(1.92 - 0.35, 51.5);
+      kSpeakerAngleMap.put(2.00 - 0.35, 50.78);
+      kSpeakerAngleMap.put(2.10 - 0.35, 49.66);
+      kSpeakerAngleMap.put(2.20 - 0.35, 48.5);
+      kSpeakerAngleMap.put(2.30 - 0.35, 47.5);
+      kSpeakerAngleMap.put(2.40 - 0.35, 46.5);
+      kSpeakerAngleMap.put(2.50 - 0.35, 45.56);
+      kSpeakerAngleMap.put(3.00 - 0.35, 41.0);
+      kSpeakerAngleMap.put(3.50 - 0.35, 36.0);
+      kSpeakerAngleMap.put(3.60 - 0.35, 35.0);
+      kSpeakerAngleMap.put(3.80 - 0.35, 34.0);
+      kSpeakerAngleMap.put(4.15 - 0.35, 33.0);
+      kSpeakerAngleMap.put(4.5 - 0.35, 32.0);
+      kSpeakerAngleMap.put(5.1 - 0.35, 32.0);
+      kSpeakerAngleMap.put(5.5 - 0.35, 32.0);
+      kSpeakerAngleMap.put(5.9 - 0.35, 31.5);
 
       // kSpeakerAngleMap.put(3.00, 49.0);
       // kSpeakerAngleMap.put(4.00, 38.0);
+    }
+
+    public static final InterpolatingDoubleTreeMap kSpeakerRPSMap =
+        new InterpolatingDoubleTreeMap();
+
+    static {
+      // TODO : TUNE
+      // distance meters <-> arm angle degrees
+      // the distance here is the distance from the speaker to the robot ()
+      // lowest allowable angle is 28, lower then that will hit camera
+
+      /*
+       * These values below are based on Speaker wall to frame front measurement with some of the
+       * bold guesses 0724
+       */
+      kSpeakerRPSMap.put(0.98 - 0.35, 53.0);
+      kSpeakerRPSMap.put(2.50 - 0.35, 53.0);
+      kSpeakerRPSMap.put(3.00 - 0.35, 61.5);
+      kSpeakerRPSMap.put(3.50 - 0.35, 70.0);
+      kSpeakerRPSMap.put(3.60 - 0.35, 68.75);
+      kSpeakerRPSMap.put(3.80 - 0.35, 75.0);
+      kSpeakerRPSMap.put(5.9 - 0.35, 75.0);
     }
 
     public static final Translation2d kRedSpeaker = new Translation2d(16.32, 5.55);

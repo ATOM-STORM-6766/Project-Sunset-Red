@@ -29,10 +29,10 @@ public class NavTrapCommand extends SequentialCommandGroup {
             new SetArmAngleCommand(arm, ShootingParameters.TRAP.angle_deg),
             new SetShooterTargetCommand(shooter, ShootingParameters.TRAP.speed_rps)),
         new ParallelDeadlineGroup(
-            new SequentialCommandGroup(new WaitCommand(2.0), new FeedCommand(transfer)),
+            new SequentialCommandGroup(new WaitCommand(2.0), new FeedCommand(transfer, shooter)),
             trapFan.blowTrapCommand()),
         new ParallelCommandGroup(
-            new SetArmAngleCommand(arm, ArmConstants.ARM_REST_ANGLE),
+            new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
             Commands.runOnce(() -> shooter.stop(), shooter)));
   }
 }

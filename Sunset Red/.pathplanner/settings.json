@@ -5,12 +5,12 @@
   "pathFolders": [
     "California",
     "Dallas",
-    "Section Based"
+    "Arizona"
   ],
   "autoFolders": [],
   "defaultMaxVel": 4.0,
   "defaultMaxAccel": 5.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
-  "maxModuleSpeed": 4.0
+  "maxModuleSpeed": 4.5
 }

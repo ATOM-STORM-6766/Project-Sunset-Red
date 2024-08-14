@@ -31,7 +31,7 @@ public class Shooter extends SubsystemBase {
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     shooterConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = false;
     shooterConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = false;
     shooterConfig.Voltage.PeakForwardVoltage = 12.0;
@@ -42,16 +42,16 @@ public class Shooter extends SubsystemBase {
     shooterConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
     shooterConfig.CurrentLimits.SupplyCurrentThreshold = 60.0;
     shooterConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
-    shooterConfig.Slot0.kV = 0.113;
-    shooterConfig.Slot0.kP = 0.15;
-    shooterConfig.Slot0.kI = 3.0;
+    shooterConfig.Slot0.kV = 0.118;
+    shooterConfig.Slot0.kP = 0.05; // 0.15
+    shooterConfig.Slot0.kI = 0.0;
     shooterConfig.Slot0.kD = 0.0;
     Util.checkReturn(
         "shooter",
         mShooterTalon.getConfigurator().apply(shooterConfig, Constants.kLongCANTimeoutSec));
     shooterConfig.Slot0.kV = 0.118;
-    shooterConfig.Slot0.kP = 0.15;
-    shooterConfig.Slot0.kI = 3.0;
+    shooterConfig.Slot0.kP = 0.05;
+    shooterConfig.Slot0.kI = 0.0; // 3.0
     shooterConfig.Slot0.kD = 0.0;
     Util.checkReturn(
         "shooter follower",
@@ -84,6 +84,12 @@ public class Shooter extends SubsystemBase {
     builder.addDoubleProperty("Shooter Main Velocity", () -> getMainMotorVelocity(), null);
     builder.addDoubleProperty("Shooter Follower Velocity", () -> getFollowerVelocity(), null);
     builder.addDoubleProperty("Shooter Target RPS", () -> shooterTargetVelocity.Velocity, null);
+    builder.addDoubleProperty(
+        "Shooter Total Current",
+        () ->
+            mShooterTalon.getSupplyCurrent().getValueAsDouble()
+                + mShooterFollower.getSupplyCurrent().getValueAsDouble(),
+        null);
   }
 
   /** */

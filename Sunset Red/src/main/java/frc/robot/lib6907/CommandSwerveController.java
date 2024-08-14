@@ -17,7 +17,7 @@ public class CommandSwerveController extends CommandXboxController {
   private static final double TRANSLATION_DEADBAND = 0.1; // percent
   private static final double ROTATION_DEADBAND = 0.85; // percent
   private static final double NEAR_POLE_DRIVE_DEGREES = 7;
-  private static final double NEAR_POLE_TURN_DEGREES = 7;
+  private static final double NEAR_POLE_TURN_DEGREES = 20;
 
   private final SlewRateLimiter translationXRateLimiter = new SlewRateLimiter(5); // (1 /
   // seconds_from_neutral_to_full)
@@ -95,6 +95,29 @@ public class CommandSwerveController extends CommandXboxController {
     Rotation2d nearestPole = nearestPole(rotationAngle);
 
     if (Math.abs(rotationAngle.minus(nearestPole).getDegrees()) < NEAR_POLE_TURN_DEGREES) {
+      rotationAngle = nearestPole;
+    }
+    return Optional.of(rotationAngle);
+  }
+
+  /**
+   * Returns an Optional containing the target angle for rotating the swerve drive, if available.
+   *
+   * @return An Optional containing the target angle in degrees, or an empty Optional if the
+   *     rotation is below the deadband.
+   */
+  public Optional<Rotation2d> getRightStickToNearestPole() {
+
+    Translation2d rotationVector = new Translation2d(-getRightY(), -getRightX());
+
+    if (rotationVector.getNorm() < ROTATION_DEADBAND) {
+      return Optional.empty();
+    }
+
+    Rotation2d rotationAngle = rotationVector.getAngle();
+    Rotation2d nearestPole = nearestPole(rotationAngle);
+
+    if (Math.abs(rotationAngle.minus(nearestPole).getDegrees()) < 45) {
       rotationAngle = nearestPole;
     }
     return Optional.of(rotationAngle);
@@ -186,6 +209,7 @@ public class CommandSwerveController extends CommandXboxController {
    * @return True if the swerve drive should be in robot-relative mode, false otherwise.
    */
   public DriveMode isRobotRelative() {
-    return getHID().getLeftBumper() ? DriveMode.ROBOT_ORIENTED : DriveMode.FIELD_ORIENTED;
+    return DriveMode
+        .FIELD_ORIENTED; // now we don't want to have robot relative mode, use this for now
   }
 }

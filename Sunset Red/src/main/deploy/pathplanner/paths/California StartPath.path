@@ -3,57 +3,57 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4722298657560282,
-        "y": 5.601728379382685
+        "x": 1.27,
+        "y": 6.55
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.8208349401668986,
-        "y": 5.601728379382685
+        "x": 2.11696605800619,
+        "y": 6.770769245242194
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.5800189794824036,
-        "y": 5.601728379382685
+        "x": 3.011176022352045,
+        "y": 6.872554069182212
       },
       "prevControl": {
-        "x": 3.0178025269366504,
-        "y": 5.713056554072863
+        "x": 2.624609133399058,
+        "y": 6.812804966535074
       },
       "nextControl": {
-        "x": 4.490203341517795,
-        "y": 5.421496792067659
+        "x": 3.6980020787635963,
+        "y": 6.978712257371614
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.873027968278159,
-        "y": 4.231433856386231
+        "x": 6.18316297720166,
+        "y": 7.1924880784789815
       },
       "prevControl": {
-        "x": 4.898465867770525,
-        "y": 4.436685286454797
+        "x": 4.628520108911688,
+        "y": 7.346259510668739
       },
       "nextControl": {
-        "x": 6.895151882896359,
-        "y": 4.0161654860346765
+        "x": 6.677807788563937,
+        "y": 7.143562217356887
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.321327105617174,
-        "y": 4.092593180556732
+        "x": 8.27742037281391,
+        "y": 7.439389330579508
       },
       "prevControl": {
-        "x": 7.49104214020394,
-        "y": 4.104287334999171
+        "x": 7.805246254030645,
+        "y": 7.3681616731171315
       },
       "nextControl": null,
       "isLocked": false,
@@ -62,13 +62,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0,
-      "rotationDegrees": 0,
-      "rotateFast": false
-    },
-    {
       "waypointRelativePos": 1,
-      "rotationDegrees": 0,
+      "rotationDegrees": 38.09372441595329,
       "rotateFast": false
     },
     {
@@ -87,13 +82,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0,
+    "rotation": 0.264417407649377,
     "rotateFast": false
   },
   "reversed": false,
-  "folder": "Dallas",
+  "folder": "California",
   "previewStartingState": {
-    "rotation": 0.6238574161169947,
+    "rotation": 30.0,
     "velocity": 0
   },
   "useDefaultConstraints": true
