@@ -14,8 +14,10 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -221,7 +223,14 @@ public class RobotContainer {
     // manual intake, press both left and right bumper
     (driverController.leftBumper().and(driverController.rightBumper()))
         .or(operatorController.leftBumper())
-        .whileTrue(new IntakeCommand(mIntake, mTransfer));
+        .whileTrue(new ParallelCommandGroup(
+            new IntakeCommand(mIntake, mTransfer),
+            Commands.either(
+                new SetArmAngleCommand(mArm, ArmConstants.ARM_MAX_INTAKE_ANGLE), 
+                new WaitCommand(0.0), 
+                () -> mArm.getAngleDeg() > ArmConstants.ARM_MAX_INTAKE_ANGLE
+            )
+        ));
     // outtake
     driverController
         .b()
