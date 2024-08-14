@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.AutoCommandFactory;
+import frc.robot.auto.AutoRoutineConfig;
 import frc.robot.commands.SetArmAngleCommand;
 import frc.robot.commands.SetShooterTargetCommand;
 import frc.robot.subsystems.*;
@@ -23,37 +24,9 @@ public class DallasAutoScore53Routine {
     FAR_SIDE_OUTER_TO_MID
   }
 
-  private static final String kStartPathDallas = "Dallas StartPath";
-
-  // Shoot poses
-  private static final Pose2d kShootPoseUnderStage =
-      new Pose2d(4.5, 4.63, Rotation2d.fromDegrees(-14.0));
-  private static final Pose2d kShootPoseNearSide =
-      new Pose2d(4.5, 6.46, Rotation2d.fromDegrees(14.0));
-  private static final Pose2d kShootPoseFarSide =
-      new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(28.0));
-
-  // Shooting parameters
-  private static final ShootingParameters kShootParamUnderStage = new ShootingParameters(75, 32.5);
-  private static final ShootingParameters kShootParamNearSide = new ShootingParameters(75, 32.5);
-  private static final ShootingParameters kShootParamFarSide = new ShootingParameters(75, 41);
-  private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 36.5);
-
-  // Paths
-  private static final String kShootPoseUnderStageTo51Path = "ShootPoseUnderStage to 51";
-  private static final String kShootPoseUnderStageTo52Path = "ShootPoseUnderStage to 52";
-  private static final String kShootPoseUnderStageTo54Path = "ShootPoseUnderStage to 54";
-  private static final String kShootPoseUnderStageTo55Path = "ShootPoseUnderStage to 55";
-  private static final String kShootPoseNearSideTo51Path = "ShootPoseNearSide to 51";
-  private static final String kShootPoseNearSideTo52Path = "ShootPoseNearSide to 52";
-  private static final String kShootPoseFarSideTo54Path = "ShootPoseFarSide to 54";
-  private static final String kShootPoseFarSideTo55Path = "ShootPoseFarSide to 55";
-
   private static class StrategyParams {
-    final Pose2d shootPoseFirstNote;
-    final Pose2d shootPoseSecondNote;
-    final ShootingParameters shootParamsFirstNote;
-    final ShootingParameters shootParamsSecondNote;
+    final AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote;
+    final AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote;
     final String firstNotePath;
     final String secondNotePath;
     final Rotation2d firstNoteRotation;
@@ -61,19 +34,15 @@ public class DallasAutoScore53Routine {
     final Pose2d endChasePose;
 
     StrategyParams(
-        Pose2d shootPoseFirstNote,
-        Pose2d shootPoseSecondNote,
-        ShootingParameters shootParamsFirstNote,
-        ShootingParameters shootParamsSecondNote,
+        AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote,
+        AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote,
         String firstNotePath,
         String secondNotePath,
         Rotation2d firstNoteRotation,
         Rotation2d secondNoteRotation,
         Pose2d endChasePose) {
-      this.shootPoseFirstNote = shootPoseFirstNote;
-      this.shootPoseSecondNote = shootPoseSecondNote;
-      this.shootParamsFirstNote = shootParamsFirstNote;
-      this.shootParamsSecondNote = shootParamsSecondNote;
+      this.shootConfigFirstNote = shootConfigFirstNote;
+      this.shootConfigSecondNote = shootConfigSecondNote;
       this.firstNotePath = firstNotePath;
       this.secondNotePath = secondNotePath;
       this.firstNoteRotation = firstNoteRotation;
@@ -86,45 +55,37 @@ public class DallasAutoScore53Routine {
     switch (strategy) {
       case NEAR_SIDE_MID_TO_OUTER:
         return new StrategyParams(
-            kShootPoseNearSide,
-            kShootPoseNearSide,
-            kShootParamNearSide,
-            kShootParamNearSide,
-            kShootPoseUnderStageTo52Path,
-            kShootPoseNearSideTo51Path,
+            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_52,
+            AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_51,
             Rotation2d.fromDegrees(90),
             Rotation2d.fromDegrees(-90),
             FieldConstants.NOTE_54_POSITION);
       case NEAR_SIDE_OUTER_TO_MID:
         return new StrategyParams(
-            kShootPoseNearSide,
-            kShootPoseNearSide,
-            kShootParamNearSide,
-            kShootParamNearSide,
-            kShootPoseUnderStageTo51Path,
-            kShootPoseNearSideTo52Path,
+            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_51,
+            AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_52,
             Rotation2d.fromDegrees(-90),
             Rotation2d.fromDegrees(90),
             FieldConstants.NOTE_54_POSITION);
       case FAR_SIDE_MID_TO_OUTER:
         return new StrategyParams(
-            kShootPoseFarSide,
-            kShootPoseFarSide,
-            kShootParamFarSide,
-            kShootParamFarSide,
-            kShootPoseUnderStageTo54Path,
-            kShootPoseFarSideTo55Path,
+            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_54,
+            AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_55,
             Rotation2d.fromDegrees(-90),
             Rotation2d.fromDegrees(90),
             FieldConstants.NOTE_55_POSITION);
       case FAR_SIDE_OUTER_TO_MID:
         return new StrategyParams(
-            kShootPoseFarSide,
-            kShootPoseFarSide,
-            kShootParamFarSide,
-            kShootParamFarSide,
-            kShootPoseUnderStageTo55Path,
-            kShootPoseFarSideTo54Path,
+            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_55,
+            AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_54,
             Rotation2d.fromDegrees(90),
             Rotation2d.fromDegrees(-90),
             FieldConstants.NOTE_55_POSITION);
@@ -148,7 +109,7 @@ public class DallasAutoScore53Routine {
         AutoCommandFactory.buildPrepCommand(
             drivetrainSubsystem,
             ShootingParameters.BELOW_SPEAKER,
-            kStartPathDallas,
+            AutoRoutineConfig.AutoPaths.START_DALLAS,
             arm,
             shooter,
             transfer),
@@ -161,15 +122,15 @@ public class DallasAutoScore53Routine {
             transfer,
             intake,
             GamePieceProcessor.getInstance(),
-            kStartPathDallas,
-            kShootParam32,
+            AutoRoutineConfig.AutoPaths.START_DALLAS,
+            AutoRoutineConfig.AutoShootPositions.NOTE_32.shootParams,
             fallbackRotation53),
 
         // Shoot 53
-        AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
+        AutoBuilder.pathfindToPoseFlipped(AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootPose, PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, kShootParamUnderStage.angle_deg),
-                new SetShooterTargetCommand(shooter, kShootParamUnderStage.speed_rps)),
+                new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
+                new SetShooterTargetCommand(shooter, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
 
         // Get first note
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -183,10 +144,10 @@ public class DallasAutoScore53Routine {
             params.firstNoteRotation),
 
         // Score first note
-        AutoBuilder.pathfindToPoseFlipped(params.shootPoseFirstNote, PathfindConstants.constraints)
+        AutoBuilder.pathfindToPoseFlipped(params.shootConfigFirstNote.shootPose, PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, params.shootParamsFirstNote.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootParamsFirstNote.speed_rps)),
+                new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
+                new SetShooterTargetCommand(shooter, params.shootConfigFirstNote.shootParams.speed_rps)),
 
         // Get second note
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -200,10 +161,10 @@ public class DallasAutoScore53Routine {
             params.secondNoteRotation),
 
         // Score second note
-        AutoBuilder.pathfindToPoseFlipped(params.shootPoseSecondNote, PathfindConstants.constraints)
+        AutoBuilder.pathfindToPoseFlipped(params.shootConfigSecondNote.shootPose, PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, params.shootParamsSecondNote.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootParamsSecondNote.speed_rps)),
+                new SetArmAngleCommand(arm, params.shootConfigSecondNote.shootParams.angle_deg),
+                new SetShooterTargetCommand(shooter, params.shootConfigSecondNote.shootParams.speed_rps)),
 
         // End chase
         AutoCommandFactory.buildPathThenChaseNoteCommand(

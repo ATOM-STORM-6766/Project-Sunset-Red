@@ -18,66 +18,22 @@ import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PathfindConstants;
 import frc.robot.auto.AutoCommandFactory;
-import frc.robot.commands.ChaseNoteCommand;
-import frc.robot.commands.FeedCommand;
-import frc.robot.commands.IntakeAndFeedCommand;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.SetArmAngleCommand;
-import frc.robot.commands.SetShooterTargetCommand;
-import frc.robot.commands.TurnToHeadingCommand;
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.DrivetrainSubsystem;
-import frc.robot.subsystems.GamePieceProcessor;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.Shooter;
-import frc.robot.subsystems.Transfer;
+import frc.robot.auto.AutoRoutineConfig;
+import frc.robot.commands.*;
+import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-/**
- * For Dallas Auto Drop 53 Routine, we have two strategies: NEAR_SIDE and FAR_SIDE For both
- * strategies, we have the following: - Start at Dallas mid position - Move to 53, shoot 32 along
- * the way - On the spot of 53, slowly eject 53 (drop 53) - Move to 52/54 depending on the strategy
- * - Score 52/54 - Move to 51/55 depending on the strategy - Score 51/55 - Come back to 53 and pick
- * up the dropped 53 - Score 53 - Move to midline, for now just put 54 Pose
- */
 public class DallasAutoDrop53Routine {
   public enum Drop53Strategy {
     NEAR_SIDE,
     FAR_SIDE
   }
 
-  private static final String kStartPathDallas = "Dallas StartPath";
-
-  // Shoot poses
-  private static final Pose2d kShootPoseUnderStage =
-      new Pose2d(4.5, 4.63, Rotation2d.fromDegrees(-14.0));
-  private static final Pose2d kShootPoseNearSide =
-      new Pose2d(4.5, 6.46, Rotation2d.fromDegrees(14.0));
-  private static final Pose2d kShootPoseFarSide =
-      new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(28.0));
-
-  // Shooting parameters
-  private static final ShootingParameters kShootParamUnderStage = new ShootingParameters(75, 32.5);
-  private static final ShootingParameters kShootParamNearSide = new ShootingParameters(75, 32.5);
-  private static final ShootingParameters kShootParamFarSide = new ShootingParameters(75, 41);
-  private static final ShootingParameters kShootParam32 = new ShootingParameters(75, 32);
-  private static final ShootingParameters kShootParamDrop53 = new ShootingParameters(10, 36.5);
-
-  // Paths
-  private static final String k53to52Path = "Dallas 53 to 52";
-  private static final String k53to54Path = "Dallas 53 to 54";
-  private static final String kShootPoseNearSideTo51Path = "ShootPoseNearSide to 51";
-  private static final String kShootPoseFarSideTo55Path = "ShootPoseFarSide to 55";
-  private static final String kShootPoseNearSideTo53Path = "ShootPoseNearSide to 53";
-  private static final String kShootPoseFarSideTo53Path = "ShootPoseFarSide to 53";
-
   private static class StrategyParams {
-    final Pose2d shootPoseFirstNote;
-    final Pose2d shootPoseSecondNote;
-    final ShootingParameters shootParamsFirstNote;
-    final ShootingParameters shootParamsSecondNote;
+    final AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote;
+    final AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote;
     final String firstNotePath;
     final String secondNotePath;
     final Rotation2d firstNoteRotation;
@@ -86,20 +42,16 @@ public class DallasAutoDrop53Routine {
     final Pose2d endChasePose;
 
     StrategyParams(
-        Pose2d shootPoseFirstNote,
-        Pose2d shootPoseSecondNote,
-        ShootingParameters shootParamsFirstNote,
-        ShootingParameters shootParamsSecondNote,
+        AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote,
+        AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote,
         String firstNotePath,
         String secondNotePath,
         Rotation2d firstNoteRotation,
         Rotation2d secondNoteRotation,
         String gotoDrop53Path,
         Pose2d endChasePose) {
-      this.shootPoseFirstNote = shootPoseFirstNote;
-      this.shootPoseSecondNote = shootPoseSecondNote;
-      this.shootParamsFirstNote = shootParamsFirstNote;
-      this.shootParamsSecondNote = shootParamsSecondNote;
+      this.shootConfigFirstNote = shootConfigFirstNote;
+      this.shootConfigSecondNote = shootConfigSecondNote;
       this.firstNotePath = firstNotePath;
       this.secondNotePath = secondNotePath;
       this.firstNoteRotation = firstNoteRotation;
@@ -113,28 +65,24 @@ public class DallasAutoDrop53Routine {
     switch (strategy) {
       case NEAR_SIDE:
         return new StrategyParams(
-            kShootPoseNearSide,
-            kShootPoseNearSide,
-            kShootParamNearSide,
-            kShootParamNearSide,
-            k53to52Path,
-            kShootPoseNearSideTo51Path,
+            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+            AutoRoutineConfig.AutoPaths.FROM_53_TO_52,
+            AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_51,
             Rotation2d.fromDegrees(90),
             Rotation2d.fromDegrees(-90),
-            kShootPoseNearSideTo53Path,
+            AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_53,
             FieldConstants.NOTE_54_POSITION);
 
       case FAR_SIDE:
         return new StrategyParams(
-            kShootPoseFarSide,
-            kShootPoseFarSide,
-            kShootParamFarSide,
-            kShootParamFarSide,
-            k53to54Path,
-            kShootPoseFarSideTo55Path,
+            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+            AutoRoutineConfig.AutoPaths.FROM_53_TO_54,
+            AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_55,
             Rotation2d.fromDegrees(-90),
             Rotation2d.fromDegrees(90),
-            kShootPoseFarSideTo53Path,
+            AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_53,
             FieldConstants.NOTE_55_POSITION);
       default:
         throw new IllegalArgumentException("Invalid strategy for DallasAutoDrop53Routine");
@@ -155,7 +103,7 @@ public class DallasAutoDrop53Routine {
         AutoCommandFactory.buildPrepCommand(
             drivetrainSubsystem,
             ShootingParameters.BELOW_SPEAKER,
-            kStartPathDallas,
+            AutoRoutineConfig.AutoPaths.START_DALLAS,
             arm,
             shooter,
             transfer),
@@ -168,8 +116,8 @@ public class DallasAutoDrop53Routine {
             transfer,
             intake,
             GamePieceProcessor.getInstance(),
-            kStartPathDallas,
-            kShootParam32,
+            AutoRoutineConfig.AutoPaths.START_DALLAS,
+            AutoRoutineConfig.AutoShootPositions.NOTE_32.shootParams,
             fallbackRotation53),
         Commands.either(
             new TurnToHeadingCommand(drivetrainSubsystem, new Rotation2d()),
@@ -190,10 +138,10 @@ public class DallasAutoDrop53Routine {
             params.firstNoteRotation),
 
         // Score first note
-        AutoBuilder.pathfindToPoseFlipped(params.shootPoseFirstNote, PathfindConstants.constraints)
+        AutoBuilder.pathfindToPoseFlipped(params.shootConfigFirstNote.shootPose, PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, params.shootParamsFirstNote.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootParamsFirstNote.speed_rps)),
+                new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
+                new SetShooterTargetCommand(shooter, params.shootConfigFirstNote.shootParams.speed_rps)),
 
         // Get second note
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -207,10 +155,10 @@ public class DallasAutoDrop53Routine {
             null),
 
         // Score second note
-        AutoBuilder.pathfindToPoseFlipped(params.shootPoseSecondNote, PathfindConstants.constraints)
+        AutoBuilder.pathfindToPoseFlipped(params.shootConfigSecondNote.shootPose, PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, params.shootParamsSecondNote.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootParamsSecondNote.speed_rps)),
+                new SetArmAngleCommand(arm, params.shootConfigSecondNote.shootParams.angle_deg),
+                new SetShooterTargetCommand(shooter, params.shootConfigSecondNote.shootParams.speed_rps)),
 
         // Go to dropped 53
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -224,10 +172,10 @@ public class DallasAutoDrop53Routine {
             null),
 
         // Score 53
-        AutoBuilder.pathfindToPoseFlipped(kShootPoseUnderStage, PathfindConstants.constraints)
+        AutoBuilder.pathfindToPoseFlipped(AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootPose, PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, kShootParamUnderStage.angle_deg),
-                new SetShooterTargetCommand(shooter, kShootParamUnderStage.speed_rps)),
+                new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
+                new SetShooterTargetCommand(shooter, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
 
         // Move to midline
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -299,8 +247,6 @@ public class DallasAutoDrop53Routine {
         new ParallelDeadlineGroup(
                 pathCommand,
                 new SequentialCommandGroup(
-                    // if note, it must be prepared, feed first
-
                     new WaitCommand(0.0).andThen(new FeedCommand(transfer, shooter)),
                     Commands.runOnce(
                         () -> {
@@ -313,12 +259,6 @@ public class DallasAutoDrop53Routine {
                         new IntakeCommand(intake, transfer))))
             .until(
                 () -> {
-                  /*
-                   * Chase conditions
-                   * 1. Deadline is whether we are far enough the field to 54
-                   * 2. Has target is whether we have a target to chase
-                   * 3. If we have a note, 53 has not been shot yet, we need to wait
-                   */
                   boolean deadline =
                       AutoCommandFactory.isFieldPositionReached(
                           drivetrainSubsystem, AutoCommandFactory.kChaseNoteDeadlineX);
@@ -329,8 +269,6 @@ public class DallasAutoDrop53Routine {
                   SmartDashboard.putBoolean("Has Target", hasTarget);
                   return (deadline && hasTarget && !transfer.isOmronDetected());
                 }),
-        // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing
-        // note")),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(
                 () -> {
@@ -341,18 +279,7 @@ public class DallasAutoDrop53Routine {
                     SmartDashboard.putString("Auto Status", "chase interrupt because midfield bar");
                   return midbar;
                 })
-            // .until(() -> {
-            // if (intake.isOmronDetected()) {
-            // timer.start();
-            // } else {
-            // timer.stop();
-            // timer.reset();
-            // }
-            // return timer.hasElapsed(0.5);
-            // })
             .unless(() -> transfer.isOmronDetected()),
-        // new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking
-        // for note")),
         Commands.either(
             new WaitCommand(0),
             new SequentialCommandGroup(
@@ -374,7 +301,7 @@ public class DallasAutoDrop53Routine {
                                     "Auto Status", "chase interrupt because midfield bar");
                               return midbar;
                             }))
-                .until(() -> transfer.isOmronDetected()), // end anytime if note is intaked
+                .until(() -> transfer.isOmronDetected()),
             () -> {
               Boolean hasNote = transfer.isOmronDetected();
               SmartDashboard.putBoolean("Has Note", hasNote);
