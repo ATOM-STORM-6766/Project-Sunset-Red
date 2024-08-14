@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
@@ -223,9 +224,23 @@ public class RobotContainer {
         .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm)
             .andThen( // if end with no note in transfer: we lost target and go do manual intake 
                 Commands.either(
-                    // TODO : LED HINT IF NO NOTE
-                    new IntakeCommand(mIntake, mTransfer), 
-                    new WaitCommand(0.0), 
+                    new ParallelCommandGroup(
+                        new IntakeCommand(mIntake, mTransfer),
+                        new LedBlinkCommand(mLed, Color.kRed, 1.0),
+                        // if we dont write explicitly drivetrain wont run
+                        // because chase note requires drivetrain
+                        new DriveWithTriggerCommand(
+                            sDrivetrainSubsystem,
+                            () ->
+                                driverController
+                                    .getDriveTranslation(driverController.isRobotRelative())
+                                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+                            () ->
+                                driverController.getRawRotationRate()
+                                    * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
+                            // heading
+                            () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED)
+                    ), new WaitCommand(0.0), 
                     () -> !mTransfer.isOmronDetected())
                 ));
     // manual intake, press both left and right bumper
