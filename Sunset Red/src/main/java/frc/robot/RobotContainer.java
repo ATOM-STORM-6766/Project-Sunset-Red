@@ -64,7 +64,7 @@ public class RobotContainer {
   private final Arm mArm = new Arm();
   private final TrapFan mTrapFan = new TrapFan();
   private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
-  private final LED mLed = new LED(mTransfer);
+  private final LED mLed = new LED();
   private static final boolean isRedAlliance =
       DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
 
@@ -86,6 +86,7 @@ public class RobotContainer {
     sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
     mShooter.setDefaultCommand(
         new SetShooterTargetCommand(mShooter, 0)); // each motor should take only about 3A
+    mLed.setDefaultCommand(new LedDefaultCommand(mLed, () -> mTransfer.isOmronDetected()));
 
     sDrivetrainSubsystem.configureAutoBuilder();
     configureBindings();
@@ -219,7 +220,14 @@ public class RobotContainer {
     driverController
         .leftBumper()
         .and(driverController.rightBumper().negate())
-        .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
+        .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm)
+            .andThen( // if end with no note in transfer: we lost target and go do manual intake 
+                Commands.either(
+                    // TODO : LED HINT IF NO NOTE
+                    new IntakeCommand(mIntake, mTransfer), 
+                    new WaitCommand(0.0), 
+                    () -> !mTransfer.isOmronDetected())
+                ));
     // manual intake, press both left and right bumper
     (driverController.leftBumper().and(driverController.rightBumper()))
         .or(operatorController.leftBumper())

@@ -1,13 +1,8 @@
 package frc.robot.subsystems;
 
-
-import org.ejml.dense.block.InnerTriangularSolver_FDRB;
-
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,27 +14,11 @@ public class LED extends SubsystemBase {
     AddressableLED mLED;
     AddressableLEDBuffer mLEDBuffer;
 
-    // private DigitalInput mIntakeEnterOmron;
-
-    private enum LEDState {
-            Disabled,
-            Idle,
-            Intaking, 
-            Shooting_Spinning, 
-            Shooting,
-            Outtake,
-            HasRing
-    }
-    private final Transfer mTransfer;
-
-    private LEDState mLEDState = LEDState.Disabled;
-
 
     private int mRainbowFirstPixelHue = 0;
     private final int LED_LENGTH = 360;
 
-    public LED(Transfer transfer) {
-        mTransfer = transfer;
+    public LED() {
         mLED = new AddressableLED(Constants.LED_PORT);
         mLEDBuffer = new AddressableLEDBuffer(LED_LENGTH);
         mLED.setLength(LED_LENGTH);
@@ -51,39 +30,8 @@ public class LED extends SubsystemBase {
 
     
     @Override
-    public void periodic() {
-        determineState();
-        SmartDashboard.putString("LED: State", mLEDState.toString());
-        switch (mLEDState) {
-            case Disabled:
-                setSolidColor(new Color(256,0,0));
-                
-                // setTransition(Color.kMagenta, Color.kCyan);
-                break;
-            case Idle:
-                setMovingRedWhiteBlue();
-                break;
-            case HasRing:
-                setSolidColor(new Color(0,256,0));
-                break;
-            default:
-                break;
-        }
-
+    public synchronized void periodic() {
         mLED.setData(mLEDBuffer);
-    }
-    
-
-    
-    private synchronized void determineState() {
-        boolean disabled = DriverStation.isDisabled();
-        if(mTransfer.isOmronDetected()){
-            mLEDState = LEDState.HasRing;
-        }else if (disabled) {
-            mLEDState = LEDState.Disabled;
-        }else{
-            mLEDState = LEDState.Idle;
-        }
     }
 
     private synchronized void setRainbow() {
@@ -112,7 +60,7 @@ public class LED extends SubsystemBase {
     }
 
 
-    private void setTransition(Color from, Color to) { // int[] sorted by r, g, b
+    public synchronized void setTransition(Color from, Color to) { // int[] sorted by r, g, b
         Color8Bit from8bit = new Color8Bit(from);
         Color8Bit to8bit = new Color8Bit(to);
         int length = LED_LENGTH;
@@ -146,7 +94,7 @@ public class LED extends SubsystemBase {
     private int colorOffset = 0;
     private final int SEGMENT_LENGTH = 8; 
     private int count=0;
-    public void setMovingRedWhiteBlue() {
+    public synchronized void setMovingRedWhiteBlue() {
         Color red = new Color(255, 0, 0);
         Color white = new Color(255, 255, 255);
         Color blue = new Color(0, 0, 255);
@@ -172,8 +120,8 @@ public class LED extends SubsystemBase {
 
     }
     
-    public void setBlinkingColor(Color color) {
-        if (Timer.getFPGATimestamp() % 1 > 0.5) {
+    public synchronized void setBlinkingColor(Color color) {
+        if (Timer.getFPGATimestamp() % 1 > 0.2) {
             for (int i = 0; i < LED_LENGTH; i++) {
                 mLEDBuffer.setLED(i, color);
             }
@@ -185,7 +133,7 @@ public class LED extends SubsystemBase {
         }
     }
 
-    public void setSolidColor(Color color) {
+    public synchronized void setSolidColor(Color color) {
         for (int i = 0; i < LED_LENGTH; i++){
             mLEDBuffer.setLED(i, color);
         }
