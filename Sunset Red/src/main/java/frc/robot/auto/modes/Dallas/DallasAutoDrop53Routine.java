@@ -26,124 +26,127 @@ import java.util.Optional;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class DallasAutoDrop53Routine {
-  public enum Drop53Strategy {
-    NEAR_SIDE,
-    FAR_SIDE
-  }
-
-  private static class StrategyParams {
-    final AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote;
-    final AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote;
-    final String firstNotePath;
-    final String secondNotePath;
-    final Rotation2d firstNoteRotation;
-    final Rotation2d secondNoteRotation;
-    final String gotoDrop53Path;
-    final Pose2d endChasePose;
-
-    StrategyParams(
-        AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote,
-        AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote,
-        String firstNotePath,
-        String secondNotePath,
-        Rotation2d firstNoteRotation,
-        Rotation2d secondNoteRotation,
-        String gotoDrop53Path,
-        Pose2d endChasePose) {
-      this.shootConfigFirstNote = shootConfigFirstNote;
-      this.shootConfigSecondNote = shootConfigSecondNote;
-      this.firstNotePath = firstNotePath;
-      this.secondNotePath = secondNotePath;
-      this.firstNoteRotation = firstNoteRotation;
-      this.secondNoteRotation = secondNoteRotation;
-      this.gotoDrop53Path = gotoDrop53Path;
-      this.endChasePose = endChasePose;
-    }
-  }
-
-  private static StrategyParams getStrategyParams(Drop53Strategy strategy) {
-    switch (strategy) {
-      case NEAR_SIDE:
-        return new StrategyParams(
-            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
-            AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
-            AutoRoutineConfig.AutoPaths.FROM_53_TO_52,
-            AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_51,
-            Rotation2d.fromDegrees(90),
-            Rotation2d.fromDegrees(-90),
-            AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_53,
-            FieldConstants.NOTE_54_POSITION);
-
-      case FAR_SIDE:
-        return new StrategyParams(
-            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
-            AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
-            AutoRoutineConfig.AutoPaths.FROM_53_TO_54,
-            AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_55,
-            Rotation2d.fromDegrees(-90),
-            Rotation2d.fromDegrees(90),
-            AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_53,
-            FieldConstants.NOTE_55_POSITION);
-      default:
-        throw new IllegalArgumentException("Invalid strategy for DallasAutoDrop53Routine");
-    }
-  }
+    public enum Drop53Strategy {
+        NEAR_SIDE,
+        FAR_SIDE
+      }
+    
+      private static class StrategyParams {
+        final AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote;
+        final String firstNotePath;
+        final Rotation2d firstNoteRotation;
+        final String gotoDrop53Path;
+        final Pose2d endChasePose;
+    
+        StrategyParams(
+            AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote,
+            String firstNotePath,
+            Rotation2d firstNoteRotation,
+            String gotoDrop53Path,
+            Pose2d endChasePose) {
+          this.shootConfigFirstNote = shootConfigFirstNote;
+          this.firstNotePath = firstNotePath;
+          this.firstNoteRotation = firstNoteRotation;
+          this.gotoDrop53Path = gotoDrop53Path;
+          this.endChasePose = endChasePose;
+        }
+      }
+    
+      private static StrategyParams getStrategyParams(Drop53Strategy strategy) {
+        switch (strategy) {
+          case NEAR_SIDE:
+            return new StrategyParams(
+                AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+                AutoRoutineConfig.AutoPaths.FROM_53_TO_52,
+                Rotation2d.fromDegrees(90),
+                AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_53,
+                FieldConstants.NOTE_54_POSITION);
+    
+          case FAR_SIDE:
+            return new StrategyParams(
+                AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+                AutoRoutineConfig.AutoPaths.FROM_53_TO_54,
+                Rotation2d.fromDegrees(-90),
+                AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_53,
+                FieldConstants.NOTE_55_POSITION);
+          default:
+            throw new IllegalArgumentException("Invalid strategy for DallasAutoDrop53Routine");
+        }
+      }
+    
 
   public static Command buildDrop53Command(
-      DrivetrainSubsystem drivetrainSubsystem,
-      Arm arm,
-      Shooter shooter,
-      Transfer transfer,
-      Intake intake,
-      Drop53Strategy strategy,
-      Rotation2d fallbackRotation53) {
-    StrategyParams params = getStrategyParams(strategy);
-    return new SequentialCommandGroup(
-        // Prepare routine
-        AutoCommandFactory.buildPrepCommand(
-            drivetrainSubsystem,
-            ShootingParameters.BELOW_SPEAKER,
-            AutoRoutineConfig.AutoPaths.START_DALLAS,
-            arm,
-            shooter,
-            transfer),
+    DrivetrainSubsystem drivetrainSubsystem,
+    Arm arm,
+    Shooter shooter,
+    Transfer transfer,
+    Intake intake,
+    Drop53Strategy strategy,
+    Rotation2d fallbackRotation53) {
+  StrategyParams params = getStrategyParams(strategy);
+  return new SequentialCommandGroup(
+      // Prepare routine
+      AutoCommandFactory.buildPrepCommand(
+          drivetrainSubsystem,
+          ShootingParameters.BELOW_SPEAKER,
+          AutoRoutineConfig.AutoPaths.START_DALLAS,
+          arm,
+          shooter,
+          transfer),
 
-        // Move to 53, intake and shoot 32 along the way
-        buildIntakeShootWhileMovingCommandWithIntake53(
-            drivetrainSubsystem,
-            arm,
-            shooter,
-            transfer,
-            intake,
-            GamePieceProcessor.getInstance(),
-            AutoRoutineConfig.AutoPaths.START_DALLAS,
-            AutoRoutineConfig.AutoShootPositions.NOTE_32.shootParams,
-            fallbackRotation53),
-        Commands.either(
-            new TurnToHeadingCommand(drivetrainSubsystem, new Rotation2d()),
-            new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(180)),
-            () ->
-                DriverStation.getAlliance().isEmpty()
-                    || DriverStation.getAlliance().get() == Alliance.Blue),
+      // Move to 53, intake and shoot 32 along the way
+      buildIntakeShootWhileMovingCommandWithIntake53(
+          drivetrainSubsystem,
+          arm,
+          shooter,
+          transfer,
+          intake,
+          GamePieceProcessor.getInstance(),
+          AutoRoutineConfig.AutoPaths.START_DALLAS,
+          AutoRoutineConfig.AutoShootPositions.NOTE_32.shootParams,
+          fallbackRotation53),
+      Commands.either(
+          new TurnToHeadingCommand(drivetrainSubsystem, new Rotation2d()),
+          new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(180)),
+          () ->
+              DriverStation.getAlliance().isEmpty()
+                  || DriverStation.getAlliance().get() == Alliance.Blue),
 
-        // Drop 53 and Get first note
-        drop53ThenBuildPathThenChaseNoteCommand(
-            drivetrainSubsystem,
-            arm,
-            shooter,
-            transfer,
-            intake,
-            GamePieceProcessor.getInstance(),
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.firstNotePath)),
-            params.firstNoteRotation),
+      // Drop 53 and Get first note
+      drop53ThenBuildPathThenChaseNoteCommand(
+          drivetrainSubsystem,
+          arm,
+          shooter,
+          transfer,
+          intake,
+          GamePieceProcessor.getInstance(),
+          AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.firstNotePath)),
+          params.firstNoteRotation),
 
-        // Score first note
-        AutoBuilder.pathfindToPoseFlipped(params.shootConfigFirstNote.shootPose, PathfindConstants.constraints)
-            .deadlineWith(
-                new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootConfigFirstNote.shootParams.speed_rps)),
+      // Score first note
+      AutoBuilder.pathfindToPoseFlipped(params.shootConfigFirstNote.shootPose, PathfindConstants.constraints)
+          .deadlineWith(
+              new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
+              new SetShooterTargetCommand(shooter, params.shootConfigFirstNote.shootParams.speed_rps)),
 
-        // Get second note
+      // Go to dropped 53
+      AutoCommandFactory.buildPathThenChaseNoteCommand(
+          drivetrainSubsystem,
+          arm,
+          shooter,
+          transfer,
+          intake,
+          GamePieceProcessor.getInstance(),
+          AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.gotoDrop53Path)),
+          null),
+
+      // Score dropped 53
+      AutoBuilder.pathfindToPoseFlipped(AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootPose, PathfindConstants.constraints)
+          .deadlineWith(
+              new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
+              new SetShooterTargetCommand(shooter, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
+
+      // Move to chase 55
         AutoCommandFactory.buildPathThenChaseNoteCommand(
             drivetrainSubsystem,
             arm,
@@ -151,43 +154,10 @@ public class DallasAutoDrop53Routine {
             transfer,
             intake,
             GamePieceProcessor.getInstance(),
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.secondNotePath)),
-            null),
-
-        // Score second note
-        AutoBuilder.pathfindToPoseFlipped(params.shootConfigSecondNote.shootPose, PathfindConstants.constraints)
-            .deadlineWith(
-                new SetArmAngleCommand(arm, params.shootConfigSecondNote.shootParams.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootConfigSecondNote.shootParams.speed_rps)),
-
-        // Go to dropped 53
-        AutoCommandFactory.buildPathThenChaseNoteCommand(
-            drivetrainSubsystem,
-            arm,
-            shooter,
-            transfer,
-            intake,
-            GamePieceProcessor.getInstance(),
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.gotoDrop53Path)),
-            null),
-
-        // Score 53
-        AutoBuilder.pathfindToPoseFlipped(AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootPose, PathfindConstants.constraints)
-            .deadlineWith(
-                new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
-                new SetShooterTargetCommand(shooter, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
-
-        // Move to midline
-        AutoCommandFactory.buildPathThenChaseNoteCommand(
-            drivetrainSubsystem,
-            arm,
-            shooter,
-            transfer,
-            intake,
-            GamePieceProcessor.getInstance(),
-            AutoBuilder.pathfindToPoseFlipped(params.endChasePose, PathfindConstants.constraints),
-            Rotation2d.fromDegrees(0)));
-  }
+            AutoBuilder.followPath(PathPlannerPath.fromPathFile(AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_55)),
+            Rotation2d.fromDegrees(90))
+  );
+}
 
   public static Command buildIntakeShootWhileMovingCommandWithIntake53(
       DrivetrainSubsystem drivetrainSubsystem,
