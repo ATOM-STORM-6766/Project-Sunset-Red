@@ -147,6 +147,8 @@ public class PepGuardiolaCommand extends Command {
     mSpeedOffsetSupplier = speedOffsetSupplier;
     mAngleOffsetSupplier = angleOffsetSupplier;
     addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
+
+    
   }
 
   @Override
@@ -226,15 +228,9 @@ public class PepGuardiolaCommand extends Command {
   private boolean decideToFeed() {
     // find if zone readly feed
     boolean zoneOk = true;
-    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
-    Pose2d robotPose = sDrivetrainSubsystem.getPose();
     if (mGoalZone == GoalZone.DOWN) {
       // you need to cross wing to be ok
-      if (alliance == Alliance.Blue) {
-        zoneOk = robotPose.getX() < kWingDeadlineX;
-      } else {
-        zoneOk = robotPose.getX() > 16.54 - kWingDeadlineX;
-      }
+      zoneOk = isOutsideOppositeWing();
     }
 
     // find if superstruct ok
@@ -271,6 +267,16 @@ public class PepGuardiolaCommand extends Command {
       return robotPose.getX() < 8.27 && robotPose.getY() > kLeftRightLineY;
     } else {
       return robotPose.getX() > 8.27 && robotPose.getY() > kLeftRightLineY;
+    }
+  }
+
+  public boolean isOutsideOppositeWing() {
+    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    Pose2d robotPose = sDrivetrainSubsystem.getPose();
+    if (alliance == Alliance.Blue) {
+      return robotPose.getX() < kWingDeadlineX;
+    } else {
+      return robotPose.getX() > 16.54 - kWingDeadlineX;
     }
   }
 
@@ -333,5 +339,10 @@ public class PepGuardiolaCommand extends Command {
   @Override
   public boolean isFinished() {
     return false;
+  }
+
+  @Override
+  public InterruptionBehavior getInterruptionBehavior() {
+      return InterruptionBehavior.kCancelIncoming;
   }
 }

@@ -418,20 +418,24 @@ public class RobotContainer {
 
     triggers[0]
         .whileTrue(
-            pepGuardiolaCommandUP.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandUP)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 0)));
     triggers[1]
         .whileTrue(
-            pepGuardiolaCommandDOWN.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandDOWN)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
     triggers[2]
         .whileTrue(
-            pepGuardiolaCommandLEFT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandLEFT)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 90)));
     triggers[3]
         .whileTrue(
-            pepGuardiolaCommandRIGHT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandRIGHT)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 270)));
+
+    // led blink when guardiola-DOWN and out of wing
+    new Trigger(() -> pepGuardiolaCommandDOWN.isScheduled() && pepGuardiolaCommandDOWN.isOutsideOppositeWing())
+        .onTrue(new LedBlinkCommand(mLed, Color.kGreen, 1.0));
   }
 
   /** @deprecated use new NavAmpCommand() instead */
