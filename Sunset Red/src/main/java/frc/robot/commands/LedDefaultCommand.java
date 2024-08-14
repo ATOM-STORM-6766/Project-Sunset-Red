@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.LED;
@@ -26,6 +27,8 @@ public class LedDefaultCommand extends Command {
     public void execute() {
         if (mTransferOmron.get()) {
             mLed.setSolidColor(kHasNoteColor);
+        } else if (DriverStation.isDisabled()) {
+            mLed.setSolidColor(Color.kRed);
         } else { // no note
             mLed.setMovingRedWhiteBlue();
         }
@@ -37,6 +40,11 @@ public class LedDefaultCommand extends Command {
     @Override
     public boolean isFinished() {
         return false;
+    }
+
+    @Override
+    public boolean runsWhenDisabled() {
+        return true;
     }
     
 }
