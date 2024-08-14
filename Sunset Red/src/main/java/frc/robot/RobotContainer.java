@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -201,6 +202,11 @@ public class RobotContainer {
         ShootingParameters.AMP_LOWSPEED);
 
     // intake system bindings
+    // rumble when has note
+    Trigger hasNote = new Trigger(()->mTransfer.isOmronDetected());
+        hasNote.onTrue(new InstantCommand(()->{
+                driverController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, 0.5);
+        }));
 
     // chase note inake, press left bumper and not pressing right bumper
     driverController
@@ -218,7 +224,7 @@ public class RobotContainer {
         .whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
     // Shooter Drop
-    buildShootBinding(operatorController.b(), ShootingParameters.DROP);
+    buildContinuousShootBinding(operatorController.b(), ShootingParameters.DROP);
 
     // Below Speaker
 
@@ -308,6 +314,26 @@ public class RobotContainer {
 
     trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
   }
+
+  
+  private void buildContinuousShootBinding(Trigger trigger, ShootingParameters parameters){
+    Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+            .andThen(new InstantCommand(()->mTransfer.setVoltage(Transfer.FEED_VOLTS)));
+    
+    Command intakeCommand = new RepeatCommand(new InstantCommand(()->{
+            if(!mTransfer.isOmronDetected()){
+                    mIntake.setIntake();
+            }else{
+                    mIntake.stop();
+            }
+    }));
+    
+    Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();})
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
+
+    trigger.whileTrue(shootCommand.alongWith(intakeCommand)).onFalse(stopShootingCommand);
+}
 
   private void buildAmpBinding(
       Trigger trigger,
