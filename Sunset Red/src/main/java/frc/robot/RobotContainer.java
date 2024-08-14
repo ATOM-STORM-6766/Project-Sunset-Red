@@ -206,7 +206,11 @@ public class RobotContainer {
     Trigger hasNote = new Trigger(()->mTransfer.isOmronDetected());
         hasNote.onTrue(new InstantCommand(()->{
                 driverController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, 0.5);
-        }));
+                driverController.getHID().setRumble(GenericHID.RumbleType.kLeftRumble, 0.5);
+        }).andThen(new WaitCommand(0.2)).andThen(new InstantCommand(()->{
+                driverController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, 0);
+            driverController.getHID().setRumble(GenericHID.RumbleType.kLeftRumble, 0);
+        })));
 
     // chase note inake, press left bumper and not pressing right bumper
     driverController

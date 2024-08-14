@@ -56,10 +56,12 @@ public class LED extends SubsystemBase {
         SmartDashboard.putString("LED: State", mLEDState.toString());
         switch (mLEDState) {
             case Disabled:
-                setTransition(Color.kMagenta, Color.kCyan);
+                setSolidColor(new Color(256,0,0));
+                
+                // setTransition(Color.kMagenta, Color.kCyan);
                 break;
             case Idle:
-                setSolidColor(new Color(256,0,0));
+                setMovingRedWhiteBlue();
                 break;
             case HasRing:
                 setSolidColor(new Color(0,256,0));
@@ -139,6 +141,35 @@ public class LED extends SubsystemBase {
             mLEDBuffer.setRGB((brightPosition + LED_LENGTH + i)%LED_LENGTH, (int) (color8bit.red / TAIL_LENGTH * i),
                     (int) (color8bit.green / TAIL_LENGTH * i), (int) (color8bit.blue / TAIL_LENGTH * i));
         }
+    }
+
+    private int colorOffset = 0;
+    private final int SEGMENT_LENGTH = 8; 
+    private int count=0;
+    public void setMovingRedWhiteBlue() {
+        Color red = new Color(255, 0, 0);
+        Color white = new Color(255, 255, 255);
+        Color blue = new Color(0, 0, 255);
+        count=count+1;
+        if (count%5==0){
+            colorOffset = (colorOffset + 1) % (3 * SEGMENT_LENGTH);
+            count=0; 
+        }
+        for (int i = 0; i < LED_LENGTH; i++) {
+            int segmentIndex = (i + colorOffset) / SEGMENT_LENGTH % 3;
+            switch (segmentIndex) {
+                case 0:
+                    mLEDBuffer.setLED(i, red);
+                    break;
+                case 1:
+                    mLEDBuffer.setLED(i, white);
+                    break;
+                case 2:
+                    mLEDBuffer.setLED(i, blue);
+                    break;
+            }
+        }
+
     }
     
     public void setBlinkingColor(Color color) {
