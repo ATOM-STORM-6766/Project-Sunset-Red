@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
 
+import org.ejml.dense.block.InnerTriangularSolver_FDRB;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -28,16 +30,16 @@ public class LED extends SubsystemBase {
             Outtake,
             HasRing
     }
-    private final Intake sIntake;
+    private final Transfer mTransfer;
 
     private LEDState mLEDState = LEDState.Disabled;
 
 
     private int mRainbowFirstPixelHue = 0;
-    private final int LED_LENGTH = 60;
+    private final int LED_LENGTH = 360;
 
-    public LED(Intake intake) {
-        sIntake =intake;
+    public LED(Transfer transfer) {
+        mTransfer = transfer;
         mLED = new AddressableLED(Constants.LED_PORT);
         mLEDBuffer = new AddressableLEDBuffer(LED_LENGTH);
         mLED.setLength(LED_LENGTH);
@@ -73,10 +75,10 @@ public class LED extends SubsystemBase {
     
     private synchronized void determineState() {
         boolean disabled = DriverStation.isDisabled();
-        if (disabled) {
-            mLEDState = LEDState.Disabled;
-        }else if(sIntake.isOmronDetected()){
+        if(mTransfer.isOmronDetected()){
             mLEDState = LEDState.HasRing;
+        }else if (disabled) {
+            mLEDState = LEDState.Disabled;
         }else{
             mLEDState = LEDState.Idle;
         }

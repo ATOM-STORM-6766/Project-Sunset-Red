@@ -61,7 +61,7 @@ public class RobotContainer {
   private final Arm mArm = new Arm();
   private final TrapFan mTrapFan = new TrapFan();
   private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
-  private final LED mLed = new LED(mIntake);
+  private final LED mLed = new LED(mTransfer);
   private static final boolean isRedAlliance =
       DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
 
