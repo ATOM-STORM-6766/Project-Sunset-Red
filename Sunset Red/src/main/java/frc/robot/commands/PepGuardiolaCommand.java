@@ -20,6 +20,10 @@ import java.util.function.Supplier;
 
 public class PepGuardiolaCommand extends Command {
 
+  // scalar when operator adjusts speed/angle
+  private static final double kManualSpeedOffsetScalar = 5.0;
+  private static final double kManualAngleOffsetScalar = 1.0;
+
   public enum GoalZone {
     UP(new Translation2d(15.7, 0.6)),
     DOWN(new Translation2d(1.2, 7.0)),
@@ -101,6 +105,8 @@ public class PepGuardiolaCommand extends Command {
   private Intake sIntake;
   private Supplier<Translation2d> mDriveVectorSupplier;
   private GoalZone mGoalZone;
+  private Supplier<Double> mSpeedOffsetSupplier;
+  private Supplier<Double> mAngleOffsetSupplier;
 
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
@@ -128,7 +134,9 @@ public class PepGuardiolaCommand extends Command {
       Shooter shooter,
       Intake intake,
       Supplier<Translation2d> driveVectorSupplier,
-      GoalZone goalZone) {
+      GoalZone goalZone,
+      Supplier<Double> speedOffsetSupplier,
+      Supplier<Double> angleOffsetSupplier) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
     sTransfer = transfer;
@@ -136,6 +144,8 @@ public class PepGuardiolaCommand extends Command {
     sIntake = intake;
     mDriveVectorSupplier = driveVectorSupplier;
     mGoalZone = Objects.requireNonNull(goalZone);
+    mSpeedOffsetSupplier = speedOffsetSupplier;
+    mAngleOffsetSupplier = angleOffsetSupplier;
     addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
   }
 
@@ -186,8 +196,8 @@ public class PepGuardiolaCommand extends Command {
       shooterSpeed = kLowShootParam.speed_rps;
       armAngle = kLowShootParam.angle_deg;
     } else {
-      shooterSpeed = kHighShootSpeedMap.get(targetDist);
-      armAngle = kHighShootAngleMap.get(targetDist);
+      shooterSpeed = kHighShootSpeedMap.get(targetDist) + mSpeedOffsetSupplier.get() * kManualSpeedOffsetScalar;
+      armAngle = kHighShootAngleMap.get(targetDist) + mAngleOffsetSupplier.get() * kManualAngleOffsetScalar;
     }
 
     // run subsystem

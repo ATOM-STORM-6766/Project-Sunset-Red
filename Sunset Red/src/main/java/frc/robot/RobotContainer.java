@@ -35,6 +35,7 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -361,11 +362,7 @@ public class RobotContainer {
   }
 
   private void buildPepGBinding(Trigger[] triggers) {
-    // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-    // mTransfer,
-    // mShooter, null,
-    // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
-    Command pepGuardiolaCommandUP =
+    Function<GoalZone, PepGuardiolaCommand> buildGuardiola = (goalzone) -> 
         new PepGuardiolaCommand(
             sDrivetrainSubsystem,
             mArm,
@@ -376,43 +373,16 @@ public class RobotContainer {
                 driverController
                     .getDriveTranslation(driverController.isRobotRelative())
                     .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.UP);
-    Command pepGuardiolaCommandDOWN =
-        new PepGuardiolaCommand(
-            sDrivetrainSubsystem,
-            mArm,
-            mTransfer,
-            mShooter,
-            mIntake,
-            () ->
-                driverController
-                    .getDriveTranslation(driverController.isRobotRelative())
-                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.DOWN);
-    Command pepGuardiolaCommandLEFT =
-        new PepGuardiolaCommand(
-            sDrivetrainSubsystem,
-            mArm,
-            mTransfer,
-            mShooter,
-            mIntake,
-            () ->
-                driverController
-                    .getDriveTranslation(driverController.isRobotRelative())
-                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.LEFT);
-    Command pepGuardiolaCommandRIGHT =
-        new PepGuardiolaCommand(
-            sDrivetrainSubsystem,
-            mArm,
-            mTransfer,
-            mShooter,
-            mIntake,
-            () ->
-                driverController
-                    .getDriveTranslation(driverController.isRobotRelative())
-                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.RIGHT);
+            goalzone,
+            // TODO : CHECK DIRECTION! 
+            () -> operatorController.getHID().getLeftX(),
+            () -> operatorController.getHID().getLeftY()
+    );
+
+    PepGuardiolaCommand pepGuardiolaCommandUP = buildGuardiola.apply(GoalZone.UP);
+    PepGuardiolaCommand pepGuardiolaCommandDOWN = buildGuardiola.apply(GoalZone.DOWN);
+    PepGuardiolaCommand pepGuardiolaCommandLEFT = buildGuardiola.apply(GoalZone.LEFT);
+    PepGuardiolaCommand pepGuardiolaCommandRIGHT = buildGuardiola.apply(GoalZone.RIGHT);
 
     triggers[0]
         .whileTrue(
