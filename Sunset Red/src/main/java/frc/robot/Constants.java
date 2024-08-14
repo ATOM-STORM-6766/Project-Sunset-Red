@@ -30,7 +30,7 @@ public final class Constants {
   public static final NeutralOut NEUTRAL = new NeutralOut();
   public static final double kLongCANTimeoutSec = 0.1; // use for constructors
   public static final int kLongCANTimeoutMs = 100; // use for constructors
-
+  public static final int LED_PORT =0;
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
