@@ -405,8 +405,8 @@ public class RobotContainer {
                     .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
             goalzone,
             // TODO : CHECK DIRECTION! 
-            () -> operatorController.getHID().getLeftX(),
-            () -> operatorController.getHID().getLeftY()
+            () -> operatorController.getHID().getLeftY(),
+            () -> operatorController.getHID().getLeftX()
     );
 
     PepGuardiolaCommand pepGuardiolaCommandUP = buildGuardiola.apply(GoalZone.UP);

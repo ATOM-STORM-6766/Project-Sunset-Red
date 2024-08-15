@@ -22,7 +22,7 @@ public class PepGuardiolaCommand extends Command {
 
   // scalar when operator adjusts speed/angle
   private static final double kManualSpeedOffsetScalar = 5.0;
-  private static final double kManualAngleOffsetScalar = 1.0;
+  private static final double kManualHeadingOffsetScalar = Math.toRadians(4.0);
 
   public enum GoalZone {
     UP(new Translation2d(9.5, 1.4)),
@@ -106,7 +106,7 @@ public class PepGuardiolaCommand extends Command {
   private Supplier<Translation2d> mDriveVectorSupplier;
   private GoalZone mGoalZone;
   private Supplier<Double> mSpeedOffsetSupplier;
-  private Supplier<Double> mAngleOffsetSupplier;
+  private Supplier<Double> mHeadingOffsetSupplier;
 
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
@@ -136,7 +136,7 @@ public class PepGuardiolaCommand extends Command {
       Supplier<Translation2d> driveVectorSupplier,
       GoalZone goalZone,
       Supplier<Double> speedOffsetSupplier,
-      Supplier<Double> angleOffsetSupplier) {
+      Supplier<Double> headingOffsetSupplier) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
     sTransfer = transfer;
@@ -145,10 +145,8 @@ public class PepGuardiolaCommand extends Command {
     mDriveVectorSupplier = driveVectorSupplier;
     mGoalZone = Objects.requireNonNull(goalZone);
     mSpeedOffsetSupplier = speedOffsetSupplier;
-    mAngleOffsetSupplier = angleOffsetSupplier;
+    mHeadingOffsetSupplier = headingOffsetSupplier;
     addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
-
-    
   }
 
   @Override
@@ -199,11 +197,12 @@ public class PepGuardiolaCommand extends Command {
       armAngle = kLowShootParam.angle_deg;
     } else {
       shooterSpeed = kHighShootSpeedMap.get(targetDist) + mSpeedOffsetSupplier.get() * kManualSpeedOffsetScalar;
-      armAngle = kHighShootAngleMap.get(targetDist) + mAngleOffsetSupplier.get() * kManualAngleOffsetScalar;
+      armAngle = kHighShootAngleMap.get(targetDist);
     }
 
     // run subsystem
-    mProfiledPID.setGoal(targetRobotHeading.getRadians());
+    double headingGoal = targetRobotHeading.getRadians() + mHeadingOffsetSupplier.get() * kManualHeadingOffsetScalar;
+    mProfiledPID.setGoal(headingGoal);
     // in rad/s
     double turnspeed =
         mProfiledPID.calculate(sDrivetrainSubsystem.getHeading().getRadians())
