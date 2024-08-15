@@ -165,7 +165,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
     double timeOfFly = getTimeOfFly(goalToRobot, shooter_pitch_degree, shooter_rps);
     Translation2d offsetDueToMove = mDrivetrain.getVelocity().times(timeOfFly); // delta x = v * t
     Translation2d aimTargetToRobot =
-        goalToRobot.plus(offsetDueToMove); // goal position plus offset due to robot motion
+        goalToRobot.plus(offsetDueToMove.unaryMinus()); // goal position plus offset due to robot motion
     aimingTargetPublisher.set(aimTargetToRobot.plus(robotToField));
     return Optional.of(aimTargetToRobot);
   }
