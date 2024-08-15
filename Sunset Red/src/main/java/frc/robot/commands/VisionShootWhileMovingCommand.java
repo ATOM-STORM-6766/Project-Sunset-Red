@@ -1,10 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -21,6 +19,7 @@ public class VisionShootWhileMovingCommand extends Command {
   private Arm sArm;
   private Transfer sTransfer;
   private Shooter sShooter;
+  private Intake sIntake;
   private Supplier<Translation2d> mDriveVectorSupplier;
 
   private final PIDController mHeadingPID = new PIDController(5.0, 0, 0.5);
@@ -42,14 +41,16 @@ public class VisionShootWhileMovingCommand extends Command {
       Arm arm,
       Transfer transfer,
       Shooter shooter,
+      Intake intake,
       Supplier<Translation2d> driveVectorSupplier) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
     sTransfer = transfer;
     sShooter = shooter;
+    sIntake = intake;
     mDriveVectorSupplier = driveVectorSupplier;
 
-    addRequirements(drivetrainSubsystem, arm, transfer, shooter);
+    addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
   }
 
   @Override
@@ -70,6 +71,11 @@ public class VisionShootWhileMovingCommand extends Command {
 
   @Override
   public void execute() {
+    if (!sTransfer.isOmronDetected()) {
+      sIntake.setIntake();
+    } else {
+      sIntake.stop();
+    }
     switch (mState) {
       case AIMING:
         handleAiming();
@@ -113,7 +119,7 @@ public class VisionShootWhileMovingCommand extends Command {
 
   private boolean decideToFeed() {
     // find if superstruct ok
-    boolean shootOk = Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 4.0
+    boolean shootOk = Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 2.0
       && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
       && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians()) < Math.toRadians(3.0);
     
@@ -133,9 +139,12 @@ public class VisionShootWhileMovingCommand extends Command {
     // find robotToGoal
     Translation2d robotToGoal = goal.minus(sDrivetrainSubsystem.getPose().getTranslation());
     
-    double timeOfFly = robotToGoal.getNorm() / kNoteFlySpeed;
+    double shooter_rps = VisionShootConstants.kSpeakerRPSMap.get(robotToGoal.getNorm());
+    double shooter_pitch_degree = VisionShootConstants.kSpeakerAngleMap.get(robotToGoal.getNorm());
+    final double kMagicScalar = 0.9;
+    double noteFlySpeed = shooter_rps * 5.0 / 3.0 * kMagicScalar * Math.PI * 0.021 * Math.cos(Math.toRadians(shooter_pitch_degree));
+    double timeOfFly = robotToGoal.getNorm() / noteFlySpeed;
     Translation2d offsetDueToMove = driveVector.times(timeOfFly); // delta x = v * t
-    // TODO : IS IT MINUS() OR PLUS() BELOW ?
     Translation2d aimTargetToRobot = robotToGoal.minus(offsetDueToMove);
     return aimTargetToRobot;
   }
@@ -156,6 +165,7 @@ public class VisionShootWhileMovingCommand extends Command {
     sShooter.stop();
     sTransfer.stop();
     stateTimer.stop();
+    sIntake.stop();
   }
 
   @Override
