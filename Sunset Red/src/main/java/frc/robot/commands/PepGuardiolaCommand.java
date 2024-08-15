@@ -26,9 +26,9 @@ public class PepGuardiolaCommand extends Command {
 
   public enum GoalZone {
     UP(new Translation2d(9.5, 1.4)),
-    DOWN(new Translation2d(1.2, 7.0)),
+    DOWN(new Translation2d(2.2, 7.0)),
     LEFT(new Translation2d(6.4, 7.6)),
-    RIGHT(new Translation2d(6.4, 4.0));
+    RIGHT(new Translation2d(5.4, 4.0));
 
     // goal position in (blue-origin) field space
     // assuming we are blue alliance (NOTE THAT IN PPT WE ARE RED)
