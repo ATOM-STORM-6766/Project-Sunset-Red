@@ -127,11 +127,11 @@ public final class Constants {
 
     // physical robot constants
     public static final double kPhysicalMaxSpeedMetersPerSecond = 4.2;
-    public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 5.0;
+    public static final double kPhysicalMaxAngularSpeedRadiansPerSecond = 10.0;
 
     public static final double kTeleDriveMaxSpeedMetersPerSecond = kPhysicalMaxSpeedMetersPerSecond;
     public static final double kTeleDriveMaxAngularSpeedRadiansPerSecond =
-        kPhysicalMaxAngularSpeedRadiansPerSecond * 1.0;
+        kPhysicalMaxAngularSpeedRadiansPerSecond * 0.8;
     public static final double kTeleDriveMaxAccelerationUnitsPerSecond = 3;
     public static final double kTeleDriveMaxAngularAccelerationUnitsPerSecond = 3;
   }
