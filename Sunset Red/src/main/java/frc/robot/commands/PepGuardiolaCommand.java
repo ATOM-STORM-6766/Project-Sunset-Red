@@ -21,8 +21,8 @@ import java.util.function.Supplier;
 public class PepGuardiolaCommand extends Command {
 
   // scalar when operator adjusts speed/angle
-  private static final double kManualSpeedOffsetScalar = 5.0;
-  private static final double kManualHeadingOffsetScalar = Math.toRadians(2.0);
+  private static final double kManualSpeedOffsetScalar = 8.0;
+  private static final double kManualHeadingOffsetScalar = Math.toRadians(8.0);
 
   public enum GoalZone {
     UP(new Translation2d(9.5, 1.4)),
