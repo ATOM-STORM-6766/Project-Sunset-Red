@@ -205,6 +205,10 @@ public class RobotContainer {
         ShootingParameters.AMP_INTERMEDIATE_POS,
         ShootingParameters.AMP_LOWSPEED);
 
+    buildAmpBinding(operatorController.povRight(),
+        ShootingParameters.AMP_INTERMEDIATE_POS,
+        ShootingParameters.AMP_LOWSPEED);
+
     // intake system bindings
     // rumble when has note
     Trigger hasNote = new Trigger(()->mTransfer.isOmronDetected());
