@@ -10,13 +10,16 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -34,6 +37,7 @@ import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
 import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -60,7 +64,7 @@ public class RobotContainer {
   private final Arm mArm = new Arm();
   private final TrapFan mTrapFan = new TrapFan();
   private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
-
+  private final LED mLed = new LED();
   private static final boolean isRedAlliance =
       DriverStation.getAlliance().orElse(Alliance.Blue) == DriverStation.Alliance.Red;
 
@@ -82,6 +86,7 @@ public class RobotContainer {
     sDrivetrainSubsystem.setDefaultCommand(mDriveWithRightStick);
     mShooter.setDefaultCommand(
         new SetShooterTargetCommand(mShooter, 0)); // each motor should take only about 3A
+    mLed.setDefaultCommand(new LedDefaultCommand(mLed, () -> mTransfer.isOmronDetected()));
 
     sDrivetrainSubsystem.configureAutoBuilder();
     configureBindings();
@@ -201,16 +206,53 @@ public class RobotContainer {
         ShootingParameters.AMP_LOWSPEED);
 
     // intake system bindings
+    // rumble when has note
+    Trigger hasNote = new Trigger(()->mTransfer.isOmronDetected());
+        hasNote.onTrue(new InstantCommand(()->{
+                driverController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, 0.5);
+                driverController.getHID().setRumble(GenericHID.RumbleType.kLeftRumble, 0.5);
+        }).andThen(new WaitCommand(0.2)).andThen(new InstantCommand(()->{
+                driverController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, 0);
+            driverController.getHID().setRumble(GenericHID.RumbleType.kLeftRumble, 0);
+        })));
 
     // chase note inake, press left bumper and not pressing right bumper
     driverController
         .leftBumper()
         .and(driverController.rightBumper().negate())
-        .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm));
+        .whileTrue(new ChaseNoteCommand(sDrivetrainSubsystem, mIntake, mTransfer, mArm)
+            .andThen( // if end with no note in transfer: we lost target and go do manual intake 
+                Commands.either(
+                    new ParallelCommandGroup(
+                        new IntakeCommand(mIntake, mTransfer),
+                        new LedBlinkCommand(mLed, Color.kRed, 1.0),
+                        // if we dont write explicitly drivetrain wont run
+                        // because chase note requires drivetrain
+                        new DriveWithTriggerCommand(
+                            sDrivetrainSubsystem,
+                            () ->
+                                driverController
+                                    .getDriveTranslation(driverController.isRobotRelative())
+                                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+                            () ->
+                                driverController.getRawRotationRate()
+                                    * DriveConstants.kTeleDriveMaxAngularSpeedRadiansPerSecond,
+                            // heading
+                            () -> driverController.isRobotRelative() == DriveMode.ROBOT_ORIENTED)
+                    ), new WaitCommand(0.0), 
+                    () -> !mTransfer.isOmronDetected())
+                ));
     // manual intake, press both left and right bumper
     (driverController.leftBumper().and(driverController.rightBumper()))
         .or(operatorController.leftBumper())
-        .whileTrue(new IntakeCommand(mIntake, mTransfer));
+        .whileTrue(new ParallelCommandGroup(
+            new IntakeCommand(mIntake, mTransfer),
+            Commands.either(
+                new SetArmAngleCommand(mArm, ArmConstants.ARM_MAX_INTAKE_ANGLE), 
+                new WaitCommand(0.0), 
+                () -> mArm.getAngleDeg() > ArmConstants.ARM_MAX_INTAKE_ANGLE
+            )
+        ));
     // outtake
     driverController
         .b()
@@ -218,7 +260,7 @@ public class RobotContainer {
         .whileTrue(new OuttakeCommand(mIntake, mTransfer));
 
     // Shooter Drop
-    buildShootBinding(operatorController.b(), ShootingParameters.DROP);
+    buildContinuousShootBinding(operatorController.b(), ShootingParameters.DROP);
 
     // Below Speaker
 
@@ -246,15 +288,14 @@ public class RobotContainer {
 
     Trigger rightStickAngle = new Trigger(() -> true);
     rightStickAngle.whileTrue(
-        new RepeatCommand(
-            new InstantCommand(
+        Commands.run(
                 () ->
                     SmartDashboard.putNumber(
                         "Right Stick Angle",
                         driverController
                             .getRightStickToNearestPole()
                             .orElse(new Rotation2d(Math.PI / 4))
-                            .getDegrees()))));
+                            .getDegrees())));
 
     // seven zones transfer
     Trigger rightStickUp =
@@ -309,6 +350,26 @@ public class RobotContainer {
     trigger.whileTrue(shootCommand).onFalse(stopShootingCommand);
   }
 
+  
+  private void buildContinuousShootBinding(Trigger trigger, ShootingParameters parameters){
+    Command shootCommand = new SetShooterTargetCommand(mShooter, parameters.speed_rps)
+            .alongWith(new SetArmAngleCommand(mArm, parameters.angle_deg))
+            .andThen(new InstantCommand(()->mTransfer.setVoltage(Transfer.FEED_VOLTS)));
+    
+    Command intakeCommand = Commands.run(()->{
+            if(!mTransfer.isOmronDetected()){
+                    mIntake.setIntake();
+            }else{
+                    mIntake.stop();
+            }
+    });
+    
+    Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();})
+            .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
+
+    trigger.whileTrue(shootCommand.alongWith(intakeCommand)).onFalse(stopShootingCommand);
+}
+
   private void buildAmpBinding(
       Trigger trigger,
       ShootingParameters IntermediateParameter,
@@ -331,11 +392,7 @@ public class RobotContainer {
   }
 
   private void buildPepGBinding(Trigger[] triggers) {
-    // Command pepGuardiolaCommand = new PepGuardiolaCommand(sDrivetrainSubsystem, mArm,
-    // mTransfer,
-    // mShooter, null,
-    // ()->triggers[0].getAsBoolean()?goalZones[0]:triggers[1].getAsBoolean()?goalZones[1]:triggers[2].getAsBoolean()?goalZones[2]:goalZones[3]);
-    Command pepGuardiolaCommandUP =
+    Function<GoalZone, PepGuardiolaCommand> buildGuardiola = (goalzone) -> 
         new PepGuardiolaCommand(
             sDrivetrainSubsystem,
             mArm,
@@ -346,60 +403,37 @@ public class RobotContainer {
                 driverController
                     .getDriveTranslation(driverController.isRobotRelative())
                     .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.UP);
-    Command pepGuardiolaCommandDOWN =
-        new PepGuardiolaCommand(
-            sDrivetrainSubsystem,
-            mArm,
-            mTransfer,
-            mShooter,
-            mIntake,
-            () ->
-                driverController
-                    .getDriveTranslation(driverController.isRobotRelative())
-                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.DOWN);
-    Command pepGuardiolaCommandLEFT =
-        new PepGuardiolaCommand(
-            sDrivetrainSubsystem,
-            mArm,
-            mTransfer,
-            mShooter,
-            mIntake,
-            () ->
-                driverController
-                    .getDriveTranslation(driverController.isRobotRelative())
-                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.LEFT);
-    Command pepGuardiolaCommandRIGHT =
-        new PepGuardiolaCommand(
-            sDrivetrainSubsystem,
-            mArm,
-            mTransfer,
-            mShooter,
-            mIntake,
-            () ->
-                driverController
-                    .getDriveTranslation(driverController.isRobotRelative())
-                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-            GoalZone.RIGHT);
+            goalzone,
+            // TODO : CHECK DIRECTION! 
+            () -> operatorController.getHID().getLeftX(),
+            () -> operatorController.getHID().getLeftY()
+    );
+
+    PepGuardiolaCommand pepGuardiolaCommandUP = buildGuardiola.apply(GoalZone.UP);
+    PepGuardiolaCommand pepGuardiolaCommandDOWN = buildGuardiola.apply(GoalZone.DOWN);
+    PepGuardiolaCommand pepGuardiolaCommandLEFT = buildGuardiola.apply(GoalZone.LEFT);
+    PepGuardiolaCommand pepGuardiolaCommandRIGHT = buildGuardiola.apply(GoalZone.RIGHT);
 
     triggers[0]
         .whileTrue(
-            pepGuardiolaCommandUP.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandUP)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 0)));
     triggers[1]
         .whileTrue(
-            pepGuardiolaCommandDOWN.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandDOWN)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
     triggers[2]
         .whileTrue(
-            pepGuardiolaCommandLEFT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandLEFT)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 90)));
     triggers[3]
         .whileTrue(
-            pepGuardiolaCommandRIGHT.withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
+            pepGuardiolaCommandRIGHT)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 270)));
+
+    // led blink when guardiola-DOWN and out of wing
+    new Trigger(() -> pepGuardiolaCommandDOWN.isScheduled() && pepGuardiolaCommandDOWN.isOutsideOppositeWing())
+        .onTrue(new LedBlinkCommand(mLed, Color.kGreen, 1.0));
   }
 
   /** @deprecated use new NavAmpCommand() instead */
