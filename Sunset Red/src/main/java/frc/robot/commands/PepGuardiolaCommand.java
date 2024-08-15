@@ -320,7 +320,7 @@ public class PepGuardiolaCommand extends Command {
     sTransfer.setVoltage(Transfer.FEED_VOLTS);
     sDrivetrainSubsystem.drive(mDriveVectorSupplier.get(), 0, true);
 
-    if (stateTimer.hasElapsed(0.5)) {
+    if (stateTimer.hasElapsed(0.1)) {
       // restart
       mDeliverState = DeliverState.AIMING;
     }
