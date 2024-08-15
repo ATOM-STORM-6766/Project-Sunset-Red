@@ -32,7 +32,11 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.15;
   private static final double MULTI_TAG_DELAY = 0.5;
   // if abs(Pose3d.Z) > Z_Margin, don't update
-  private static final double Z_MARGIN = 0.75;
+  private static final double Z_MARGIN = 0.35;
+
+  // chassis speed filter
+  private static final double STATIC_DELTAV_BOUND = 0.5; // meter per sec
+  private static final double MOVING_DELTAV_BOUND = 1.5; // meter per sec
 
   // read-only data class from Java 14: keyword 'record'
   public record VisionObservation(EstimatedRobotPose estimate, double xyDev, double angleDev) {}
@@ -114,7 +118,7 @@ StructPublisher<Pose3d> shooterLongFocalPublisher =
   private List<PhotonPoseEstimator> estimators = List.of(photonPoseEstimatorForShooterSide, photonPoseEstimatorForIntakeSide, photonPoseEstimatorForShooterLongFocal);
   private List<StructPublisher<Pose3d>> publishers = List.of(shooterSidePublisher, intakeSidePublisher, shooterLongFocalPublisher);
   // camera-wise area filter bounds
-  private static final List<Double> kAreaBounds = List.of(0.1, 0.1, 0.35);
+  private static final List<Double> kAreaBounds = List.of(0.1, 0.1, 0.2);
   // camera-wise dev factors
   // applied dev = factor * (dist^2) / tagcount
   // factor=0.02 means dev=0.08 for single tag dist=2m
@@ -127,10 +131,10 @@ StructPublisher<Pose3d> shooterLongFocalPublisher =
 
   private ApriltagCoprocessor() {
     photonPoseEstimatorForShooterSide.setMultiTagFallbackStrategy(
-        PoseStrategy.AVERAGE_BEST_TARGETS);
-    photonPoseEstimatorForIntakeSide.setMultiTagFallbackStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+        PoseStrategy.LOWEST_AMBIGUITY);
+    photonPoseEstimatorForIntakeSide.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
     photonPoseEstimatorForShooterLongFocal.setMultiTagFallbackStrategy(
-        PoseStrategy.AVERAGE_BEST_TARGETS);
+        PoseStrategy.LOWEST_AMBIGUITY);
 
     double currentTime = Timer.getFPGATimestamp();
     lstMultiTagDelayedBoolean = List.of(
@@ -259,9 +263,11 @@ StructPublisher<Pose3d> shooterLongFocalPublisher =
                 .toTranslation2d()
                 .minus(lastVisionEstimatedPose[i])
                 .div(camresult.get().timestampSeconds - lastVisionEstimatedPoseTimestamp[i]);
+        double deltav = visionVelMS.minus(chassisVelMS).getNorm();
         SmartDashboard.putString("vision vel ms (" + cameras.get(i).getName(), visionVelMS.toString());
-        SmartDashboard.putNumber("velocity delta v(" + cameras.get(i).getName(), visionVelMS.minus(chassisVelMS).getNorm());
-        if (visionVelMS.minus(chassisVelMS).getNorm() > 0.5) {
+        SmartDashboard.putNumber("velocity delta v(" + cameras.get(i).getName(), deltav);
+        if ((chassisVelMS.getNorm() < 0.5 && deltav > STATIC_DELTAV_BOUND)
+            || (chassisVelMS.getNorm() >= 0.5 && deltav > MOVING_DELTAV_BOUND)) {
           SmartDashboard.putString("Vision Update Status (" + cameras.get(i).getName() + ")", "VELOCITY_INCORRECT");
           continue;
         }
