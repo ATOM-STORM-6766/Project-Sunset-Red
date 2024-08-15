@@ -25,6 +25,7 @@ import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+@Deprecated
 public class VisionShootCommand extends ParallelCommandGroup {
   private final Shooter mShooter;
   private final Arm mArm;

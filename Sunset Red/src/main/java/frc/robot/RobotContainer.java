@@ -156,11 +156,11 @@ public class RobotContainer {
     Trigger visionShootTrigger = driverController.y();
     visionShootTrigger
         .whileTrue(
-            new VisionShootCommand(
-                    mShooter,
+            new VisionShootWhileMovingCommand(
+                    sDrivetrainSubsystem,
                     mArm,
                     mTransfer,
-                    sDrivetrainSubsystem,
+                    mShooter,
                     mIntake,
                     () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
@@ -202,6 +202,10 @@ public class RobotContainer {
     // manual amp
     buildAmpBinding(
         driverController.povRight().and(driverController.rightBumper()),
+        ShootingParameters.AMP_INTERMEDIATE_POS,
+        ShootingParameters.AMP_LOWSPEED);
+
+    buildAmpBinding(operatorController.povRight(),
         ShootingParameters.AMP_INTERMEDIATE_POS,
         ShootingParameters.AMP_LOWSPEED);
 
