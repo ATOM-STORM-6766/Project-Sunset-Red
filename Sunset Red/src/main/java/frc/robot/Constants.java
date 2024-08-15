@@ -30,7 +30,7 @@ public final class Constants {
   public static final NeutralOut NEUTRAL = new NeutralOut();
   public static final double kLongCANTimeoutSec = 0.1; // use for constructors
   public static final int kLongCANTimeoutMs = 100; // use for constructors
-
+  public static final int LED_PORT =0;
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -163,6 +163,8 @@ public final class Constants {
     public static final int ARM_ID = 10;
     // arm pitch when observing note on intake side
     public static final double ARM_OBSERVE_ANGLE = 36.0;
+    // max arm pitch when intake dont stuck at transfer
+    public static final double ARM_MAX_INTAKE_ANGLE = 55.0;
     // arm pitch when resting in degrees
     public static final double ARM_REST_ANGLE = 23.0;
     // arm pitch when resting in rotations
