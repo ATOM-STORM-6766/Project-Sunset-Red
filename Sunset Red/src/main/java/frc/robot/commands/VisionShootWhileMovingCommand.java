@@ -191,7 +191,9 @@ public class VisionShootWhileMovingCommand extends Command {
     double targetDist = (kTagHeight - camExtrinsic.getZ()) / Math.tan(
       Math.abs(camExtrinsic.getRotation().getY()) + Math.toRadians(targetOfInterest.getPitch())) + Math.abs(camExtrinsic.getX());
     SmartDashboard.putString("Vision Shoot 2D", "OK");
-    return new Translation2d(targetDist, targetHeading);
+    Translation2d ret = new Translation2d(targetDist, targetHeading);
+    SmartDashboard.putString("Vision Shoot 2D Vector", ret.toString());
+    return ret;
   }
 
   private boolean decideToFeed() {
