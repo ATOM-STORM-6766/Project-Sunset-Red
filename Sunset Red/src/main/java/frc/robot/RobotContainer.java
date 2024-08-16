@@ -521,6 +521,7 @@ public class RobotContainer {
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
     SmartDashboard.putData("Score 53 Strategy", mScore53StrategyChooser);
+    SmartDashboard.putData("Drop 53 Strategy", mDrop53StrategyChooser);
     SmartDashboard.putData("Fallback Rotation 53", mFallbackRotation53Chooser);
   }
 
