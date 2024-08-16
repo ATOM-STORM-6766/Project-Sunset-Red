@@ -61,7 +61,7 @@ public final class Constants {
       FR.driveID = 6;
       FR.azimuthID = 7;
       FR.azimuthBlockCenterDegree = 105.0;
-      FR.azimuthEncoderOffsetRotation = 0.075928;
+      FR.azimuthEncoderOffsetRotation = -0.013672;
       FR.lightGateID = 5;
       FR.corner = ModuleCorner.Front_Right;
       FR.invertDrive = InvertedValue.CounterClockwise_Positive;
@@ -97,7 +97,7 @@ public final class Constants {
       BR.driveID = 0;
       BR.azimuthID = 1;
       BR.azimuthBlockCenterDegree = 105.0;
-      BR.azimuthEncoderOffsetRotation = 0.010986;
+      BR.azimuthEncoderOffsetRotation = 0.234131;
       BR.lightGateID = 2;
       BR.corner = ModuleCorner.Back_Right;
       BR.invertDrive = InvertedValue.Clockwise_Positive;
