@@ -338,7 +338,8 @@ public class RobotContainer {
                         .getDegrees()
                     == 180.0);
 
-    buildPepGBinding(new Trigger[] {rightStickUp, rightStickDown, rightStickLeft, rightStickRight});
+    buildPepGBinding(new Trigger[] {rightStickUp, rightStickDown.and(driverController.rightBumper().negate()), 
+            rightStickLeft, rightStickRight, rightStickDown.and(driverController.rightBumper())});
   }
 
   private void buildShootBinding(Trigger trigger, ShootingParameters parameters) {
@@ -415,6 +416,7 @@ public class RobotContainer {
 
     PepGuardiolaCommand pepGuardiolaCommandUP = buildGuardiola.apply(GoalZone.UP);
     PepGuardiolaCommand pepGuardiolaCommandDOWN = buildGuardiola.apply(GoalZone.DOWN);
+    PepGuardiolaCommand pepGuardiolaCommandHOME = buildGuardiola.apply(GoalZone.HOME);
     PepGuardiolaCommand pepGuardiolaCommandLEFT = buildGuardiola.apply(GoalZone.LEFT);
     PepGuardiolaCommand pepGuardiolaCommandRIGHT = buildGuardiola.apply(GoalZone.RIGHT);
 
@@ -434,6 +436,10 @@ public class RobotContainer {
         .whileTrue(
             pepGuardiolaCommandRIGHT)
         .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 270)));
+    triggers[4]
+        .whileTrue(
+            pepGuardiolaCommandHOME)
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
 
     // led blink when guardiola-DOWN and out of wing
     new Trigger(() -> pepGuardiolaCommandDOWN.isScheduled() && pepGuardiolaCommandDOWN.isOutsideOppositeWing())

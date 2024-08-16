@@ -27,6 +27,7 @@ public class PepGuardiolaCommand extends Command {
   public enum GoalZone {
     UP(new Translation2d(9.5, 1.4)),
     DOWN(new Translation2d(2.2, 7.0)),
+    HOME(new Translation2d(1.0, 4.3)),
     LEFT(new Translation2d(6.4, 7.6)),
     RIGHT(new Translation2d(5.4, 4.0));
 
@@ -227,7 +228,7 @@ public class PepGuardiolaCommand extends Command {
   private boolean decideToFeed() {
     // find if zone readly feed
     boolean zoneOk = true;
-    if (mGoalZone == GoalZone.DOWN) {
+    if (mGoalZone == GoalZone.DOWN || mGoalZone == GoalZone.HOME) {
       // you need to cross wing to be ok
       zoneOk = isOutsideOppositeWing();
     }
@@ -302,6 +303,8 @@ public class PepGuardiolaCommand extends Command {
         goal = GeometryUtil.flipFieldPosition(GoalZone.UP.target);
       } else if (mGoalZone == GoalZone.DOWN) {
         goal = GeometryUtil.flipFieldPosition(GoalZone.DOWN.target);
+      } else if (mGoalZone == GoalZone.HOME) {
+        goal = GeometryUtil.flipFieldPosition(GoalZone.HOME.target);
       } else if (mGoalZone == GoalZone.LEFT) {
         // THIS IS NOT A TYPO: in blue/red the left and right reverted.
         goal = GeometryUtil.flipFieldPosition(GoalZone.RIGHT.target);
