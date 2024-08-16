@@ -41,7 +41,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final double MOVING_DELTAV_BOUND = 1.5; // meter per sec
 
   // read-only data class from Java 14: keyword 'record'
-  public record VisionObservation(EstimatedRobotPose estimate, double xyDev, double angleDev) {}
+  public record VisionObservation(EstimatedRobotPose estimate, double xyDev, double angleDev, String camname) {}
 
   private PhotonCamera ApriltagCamShooterSide = new PhotonCamera("TagCamShooterSide");
   private PhotonCamera ApriltagCamIntakeSide = new PhotonCamera("TagCamIntakeSide");
@@ -296,15 +296,18 @@ StructPublisher<Pose3d> shooterLongFocalPublisher =
         angleDev = angleDevFactors[i] * Math.pow(avgdist, 2) / tagcnt;
       }
 
-      allObservation.add(new VisionObservation(camresult.get(), xyDev, angleDev));
+      VisionObservation newobs = new VisionObservation(camresult.get(), xyDev, angleDev, cameras.get(i).getName());
+      allObservation.add(newobs);
       SmartDashboard.putString("Vision Update Status (" + cameras.get(i).getName() + ")", "OK");
+      SmartDashboard.putString("Vision Observation Log", newobs.toString());
 
       lastVisionEstimatedPose[i] = camresult.get().estimatedPose.getTranslation().toTranslation2d();
       lastVisionEstimatedPoseTimestamp[i] = camresult.get().timestampSeconds;
     }
 
     // sort by timestamp to update from oldest to latest
-    return allObservation.stream().sorted(Comparator.comparingDouble(x -> x.estimate.timestampSeconds)).collect(Collectors.toList());
+    allObservation = allObservation.stream().sorted(Comparator.comparingDouble(x -> x.estimate.timestampSeconds)).collect(Collectors.toList());
+    
   }
 
   private PoseStrategy determineStrategy(int camIdx, List<PhotonTrackedTarget> acceptableTargets) {
