@@ -48,7 +48,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private PhotonCamera ApriltagCamIntakeSide = new PhotonCamera("TagCamIntakeSide");
   private PhotonCamera ApriltagCamShooterLongFocal = new PhotonCamera("TagCamShooterSideLongFocal");
 
-  private Transform3d kRobotToCameraForShooterSide =
+  public Transform3d kRobotToCameraForShooterSide =
       new Transform3d(-0.28, -0.105, 0.25, new Rotation3d(Units.degreesToRadians(180),
           Units.degreesToRadians(-40), Units.degreesToRadians(180)));
 
@@ -344,5 +344,9 @@ public class ApriltagCoprocessor extends SubsystemBase {
    */
   public Optional<Pose3d> getAprilTagPose(int tagId) {
     return aprilTagFieldLayout.getTagPose(tagId);
+  }
+
+  public PhotonPipelineResult getShooterSideLastResult() {
+    return ApriltagCamShooterSide.getLatestResult();
   }
 }

@@ -356,6 +356,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return getPose().getRotation();
   }
 
+  public Rotation2d getHeading(double timestamp) {
+    return mHeading.get(timestamp);
+  }
+
   /**
    * Sets the heading of the drivetrain to the specified rotation.
    *
