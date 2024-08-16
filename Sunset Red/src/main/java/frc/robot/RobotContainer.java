@@ -162,7 +162,9 @@ public class RobotContainer {
                     mTransfer,
                     mShooter,
                     mIntake,
-                    () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
+                    () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED),
+                    () -> operatorController.getLeftX(),
+                    () -> -operatorController.getLeftY())
                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
         .onFalse(
             new InstantCommand(

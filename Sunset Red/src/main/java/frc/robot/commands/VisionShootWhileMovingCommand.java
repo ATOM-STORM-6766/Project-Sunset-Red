@@ -15,6 +15,9 @@ import java.util.function.Supplier;
 
 public class VisionShootWhileMovingCommand extends Command {
 
+  private static final double kHeadingOffsetScalarDeg = 8.0;
+  private static final double kAngleOffsetScalarDeg = 5.0;
+
   private DrivetrainSubsystem sDrivetrainSubsystem;
   private Arm sArm;
   private Transfer sTransfer;
@@ -34,6 +37,9 @@ public class VisionShootWhileMovingCommand extends Command {
   private static final double READY_TO_FEED_DELAY = 0.1;
   private DualEdgeDelayedBoolean mReadyToFeed;
 
+  private Supplier<Double> mHeadingOffsetSupplier;
+  private Supplier<Double> mAngleOffsetSupplier;
+
   private Timer stateTimer = new Timer();
 
   public VisionShootWhileMovingCommand(
@@ -42,13 +48,17 @@ public class VisionShootWhileMovingCommand extends Command {
       Transfer transfer,
       Shooter shooter,
       Intake intake,
-      Supplier<Translation2d> driveVectorSupplier) {
+      Supplier<Translation2d> driveVectorSupplier,
+      Supplier<Double> headingOffsetSupplier,
+      Supplier<Double> angleOffsetSupplier) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
     sTransfer = transfer;
     sShooter = shooter;
     sIntake = intake;
     mDriveVectorSupplier = driveVectorSupplier;
+    mHeadingOffsetSupplier = headingOffsetSupplier;
+    mAngleOffsetSupplier = angleOffsetSupplier;
 
     addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
   }
@@ -93,11 +103,12 @@ public class VisionShootWhileMovingCommand extends Command {
     // calculate distance
     Translation2d targetVector = calculateTarget(driveVector);
     Rotation2d targetRobotHeading = targetVector.getAngle().rotateBy(Rotation2d.fromDegrees(180.0));
+    targetRobotHeading = targetRobotHeading.plus(Rotation2d.fromDegrees(kHeadingOffsetScalarDeg * mHeadingOffsetSupplier.get()));
     double targetDist = targetVector.getNorm();
 
     // find shoot parameter
     shooterSpeed = VisionShootConstants.kSpeakerRPSMap.get(targetDist);
-    armAngle = VisionShootConstants.kSpeakerAngleMap.get(targetDist);
+    armAngle = VisionShootConstants.kSpeakerAngleMap.get(targetDist) + kAngleOffsetScalarDeg * mAngleOffsetSupplier.get();
 
     // run subsystem
     // in rad/s
@@ -121,7 +132,7 @@ public class VisionShootWhileMovingCommand extends Command {
     // find if superstruct ok
     boolean shootOk = Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 2.0
       && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
-      && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians()) < Math.toRadians(3.0);
+      && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians()) < Math.toRadians(2.0);
     
     return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk);
   }
