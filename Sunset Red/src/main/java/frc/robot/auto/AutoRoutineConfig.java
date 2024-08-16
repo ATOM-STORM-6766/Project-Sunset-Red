@@ -16,30 +16,27 @@ public class AutoRoutineConfig {
     }
 
     public static class AutoShootPositions {
-        public static final AutoShootingConfig UNDER_STAGE = new AutoShootingConfig(
-            new Pose2d(4.5, 4.63, Rotation2d.fromDegrees(-14.0)),
-            new ShootingParameters(75, 32.5)
-        );
-        public static final AutoShootingConfig NEAR_SIDE = new AutoShootingConfig(
-            new Pose2d(4.5, 6.46, Rotation2d.fromDegrees(14.0)),
-            new ShootingParameters(75, 32.5)
-        );
+        public static final AutoShootingConfig UNDER_STAGE =
+                new AutoShootingConfig(new Pose2d(4.5, 4.63, Rotation2d.fromDegrees(-14.0)),
+                        new ShootingParameters(75, 32.5));
+        public static final AutoShootingConfig NEAR_SIDE =
+                new AutoShootingConfig(new Pose2d(4.5, 6.46, Rotation2d.fromDegrees(14.0)),
+                        new ShootingParameters(75, 32.5));
         public static final AutoShootingConfig FAR_SIDE = new AutoShootingConfig(
-            new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(28.0)),
-            new ShootingParameters(75, 41)
-        );
-        public static final AutoShootingConfig NOTE_31 = new AutoShootingConfig(
-            null, // No specific pose for this one
-            new ShootingParameters(75, 36.5)
-        );
-        public static final AutoShootingConfig NOTE_32 = new AutoShootingConfig(
-            null, // No specific pose for this one
-            new ShootingParameters(75, 36.5)
-        );
-        public static final AutoShootingConfig DROP_53 = new AutoShootingConfig(
-            null, // No specific pose for this one
-            new ShootingParameters(10, 36.5)
-        );
+                new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(28.0)), new ShootingParameters(75, 41));
+        public static final AutoShootingConfig NOTE_31 =
+                new AutoShootingConfig(new Pose2d(2.85, 6.96, Rotation2d.fromDegrees(30.0)),
+                        new ShootingParameters(75, 36.5)); // todo: tune this
+        public static final AutoShootingConfig NOTE_32 =
+                new AutoShootingConfig(null, new ShootingParameters(75, 36.5));
+        public static final AutoShootingConfig NOTE_33 =
+                new AutoShootingConfig(new Pose2d(2.65, 4.27, Rotation2d.fromDegrees(-30.0)),
+                        new ShootingParameters(75, 36.5)); // todo: tune this
+        public static final AutoShootingConfig DROP_53 =
+                new AutoShootingConfig(null, new ShootingParameters(10, 36.5));
+        public static final AutoShootingConfig HOME =
+                new AutoShootingConfig(new Pose2d(1.47, 5.59, Rotation2d.fromDegrees(0)),
+                        ShootingParameters.BELOW_SPEAKER);
     }
 
     public static class AutoPaths {
@@ -58,5 +55,9 @@ public class AutoRoutineConfig {
         public static final String FAR_SIDE_TO_55 = "ShootPoseFarSide to 55";
         public static final String NEAR_SIDE_TO_53 = "ShootPoseNearSide to 53";
         public static final String FAR_SIDE_TO_53 = "ShootPoseFarSide to 53";
+        public static final String HOME_TO_31 = "Dallas Home to 31";
+        public static final String HOME_TO_33 = "Dallas Home to 33";
+        public static final String FROM_52_TO_HOME = "Dallas 52 to Home";
+        public static final String FROM_54_TO_HOME = "Dallas 54 to Home";
     }
 }
