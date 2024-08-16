@@ -280,8 +280,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
       lastVisionEstimatedPoseTimestamp[i] = camresult.get().timestampSeconds;
     }
 
-    // sort by timestamp to update from oldest to latest
-    return allObservation.stream().sorted(Comparator.comparingDouble(x -> x.estimate.timestampSeconds)).collect(Collectors.toList());
+    return allObservation;
   }
 
   private PoseStrategy determineStrategy(int camIdx, List<PhotonTrackedTarget> acceptableTargets) {
