@@ -274,7 +274,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
       VisionObservation newobs = new VisionObservation(camresult.get(), xyDev, angleDev, cameras.get(i).getName());
       allObservation.add(newobs);
       SmartDashboard.putString("Vision Update Status (" + cameras.get(i).getName() + ")", "OK");
-      SmartDashboard.putString("Vision Observation Log", newobs.toString());
+      SmartDashboard.putString("Vision Observation Log", newobs.toString() + " " + camresult.get().estimatedPose.toString());
 
       lastVisionEstimatedPose[i] = camresult.get().estimatedPose.getTranslation().toTranslation2d();
       lastVisionEstimatedPoseTimestamp[i] = camresult.get().timestampSeconds;
