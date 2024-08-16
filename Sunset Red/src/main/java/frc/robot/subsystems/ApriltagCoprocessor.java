@@ -307,14 +307,16 @@ StructPublisher<Pose3d> shooterLongFocalPublisher =
 
   private PoseStrategy determineStrategy(int camIdx, List<PhotonTrackedTarget> acceptableTargets) {
     double currentTime = Timer.getFPGATimestamp();
-    boolean isMultiTag = acceptableTargets.size() > 1;
+    // boolean isMultiTag = acceptableTargets.size() > 1;
+    // temporarily disable multitag for debug now
+    boolean isMultiTag = false;
 
     boolean useMultiTag = lstMultiTagDelayedBoolean.get(camIdx).update(currentTime, isMultiTag);
 
     if (useMultiTag) {
       return PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
     } else {
-      return PoseStrategy.AVERAGE_BEST_TARGETS;
+      return PoseStrategy.LOWEST_AMBIGUITY;
     }
   }
 
