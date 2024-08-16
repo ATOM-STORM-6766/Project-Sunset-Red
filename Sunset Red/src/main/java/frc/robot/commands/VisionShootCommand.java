@@ -8,9 +8,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.VisionShootConstants;
@@ -25,6 +25,7 @@ import frc.robot.utils.ShootingParameters;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+@Deprecated
 public class VisionShootCommand extends ParallelCommandGroup {
   private final Shooter mShooter;
   private final Arm mArm;
@@ -75,8 +76,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
                     new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 0.1, EdgeType.RISING)),
 
         // shooter and arm
-        new RepeatCommand(
-            new InstantCommand( // repeatedly change shooter and arm targets
+        Commands.run( // repeatedly change shooter and arm targets
                 () -> {
 
                   // calculate target velocity and angle
@@ -95,13 +95,11 @@ public class VisionShootCommand extends ParallelCommandGroup {
                       mArm.setAngle(ArmConstants.ARM_REST_ANGLE);
                     }
                   }
-                })),
-
+                }),
         // feeder
-        new WaitCommand(0.5)
+        new WaitCommand(0.1)
             .andThen(
-                new RepeatCommand(
-                    new InstantCommand(
+                Commands.run(
                         () -> {
                           if (readyToShoot()) {
                             mTransfer.setVoltage(Transfer.FEED_VOLTS);
@@ -109,29 +107,29 @@ public class VisionShootCommand extends ParallelCommandGroup {
                             mTransfer.stop();
                           }
                         },
-                        mTransfer))),
+                        mTransfer)),
 
         // intake
-        new RepeatCommand(
-            new InstantCommand(
+        Commands.run(
                 () -> {
                   if (!mTransfer.isOmronDetected()) {
                     mIntake.setIntake();
                   } else {
                     mIntake.stop();
                   }
-                })),
+                }),
 
         // log
-        new RepeatCommand(
-            new InstantCommand(
+        Commands.run(
                 () -> {
                   var goalToRobot = goalToRobot_;
                   if (goalToRobot.isPresent()) {
                     SmartDashboard.putNumber("distance to goal", goalToRobot.get().getNorm());
                   }
                   SmartDashboard.putBoolean("ready to shoot", readyToShoot());
-                })));
+                }));
+    
+    addRequirements(drivetrain, shooter, arm, transfer, intake);
   }
 
   // no delayed boolean for filter yet, need to verify whether needed
@@ -168,7 +166,7 @@ public class VisionShootCommand extends ParallelCommandGroup {
     double timeOfFly = getTimeOfFly(goalToRobot, shooter_pitch_degree, shooter_rps);
     Translation2d offsetDueToMove = mDrivetrain.getVelocity().times(timeOfFly); // delta x = v * t
     Translation2d aimTargetToRobot =
-        goalToRobot.plus(offsetDueToMove); // goal position plus offset due to robot motion
+        goalToRobot.plus(offsetDueToMove.unaryMinus()); // goal position plus offset due to robot motion
     aimingTargetPublisher.set(aimTargetToRobot.plus(robotToField));
     return Optional.of(aimTargetToRobot);
   }
