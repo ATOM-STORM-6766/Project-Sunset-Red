@@ -17,6 +17,8 @@ public class VisionShootWhileMovingCommand extends Command {
 
   private static final double kHeadingOffsetScalarDeg = 8.0;
   private static final double kAngleOffsetScalarDeg = 5.0;
+  // the aim offset scalar when you are aside from the speaker
+  private static final double kFarCornerScalar = 0.1;
 
   private DrivetrainSubsystem sDrivetrainSubsystem;
   private Arm sArm;
@@ -103,6 +105,16 @@ public class VisionShootWhileMovingCommand extends Command {
     // calculate distance
     Translation2d targetVector = calculateTarget(driveVector);
     Rotation2d targetRobotHeading = targetVector.getAngle().rotateBy(Rotation2d.fromDegrees(180.0));
+    // far corner offset
+    Rotation2d entryAngleRev;
+    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+    if (alliance == Alliance.Blue) {
+      entryAngleRev = Rotation2d.fromDegrees(0.0);
+    } else { // red
+      entryAngleRev = Rotation2d.fromDegrees(180.0);
+    }
+    Rotation2d farShootOffset = targetRobotHeading.minus(entryAngleRev).times(kFarCornerScalar);
+    targetRobotHeading = targetRobotHeading.plus(farShootOffset);
     targetRobotHeading = targetRobotHeading.plus(Rotation2d.fromDegrees(kHeadingOffsetScalarDeg * mHeadingOffsetSupplier.get()));
     double targetDist = targetVector.getNorm();
 
