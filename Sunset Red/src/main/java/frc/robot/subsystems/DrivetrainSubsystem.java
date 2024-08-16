@@ -442,6 +442,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Pose2d estimatedPose2d = obs.estimate().estimatedPose.toPose2d();
         double photonTimestamp = obs.estimate().timestampSeconds;
         photonLatency = currentTimestamp - photonTimestamp;
+        SmartDashboard.putString("Vision Measurement Log", estimatedPose2d.toString() + " " + Double.toString(photonTimestamp));
         mEstimator.addVisionMeasurement(
             estimatedPose2d, photonTimestamp, VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.angleDev()));
       }
