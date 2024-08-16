@@ -29,7 +29,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class ApriltagCoprocessor extends SubsystemBase {
   private static ApriltagCoprocessor mCoprocessor = new ApriltagCoprocessor();
-  private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.15;
+  private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.2;
+  private static final double ACCEPTABLE_YAW_THRESHOLD = 30;
+  private static final double ACCEPTABLE_PITCH_THRESHOLD = 25;
   private static final double MULTI_TAG_DELAY = 0.5;
   // if abs(Pose3d.Z) > Z_Margin, don't update
   private static final double Z_MARGIN = 0.35;
@@ -343,8 +345,8 @@ StructPublisher<Pose3d> shooterLongFocalPublisher =
               boolean isAcceptable =
                   target.getArea() > minArea
                       && target.getPoseAmbiguity() < ACCEPTABLE_AMBIGUITY_THRESHOLD
-                      && Math.abs(target.getYaw()) < 30
-                      && Math.abs(target.getPitch()) < 25;
+                      && Math.abs(target.getYaw()) < ACCEPTABLE_YAW_THRESHOLD
+                      && Math.abs(target.getPitch()) < ACCEPTABLE_PITCH_THRESHOLD;
               SmartDashboard.putString(
                   "Filtering Log",
                   String.format(
