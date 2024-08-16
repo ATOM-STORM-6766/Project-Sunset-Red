@@ -260,7 +260,9 @@ public class ApriltagCoprocessor extends SubsystemBase {
           tagcnt += 1;
         }
       }
-      avgdist /= tagcnt;
+      if (tagcnt > 0) {
+        avgdist /= tagcnt;
+      }
 
       // calculate update dev by distance
       // you find multitag results get smaller devs by dividing tag count here.
