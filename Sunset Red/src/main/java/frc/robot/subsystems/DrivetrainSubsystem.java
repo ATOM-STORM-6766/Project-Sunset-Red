@@ -356,6 +356,10 @@ public class DrivetrainSubsystem extends SubsystemBase {
     return getPose().getRotation();
   }
 
+  public Rotation2d getHeading(double timestamp) {
+    return mHeading.get(timestamp);
+  }
+
   /**
    * Sets the heading of the drivetrain to the specified rotation.
    *
@@ -442,8 +446,15 @@ public class DrivetrainSubsystem extends SubsystemBase {
         Pose2d estimatedPose2d = obs.estimate().estimatedPose.toPose2d();
         double photonTimestamp = obs.estimate().timestampSeconds;
         photonLatency = currentTimestamp - photonTimestamp;
-        mEstimator.addVisionMeasurement(
-            estimatedPose2d, photonTimestamp, VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.angleDev()));
+        if (Double.isInfinite(obs.angleDev())) {
+          // by inf we mean no angle update
+          estimatedPose2d = new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
+          mEstimator.addVisionMeasurement(
+              estimatedPose2d, photonTimestamp, VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.xyDev()));
+        } else {
+          mEstimator.addVisionMeasurement(
+              estimatedPose2d, photonTimestamp, VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.angleDev()));
+        }
       }
 
       if (visionObservations.size() > 0) {

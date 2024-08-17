@@ -33,6 +33,7 @@ import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine.Score53Strategy;
 import frc.robot.auto.modes.Dallas.DallasAutoTrap53Routine;
 import frc.robot.commands.*;
 import frc.robot.commands.PepGuardiolaCommand.GoalZone;
+import frc.robot.commands.VisionShootWhileMovingCommand.AimingMode;
 import frc.robot.lib6907.CommandSwerveController;
 import frc.robot.lib6907.CommandSwerveController.DriveMode;
 import frc.robot.subsystems.*;
@@ -163,7 +164,10 @@ public class RobotContainer {
                     mTransfer,
                     mShooter,
                     mIntake,
-                    () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED))
+                    () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED),
+                    () -> operatorController.getLeftX(),
+                    () -> -operatorController.getLeftY(),
+                    AimingMode.PNP3D)
                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
         .onFalse(
             new InstantCommand(
@@ -369,8 +373,10 @@ public class RobotContainer {
                     mIntake.stop();
             }
     });
+
+    intakeCommand.addRequirements(mIntake, mTransfer);
     
-    Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();})
+    Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();mIntake.stop();})
             .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
     trigger.whileTrue(shootCommand.alongWith(intakeCommand)).onFalse(stopShootingCommand);
