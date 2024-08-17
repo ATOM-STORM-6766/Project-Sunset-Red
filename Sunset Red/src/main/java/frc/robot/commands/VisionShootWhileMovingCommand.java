@@ -34,7 +34,7 @@ public class VisionShootWhileMovingCommand extends Command {
   private Intake sIntake;
   private Supplier<Translation2d> mDriveVectorSupplier;
 
-  private final PIDController mHeadingPID = new PIDController(5.0, 0, 0.5);
+  private final PIDController mHeadingPID = new PIDController(5.0, 0, 0.2);
 
   private enum State {
     AIMING, FEEDING, END

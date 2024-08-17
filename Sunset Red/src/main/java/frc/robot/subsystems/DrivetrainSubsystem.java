@@ -487,6 +487,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
+      SmartDashboard.putNumber("gyro yaw", getGyroYaw().getDegrees());
       mHeading.put(timestamp, getHeading());
     }
   }

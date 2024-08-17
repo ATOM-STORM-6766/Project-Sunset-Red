@@ -33,7 +33,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.2;
   private static final double ACCEPTABLE_YAW_THRESHOLD = 30;
   private static final double ACCEPTABLE_PITCH_THRESHOLD = 25;
-  private static final double MULTI_TAG_DELAY = 0.5;
+  private static final double MULTI_TAG_DELAY = 0.1;
   // if abs(Pose3d.Z) > Z_Margin, don't update
   private static final double Z_MARGIN = 0.35;
 
@@ -287,8 +287,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
   private PoseStrategy determineStrategy(int camIdx, List<PhotonTrackedTarget> acceptableTargets) {
     double currentTime = Timer.getFPGATimestamp();
-    // boolean isMultiTag = acceptableTargets.size() > 1;
-    boolean isMultiTag = false;
+    boolean isMultiTag = acceptableTargets.size() > 1;
+    // boolean isMultiTag = false;
 
     boolean useMultiTag = lstMultiTagDelayedBoolean.get(camIdx).update(currentTime, isMultiTag);
 
