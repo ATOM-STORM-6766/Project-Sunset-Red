@@ -287,7 +287,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
   private PoseStrategy determineStrategy(int camIdx, List<PhotonTrackedTarget> acceptableTargets) {
     double currentTime = Timer.getFPGATimestamp();
-    boolean isMultiTag = acceptableTargets.size() > 1;
+    // boolean isMultiTag = acceptableTargets.size() > 1;
+    boolean isMultiTag = false;
 
     boolean useMultiTag = lstMultiTagDelayedBoolean.get(camIdx).update(currentTime, isMultiTag);
 
