@@ -373,7 +373,7 @@ public class RobotContainer {
             }
     });
     
-    Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();})
+    Command stopShootingCommand = new InstantCommand(() -> {mShooter.stop(); mTransfer.stop();mIntake.stop();})
             .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
 
     trigger.whileTrue(shootCommand.alongWith(intakeCommand)).onFalse(stopShootingCommand);
