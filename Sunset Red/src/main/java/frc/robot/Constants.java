@@ -61,7 +61,7 @@ public final class Constants {
       FR.driveID = 6;
       FR.azimuthID = 7;
       FR.azimuthBlockCenterDegree = 105.0;
-      FR.azimuthEncoderOffsetRotation = -0.013672;
+      FR.azimuthEncoderOffsetRotation = -0.022949;
       FR.lightGateID = 5;
       FR.corner = ModuleCorner.Front_Right;
       FR.invertDrive = InvertedValue.CounterClockwise_Positive;
@@ -200,34 +200,48 @@ public final class Constants {
        * These values below are based on Speaker wall to frame front measurement with some of the
        * bold guesses 0724
        */
-      kSpeakerAngleMap.put(0.98 + kMagicDistOffset, 60.0);
-      kSpeakerAngleMap.put(1.04 + kMagicDistOffset, 60.0);
-      kSpeakerAngleMap.put(1.105 + kMagicDistOffset, 59.0);
-      kSpeakerAngleMap.put(1.205 + kMagicDistOffset, 57.0);
-      kSpeakerAngleMap.put(1.305 + kMagicDistOffset, 56.0);
-      kSpeakerAngleMap.put(1.40 + kMagicDistOffset, 56.0);
-      kSpeakerAngleMap.put(1.50 + kMagicDistOffset, 55.0);
-      kSpeakerAngleMap.put(1.58 + kMagicDistOffset, 54.0);
-      kSpeakerAngleMap.put(1.70 + kMagicDistOffset, 53.0);
-      kSpeakerAngleMap.put(1.83 + kMagicDistOffset, 52.3);
-      kSpeakerAngleMap.put(1.92 + kMagicDistOffset, 51.5);
-      kSpeakerAngleMap.put(2.00 + kMagicDistOffset, 50.78);
-      kSpeakerAngleMap.put(2.10 + kMagicDistOffset, 49.66);
-      kSpeakerAngleMap.put(2.20 + kMagicDistOffset, 48.5);
-      kSpeakerAngleMap.put(2.30 + kMagicDistOffset, 47.5);
-      kSpeakerAngleMap.put(2.40 + kMagicDistOffset, 46.5);
-      kSpeakerAngleMap.put(2.50 + kMagicDistOffset, 45.56);
-      kSpeakerAngleMap.put(3.00 + kMagicDistOffset, 41.0);
-      kSpeakerAngleMap.put(3.50 + kMagicDistOffset, 36.0);
-      kSpeakerAngleMap.put(3.60 + kMagicDistOffset, 35.0);
-      kSpeakerAngleMap.put(3.80 + kMagicDistOffset, 34.0);
-      kSpeakerAngleMap.put(4.15 + kMagicDistOffset, 33.0);
-      kSpeakerAngleMap.put(4.5 + kMagicDistOffset, 32.0);
-      kSpeakerAngleMap.put(5.1 + kMagicDistOffset, 32.0);
-      kSpeakerAngleMap.put(5.5 + kMagicDistOffset, 32.0);
-      kSpeakerAngleMap.put(5.9 + kMagicDistOffset, 31.5);
+      // kSpeakerAngleMap.put(0.98 + kMagicDistOffset, 60.0);
+      // kSpeakerAngleMap.put(1.04 + kMagicDistOffset, 60.0);
+      // kSpeakerAngleMap.put(1.105 + kMagicDistOffset, 59.0);
+      // kSpeakerAngleMap.put(1.205 + kMagicDistOffset, 57.0);
+      // kSpeakerAngleMap.put(1.305 + kMagicDistOffset, 56.0);
+      // kSpeakerAngleMap.put(1.40 + kMagicDistOffset, 56.0);
+      // kSpeakerAngleMap.put(1.50 + kMagicDistOffset, 55.0);
+      // kSpeakerAngleMap.put(1.58 + kMagicDistOffset, 54.0);
+      // kSpeakerAngleMap.put(1.70 + kMagicDistOffset, 53.0);
+      // kSpeakerAngleMap.put(1.83 + kMagicDistOffset, 52.3);
+      // kSpeakerAngleMap.put(1.92 + kMagicDistOffset, 51.5);
+      // kSpeakerAngleMap.put(2.00 + kMagicDistOffset, 50.78);
+      // kSpeakerAngleMap.put(2.10 + kMagicDistOffset, 49.66);
+      // kSpeakerAngleMap.put(2.20 + kMagicDistOffset, 48.5);
+      // kSpeakerAngleMap.put(2.30 + kMagicDistOffset, 47.5);
+      // kSpeakerAngleMap.put(2.40 + kMagicDistOffset, 46.5);
+      // kSpeakerAngleMap.put(2.50 + kMagicDistOffset, 45.56);
+      // kSpeakerAngleMap.put(3.00 + kMagicDistOffset, 41.0);
+      // kSpeakerAngleMap.put(3.50 + kMagicDistOffset, 36.0);
+      // kSpeakerAngleMap.put(3.60 + kMagicDistOffset, 35.0);
+      // kSpeakerAngleMap.put(3.80 + kMagicDistOffset, 34.0);
+      // kSpeakerAngleMap.put(4.15 + kMagicDistOffset, 33.0);
+      // kSpeakerAngleMap.put(4.5 + kMagicDistOffset, 32.0);
+      // kSpeakerAngleMap.put(5.1 + kMagicDistOffset, 32.0);
+      // kSpeakerAngleMap.put(5.5 + kMagicDistOffset, 32.0);
+      // kSpeakerAngleMap.put(5.9 + kMagicDistOffset, 31.5);
 
-      // kSpeakerAngleMap.put(3.00, 49.0);
+
+      kSpeakerAngleMap.put(1.06, 60.0);
+      kSpeakerAngleMap.put(1.36, 54.0);
+      kSpeakerAngleMap.put(1.80, 48.0);
+      kSpeakerAngleMap.put(2.15, 45.5);
+
+      kSpeakerAngleMap.put(2.5, 41.5);
+      kSpeakerAngleMap.put(3.00, 37.5);
+      kSpeakerAngleMap.put(3.25, 35.5);
+      kSpeakerAngleMap.put(3.50, 33.5);
+      kSpeakerAngleMap.put(4.00, 32.0);
+      kSpeakerAngleMap.put(4.50, 30.5);
+
+
+
       // kSpeakerAngleMap.put(4.00, 38.0);
     }
 
@@ -244,18 +258,18 @@ public final class Constants {
        * These values below are based on Speaker wall to frame front measurement with some of the
        * bold guesses 0724
        */
-      kSpeakerRPSMap.put(0.98 + kMagicDistOffset, 53.0);
-      kSpeakerRPSMap.put(2.50 + kMagicDistOffset, 53.0);
-      kSpeakerRPSMap.put(3.00 + kMagicDistOffset, 61.5);
-      kSpeakerRPSMap.put(3.50 + kMagicDistOffset, 70.0);
-      kSpeakerRPSMap.put(3.60 + kMagicDistOffset, 68.75);
+      kSpeakerRPSMap.put(1.36, 53.0);
+      // kSpeakerRPSMap.put(2.50 + kMagicDistOffset, 53.0);
+      // kSpeakerRPSMap.put(3.00 + kMagicDistOffset, 61.5);
+      // kSpeakerRPSMap.put(3.50 + kMagicDistOffset, 70.0);
+      // kSpeakerRPSMap.put(3.60 + kMagicDistOffset, 68.75);
       kSpeakerRPSMap.put(3.80 + kMagicDistOffset, 75.0);
       kSpeakerRPSMap.put(5.9 + kMagicDistOffset, 75.0);
     }
 
     // this aim target is exactly below the center tags
-    public static final Translation2d kRedSpeaker = new Translation2d(16.54, 5.54);
-    public static final Translation2d kBlueSpeaker = new Translation2d(0.0, 5.54);
+    public static final Translation2d kRedSpeaker = new Translation2d(16.30, 5.54);
+    public static final Translation2d kBlueSpeaker = new Translation2d(0.24, 5.54);
   }
 
   public static final class FieldConstants {

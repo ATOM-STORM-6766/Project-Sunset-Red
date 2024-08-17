@@ -25,7 +25,7 @@ public class VisionShootWhileMovingCommand extends Command {
   private static final double kHeadingOffsetScalarDeg = 8.0;
   private static final double kAngleOffsetScalarDeg = 5.0;
   // the aim offset scalar when you are aside from the speaker
-  private static final double kFarCornerScalar = 0.1;
+  private static final double kFarCornerScalar = 0.0;
 
   private DrivetrainSubsystem sDrivetrainSubsystem;
   private Arm sArm;
@@ -225,6 +225,7 @@ public class VisionShootWhileMovingCommand extends Command {
     double timeOfFly = robotToGoal.getNorm() / noteFlySpeed;
     Translation2d offsetDueToMove = driveVector.times(timeOfFly); // delta x = v * t
     Translation2d aimTargetToRobot = robotToGoal.minus(offsetDueToMove);
+    SmartDashboard.putNumber("dist to goal", aimTargetToRobot.getNorm());
     return aimTargetToRobot;
   }
 

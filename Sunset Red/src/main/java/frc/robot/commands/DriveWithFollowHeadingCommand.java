@@ -23,8 +23,8 @@ public class DriveWithFollowHeadingCommand extends Command {
   // TODO : CHECK PID
   private final ProfiledPIDController mProfiledPID =
       new ProfiledPIDController(
-          1.0,
-          2.0,
+          3.0,
+          0.0,
           0.3,
           new TrapezoidProfile.Constraints(Math.toRadians(540), Math.toRadians(720)));
 
