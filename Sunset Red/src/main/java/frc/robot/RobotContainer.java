@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.*;
+import frc.robot.auto.modes.California.CaliforniaAutoSweepMidfield;
 import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine;
 import frc.robot.auto.modes.Dallas.DallasAutoDrop53Routine.Drop53Strategy;
 import frc.robot.auto.modes.Dallas.DallasAutoScore53Routine;
@@ -522,11 +523,18 @@ public class RobotContainer {
         "Dallas Trap 53 (Configurable)", new ProxyCommand(this::createDallasTrap53Command));
     mChooser.addOption(
         "Dallas Drop 53 (Configurable)", new ProxyCommand(this::createDallasDrop53Command));
+    mChooser.addOption("California Sweep Mid Field", new ProxyCommand(this::createCaliforniaSweepMidFieldCommand));
 
     SmartDashboard.putData("AUTO CHOICES", mChooser);
     SmartDashboard.putData("Score 53 Strategy", mScore53StrategyChooser);
+    SmartDashboard.putData("Drop 53 Strategy", mDrop53StrategyChooser);
     SmartDashboard.putData("Fallback Rotation 53", mFallbackRotation53Chooser);
   }
+
+    private Command createCaliforniaSweepMidFieldCommand() {
+        return CaliforniaAutoSweepMidfield.buildSweepMidFieldCommand(
+            sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake);
+    }
 
   private Command createDallasScore53Command() {
     return DallasAutoScore53Routine.buildScore53Command(

@@ -344,6 +344,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void setPose(Pose2d pose) {
     synchronized (mEstimator) {
       mEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
+      mHeading.clear();
     }
   }
 
@@ -386,6 +387,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
               DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                   ? new Rotation2d()
                   : Rotation2d.fromDegrees(180)));
+      mHeading.clear();
     }
   }
 
@@ -485,6 +487,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
+      SmartDashboard.putNumber("gyro yaw", getGyroYaw().getDegrees());
       mHeading.put(timestamp, getHeading());
     }
   }

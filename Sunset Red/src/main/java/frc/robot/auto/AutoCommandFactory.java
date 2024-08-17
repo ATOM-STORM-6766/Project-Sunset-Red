@@ -36,7 +36,7 @@ public class AutoCommandFactory {
   // upon robot pose x reach kChaseNoteDeadlineX we start chase note
   // for reference: wing line ~5.8m
   // TODO: THIS SHOULD BE 6.5-7.0
-  public static final double kChaseNoteDeadlineX = 6.3;
+  public static final double kChaseNoteDeadlineX = 5.8;
 
   // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield
   // completely
@@ -63,17 +63,23 @@ public class AutoCommandFactory {
       Arm arm,
       Shooter shooter,
       Transfer transfer) {
-    Optional<Alliance> currentAlliance = DriverStation.getAlliance();
-    PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
-    if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
-      firstPath = firstPath.flipPath();
-    }
 
     return new ParallelCommandGroup(
         new SequentialCommandGroup(
-            drivetrainSubsystem.runZeroingCommand(),
-            AutoBuilder.pathfindToPose(
-                firstPath.getPreviewStartingHolonomicPose(), PathfindConstants.constraints)),
+            new InstantCommand(
+                () -> {
+                  Optional<Alliance> currentAlliance = DriverStation.getAlliance();
+                  PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
+                  if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
+                    firstPath = firstPath.flipPath();
+                  }
+                  drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
+                SmartDashboard.putNumber("Auto Init Heading", firstPath.getPreviewStartingHolonomicPose().getRotation().getDegrees());
+
+                  SmartDashboard.putString("Auto Status", "Finished prepare command");
+                }),
+            drivetrainSubsystem.runZeroingCommand()
+            ),
         new SequentialCommandGroup(
             new ParallelCommandGroup(
                 new SetArmAngleCommand(arm, shootingParameters.angle_deg),

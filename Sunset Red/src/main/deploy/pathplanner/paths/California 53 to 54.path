@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.2985793368847,
-        "y": 4.1039637667199065
+        "x": 8.27025654051308,
+        "y": 4.11050362756931
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.976924171440936,
-        "y": 3.434911193896462
+        "x": 7.368522126487903,
+        "y": 4.11050362756931
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 8.2985793368847,
-        "y": 2.449346652754041
+        "x": 7.801823078681821,
+        "y": 2.705203242075528
       },
       "prevControl": {
-        "x": 7.66055509335595,
-        "y": 3.369419993606936
+        "x": 7.087462049389147,
+        "y": 3.3727209251850745
       },
       "nextControl": null,
       "isLocked": false,
@@ -39,13 +39,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -55.125657576668296,
-    "rotateFast": true
+    "rotation": -25.86635679409444,
+    "rotateFast": false
   },
   "reversed": false,
-  "folder": "Dallas",
+  "folder": "California",
   "previewStartingState": {
-    "rotation": -0.6832392239461814,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true
