@@ -200,8 +200,8 @@ public class VisionShootWhileMovingCommand extends Command {
     // find if superstruct ok
     boolean shootOk = Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 2.0
       && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
-      && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians()) < Math.toRadians(2.0);
-    
+      && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians()) < Math.toRadians(3.0);
+    SmartDashboard.putBoolean("decide to feed", shootOk);
     return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk);
   }
 
