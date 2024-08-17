@@ -100,7 +100,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   // camera-wise dev factors
   // applied dev = factor * (dist^2) / tagcount
   // factor=0.02 means dev=0.08 for single tag dist=2m
-  private static final double[] xyDevFactors = new double[] {0.02, 0.02, 0.05}; // 0.005, 0.005, 0.01
+  private static final double[] xyDevFactors = new double[] {0.01, 0.01, 0.02}; // 0.005, 0.005, 0.01
   private static final double[] angleDevFactors = new double[] {0.05, 0.05, 0.1};
 
 
