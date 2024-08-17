@@ -38,8 +38,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final double Z_MARGIN = 0.35;
 
   // chassis speed filter
-  private static final double STATIC_DELTAV_BOUND = 0.5; // meter per sec
-  private static final double MOVING_DELTAV_BOUND = 1.5; // meter per sec
+  private static final double STATIC_DELTAV_BOUND = 1.0; // meter per sec
+  private static final double MOVING_DELTAV_BOUND = 2.0; // meter per sec
 
   // read-only data class from Java 14: keyword 'record'
   public record VisionObservation(EstimatedRobotPose estimate, double xyDev, double angleDev, String camname) {}

@@ -433,12 +433,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
+      // we should calculate a FIELD-SPACE velocity reference
+      // for vision coprocessor filtering
+      Translation2d driveSpeedFieldRel = new Translation2d(
+        mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond)
+          .rotateBy(getHeading());
       var visionObservations =
           ApriltagCoprocessor.getInstance()
               .updateEstimatedGlobalPose(
                   mEstimator.getEstimatedPosition(),
-                  new Translation2d(
-                      mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
+                  driveSpeedFieldRel);
       // report how many updates we are doing
       SmartDashboard.putNumber("Vision Observation Count", visionObservations.size());
 
