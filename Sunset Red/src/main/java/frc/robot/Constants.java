@@ -182,10 +182,6 @@ public final class Constants {
   }
 
   public static final class VisionShootConstants {
-    // in measurement: front frame to tag
-    // in program: robot center to tag
-    // compensate for that difference
-    public static final double kMagicDistOffset = 0.35;
 
     public static final InterpolatingDoubleTreeMap kSpeakerAngleMap =
         new InterpolatingDoubleTreeMap();
