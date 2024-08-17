@@ -276,7 +276,7 @@ public class RobotContainer {
     buildShootBinding(
         driverController.x().or(operatorController.x()), ShootingParameters.BELOW_SPEAKER);
     buildShootBinding(
-        driverController.a().or(operatorController.a()), ShootingParameters.BELOW_SPEAKER_REVERSE);
+        operatorController.a(), ShootingParameters.BELOW_SPEAKER_REVERSE);
 
     // Get note from source
     operatorController

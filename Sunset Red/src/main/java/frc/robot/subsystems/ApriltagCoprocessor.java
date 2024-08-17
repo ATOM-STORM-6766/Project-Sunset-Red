@@ -38,8 +38,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final double Z_MARGIN = 0.35;
 
   // chassis speed filter
-  private static final double STATIC_DELTAV_BOUND = 0.5; // meter per sec
-  private static final double MOVING_DELTAV_BOUND = 1.5; // meter per sec
+  private static final double STATIC_DELTAV_BOUND = 1.0; // meter per sec
+  private static final double MOVING_DELTAV_BOUND = 2.0; // meter per sec
 
   // read-only data class from Java 14: keyword 'record'
   public record VisionObservation(EstimatedRobotPose estimate, double xyDev, double angleDev, String camname) {}
@@ -100,7 +100,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
   // camera-wise dev factors
   // applied dev = factor * (dist^2) / tagcount
   // factor=0.02 means dev=0.08 for single tag dist=2m
-  private static final double[] xyDevFactors = new double[] {0.005, 0.005, 0.01};
+  private static final double[] xyDevFactors = new double[] {0.02, 0.02, 0.05}; // 0.005, 0.005, 0.01
   private static final double[] angleDevFactors = new double[] {0.05, 0.05, 0.1};
 
 
