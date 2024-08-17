@@ -93,11 +93,11 @@ public class CaliforniaAutoSweepMidfield {
                 intake,
                 GamePieceProcessor.getInstance(),
                 AutoBuilder.followPath(PathPlannerPath.fromPathFile(AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_54)),
-                Rotation2d.fromDegrees(-90)),
+                Rotation2d.fromDegrees(-90))
 
-            // Finally move to 55 (with 54 inside the robot)
-            // just follow the path 54 to 55, without chasing any note
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(AutoRoutineConfig.AutoPaths.FROM_54_TO_55))
+            // // Finally move to 55 (with 54 inside the robot)
+            // // just follow the path 54 to 55, without chasing any note
+            // AutoBuilder.followPath(PathPlannerPath.fromPathFile(AutoRoutineConfig.AutoPaths.FROM_54_TO_55))
 
         );
     }

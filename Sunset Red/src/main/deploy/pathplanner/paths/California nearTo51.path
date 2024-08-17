@@ -3,45 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.27,
-        "y": 6.55
+        "x": 0.6933452953924437,
+        "y": 6.75715268691593
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7026837143702784,
-        "y": 6.339505220036081
-      },
-      "isLocked": true,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 2.9026396514331485,
-        "y": 6.2797609355902475
-      },
-      "prevControl": {
-        "x": 2.329626083753592,
-        "y": 6.291455090032687
-      },
-      "nextControl": {
-        "x": 3.6624814334653686,
-        "y": 6.264253960446733
+        "x": 1.2437546130441741,
+        "y": 7.459802879662821
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.148037022925897,
-        "y": 7.010147673073124
+        "x": 2.9301150756367123,
+        "y": 7.705730447124233
       },
       "prevControl": {
-        "x": 5.196338249945354,
-        "y": 6.71660230554304
+        "x": 2.1688206221326167,
+        "y": 7.705730447124233
       },
       "nextControl": {
-        "x": 7.09973579590644,
-        "y": 7.303693040603209
+        "x": 5.881245885173652,
+        "y": 7.705730447124233
       },
       "isLocked": false,
       "linkedName": null
@@ -62,19 +46,9 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0,
+      "waypointRelativePos": 0.6,
       "rotationDegrees": 0,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 1,
-      "rotationDegrees": 0,
-      "rotateFast": false
-    },
-    {
-      "waypointRelativePos": 2,
-      "rotationDegrees": 0,
-      "rotateFast": false
+      "rotateFast": true
     }
   ],
   "constraintZones": [],
@@ -93,7 +67,7 @@
   "reversed": false,
   "folder": "California",
   "previewStartingState": {
-    "rotation": 30.0,
+    "rotation": 60.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -56,18 +56,18 @@ public class DallasAutoDrop53Routine {
         switch (strategy) {
           case NEAR_SIDE:
             return new StrategyParams(
-                AutoRoutineConfig.AutoShootPositions.NEAR_SIDE,
+                AutoRoutineConfig.AutoShootPositions.UNDER_STAGE,
                 AutoRoutineConfig.AutoPaths.FROM_53_TO_52,
                 Rotation2d.fromDegrees(90),
-                AutoRoutineConfig.AutoPaths.NEAR_SIDE_TO_53,
+                AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_54,
                 FieldConstants.NOTE_54_POSITION);
     
           case FAR_SIDE:
             return new StrategyParams(
-                AutoRoutineConfig.AutoShootPositions.FAR_SIDE,
+                AutoRoutineConfig.AutoShootPositions.UNDER_STAGE,
                 AutoRoutineConfig.AutoPaths.FROM_53_TO_54,
                 Rotation2d.fromDegrees(-90),
-                AutoRoutineConfig.AutoPaths.FAR_SIDE_TO_53,
+                AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_52,
                 FieldConstants.NOTE_55_POSITION);
           default:
             throw new IllegalArgumentException("Invalid strategy for DallasAutoDrop53Routine");
@@ -105,12 +105,13 @@ public class DallasAutoDrop53Routine {
           AutoRoutineConfig.AutoPaths.START_DALLAS,
           AutoRoutineConfig.AutoShootPositions.NOTE_32.shootParams,
           fallbackRotation53),
-      Commands.either(
-          new TurnToHeadingCommand(drivetrainSubsystem, new Rotation2d()),
-          new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(180)),
-          () ->
-              DriverStation.getAlliance().isEmpty()
-                  || DriverStation.getAlliance().get() == Alliance.Blue),
+
+      // Commands.either(
+      //     new TurnToHeadingCommand(drivetrainSubsystem, new Rotation2d()),
+      //     new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(180)),
+      //     () ->
+      //         DriverStation.getAlliance().isEmpty()
+      //             || DriverStation.getAlliance().get() == Alliance.Blue),
 
       // Drop 53 and Get first note
       drop53ThenBuildPathThenChaseNoteCommand(
@@ -126,6 +127,7 @@ public class DallasAutoDrop53Routine {
       // Score first note
       AutoBuilder.pathfindToPoseFlipped(params.shootConfigFirstNote.shootPose, PathfindConstants.constraints)
           .deadlineWith(
+              new IntakeCommand(intake, transfer),
               new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
               new SetShooterTargetCommand(shooter, params.shootConfigFirstNote.shootParams.speed_rps)),
 
@@ -143,10 +145,11 @@ public class DallasAutoDrop53Routine {
       // Score dropped 53
       AutoBuilder.pathfindToPoseFlipped(AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootPose, PathfindConstants.constraints)
           .deadlineWith(
+              new IntakeCommand(intake, transfer),
               new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
               new SetShooterTargetCommand(shooter, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
 
-      // Move to chase 55
+        // Move to chase 55
         AutoCommandFactory.buildPathThenChaseNoteCommand(
             drivetrainSubsystem,
             arm,

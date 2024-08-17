@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.27,
-        "y": 6.55
+        "x": 0.7050561319382253,
+        "y": 6.745441850370149
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.11696605800619,
-        "y": 6.770769245242194
+        "x": 2.356284084893418,
+        "y": 6.101345840352166
       },
       "isLocked": false,
       "linkedName": null
@@ -20,12 +20,12 @@
         "y": 6.872554069182212
       },
       "prevControl": {
-        "x": 2.624609133399058,
-        "y": 6.812804966535074
+        "x": 2.6804325744803523,
+        "y": 6.663717562335652
       },
       "nextControl": {
-        "x": 3.6980020787635963,
-        "y": 6.978712257371614
+        "x": 3.6444761049293843,
+        "y": 7.272429494930317
       },
       "isLocked": false,
       "linkedName": null
@@ -88,7 +88,7 @@
   "reversed": false,
   "folder": "California",
   "previewStartingState": {
-    "rotation": 30.0,
+    "rotation": 60.0,
     "velocity": 0
   },
   "useDefaultConstraints": true

@@ -18,17 +18,17 @@ public class AutoRoutineConfig {
     public static class AutoShootPositions {
         public static final AutoShootingConfig UNDER_STAGE =
                 new AutoShootingConfig(new Pose2d(4.5, 4.63, Rotation2d.fromDegrees(-14.0)),
-                        new ShootingParameters(75, 32.5));
+                        new ShootingParameters(75, 30.93));
         public static final AutoShootingConfig NEAR_SIDE =
-                new AutoShootingConfig(new Pose2d(4.5, 6.46, Rotation2d.fromDegrees(14.0)),
-                        new ShootingParameters(75, 32.5));
+                new AutoShootingConfig(new Pose2d(3.8, 6.30, Rotation2d.fromDegrees(-167.94921511659044+180)),
+                        new ShootingParameters(70.98022760533058, 33.07934067924468));
         public static final AutoShootingConfig FAR_SIDE = new AutoShootingConfig(
-                new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(28.0)), new ShootingParameters(75, 41));
+                new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(-28.0)), new ShootingParameters(75, 33.4));
         public static final AutoShootingConfig NOTE_31 =
                 new AutoShootingConfig(new Pose2d(2.85, 6.96, Rotation2d.fromDegrees(30.0)),
                         new ShootingParameters(75, 36.5)); // todo: tune this
         public static final AutoShootingConfig NOTE_32 =
-                new AutoShootingConfig(null, new ShootingParameters(75, 36.5));
+                new AutoShootingConfig(null, new ShootingParameters(75, 34.5));
         public static final AutoShootingConfig NOTE_33 =
                 new AutoShootingConfig(new Pose2d(2.65, 4.27, Rotation2d.fromDegrees(-30.0)),
                         new ShootingParameters(75, 36.5)); // todo: tune this
@@ -41,10 +41,11 @@ public class AutoRoutineConfig {
 
     public static class AutoPaths {
         public static final String START_DALLAS = "Dallas StartPath";
-        public static final String START_CALIFORNIA = "California StartPath";
+        public static final String START_CALIFORNIA = "California nearTo51";
         public static final String FROM_53_TO_52 = "Dallas 53 to 52";
         public static final String FROM_53_TO_54 = "Dallas 53 to 54";
         public static final String FROM_54_TO_55 = "California 54 to 55";
+        public static final String CALI_53_TO_54 = "California 53 to 54";
         public static final String UNDER_STAGE_TO_51 = "ShootPoseUnderStage to 51";
         public static final String UNDER_STAGE_TO_52 = "ShootPoseUnderStage to 52";
         public static final String UNDER_STAGE_TO_54 = "ShootPoseUnderStage to 54";

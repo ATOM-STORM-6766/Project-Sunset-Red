@@ -31,6 +31,12 @@ public class LED extends SubsystemBase {
     
     @Override
     public synchronized void periodic() {
+        for (int i = 25; i < 60; i ++) {
+            mLEDBuffer.setRGB(i,0,0,0);
+        }
+        for (int i = 140; i < 360; i ++) {
+            mLEDBuffer.setRGB(i,0,0,0);
+        }
         mLED.setData(mLEDBuffer);
     }
 
