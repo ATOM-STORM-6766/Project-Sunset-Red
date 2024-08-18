@@ -417,7 +417,7 @@ public class RobotContainer {
                     .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
             goalzone,
             // TODO : CHECK DIRECTION! 
-            () -> operatorController.getHID().getLeftY(),
+            () -> -operatorController.getHID().getLeftY(),
             () -> operatorController.getHID().getLeftX()
     );
 
