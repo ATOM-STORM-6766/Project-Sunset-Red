@@ -166,7 +166,7 @@ public class RobotContainer {
                     mIntake,
                     () -> driverController.getDriveTranslation(DriveMode.FIELD_ORIENTED),
                     () -> operatorController.getLeftX(),
-                    () -> operatorController.getLeftY(),
+                    () -> -operatorController.getLeftY(),
                     AimingMode.PNP3D)
                 .withInterruptBehavior(InterruptionBehavior.kCancelIncoming))
         .onFalse(
