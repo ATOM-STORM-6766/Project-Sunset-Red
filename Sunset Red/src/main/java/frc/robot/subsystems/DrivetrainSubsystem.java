@@ -344,6 +344,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
   public void setPose(Pose2d pose) {
     synchronized (mEstimator) {
       mEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
+      mHeading.clear();
     }
   }
 
@@ -386,6 +387,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
               DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                   ? new Rotation2d()
                   : Rotation2d.fromDegrees(180)));
+      mHeading.clear();
     }
   }
 
@@ -431,12 +433,16 @@ public class DrivetrainSubsystem extends SubsystemBase {
 
   private double updateOdomFromVision() {
     synchronized (mEstimator) {
+      // we should calculate a FIELD-SPACE velocity reference
+      // for vision coprocessor filtering
+      Translation2d driveSpeedFieldRel = new Translation2d(
+        mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond)
+          .rotateBy(getHeading());
       var visionObservations =
           ApriltagCoprocessor.getInstance()
               .updateEstimatedGlobalPose(
                   mEstimator.getEstimatedPosition(),
-                  new Translation2d(
-                      mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond));
+                  driveSpeedFieldRel);
       // report how many updates we are doing
       SmartDashboard.putNumber("Vision Observation Count", visionObservations.size());
 
@@ -485,6 +491,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
         mModulePositions[i].angle = Rotation2d.fromDegrees(anglerot * 360);
       }
       mEstimator.updateWithTime(timestamp, getGyroYaw(), mModulePositions);
+      SmartDashboard.putNumber("gyro yaw", getGyroYaw().getDegrees());
       mHeading.put(timestamp, getHeading());
     }
   }

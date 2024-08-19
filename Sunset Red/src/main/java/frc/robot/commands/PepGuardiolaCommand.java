@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 public class PepGuardiolaCommand extends Command {
 
   // scalar when operator adjusts speed/angle
-  private static final double kManualSpeedOffsetScalar = 8.0;
+  private static final double kManualArmOffsetScalarDeg = 8.0;
   private static final double kManualHeadingOffsetScalar = Math.toRadians(8.0);
 
   public enum GoalZone {
@@ -106,7 +106,7 @@ public class PepGuardiolaCommand extends Command {
   private Intake sIntake;
   private Supplier<Translation2d> mDriveVectorSupplier;
   private GoalZone mGoalZone;
-  private Supplier<Double> mSpeedOffsetSupplier;
+  private Supplier<Double> mAngleOffsetSupplier;
   private Supplier<Double> mHeadingOffsetSupplier;
 
   private final ProfiledPIDController mProfiledPID =
@@ -136,7 +136,7 @@ public class PepGuardiolaCommand extends Command {
       Intake intake,
       Supplier<Translation2d> driveVectorSupplier,
       GoalZone goalZone,
-      Supplier<Double> speedOffsetSupplier,
+      Supplier<Double> angleOffsetSupplier,
       Supplier<Double> headingOffsetSupplier) {
     sDrivetrainSubsystem = drivetrainSubsystem;
     sArm = arm;
@@ -145,7 +145,7 @@ public class PepGuardiolaCommand extends Command {
     sIntake = intake;
     mDriveVectorSupplier = driveVectorSupplier;
     mGoalZone = Objects.requireNonNull(goalZone);
-    mSpeedOffsetSupplier = speedOffsetSupplier;
+    mAngleOffsetSupplier = angleOffsetSupplier;
     mHeadingOffsetSupplier = headingOffsetSupplier;
     addRequirements(drivetrainSubsystem, arm, transfer, shooter, intake);
   }
@@ -197,8 +197,8 @@ public class PepGuardiolaCommand extends Command {
       shooterSpeed = kLowShootParam.speed_rps;
       armAngle = kLowShootParam.angle_deg;
     } else {
-      shooterSpeed = kHighShootSpeedMap.get(targetDist) + mSpeedOffsetSupplier.get() * kManualSpeedOffsetScalar;
-      armAngle = kHighShootAngleMap.get(targetDist);
+      shooterSpeed = kHighShootSpeedMap.get(targetDist);
+      armAngle = kHighShootAngleMap.get(targetDist) + mAngleOffsetSupplier.get() * kManualArmOffsetScalarDeg;
     }
 
     // run subsystem

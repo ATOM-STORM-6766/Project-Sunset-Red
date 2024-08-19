@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -33,13 +32,13 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private static final double ACCEPTABLE_AMBIGUITY_THRESHOLD = 0.2;
   private static final double ACCEPTABLE_YAW_THRESHOLD = 30;
   private static final double ACCEPTABLE_PITCH_THRESHOLD = 25;
-  private static final double MULTI_TAG_DELAY = 0.5;
+  private static final double MULTI_TAG_DELAY = 0.1;
   // if abs(Pose3d.Z) > Z_Margin, don't update
   private static final double Z_MARGIN = 0.35;
 
   // chassis speed filter
-  private static final double STATIC_DELTAV_BOUND = 0.5; // meter per sec
-  private static final double MOVING_DELTAV_BOUND = 1.5; // meter per sec
+  private static final double STATIC_DELTAV_BOUND = 1.0; // meter per sec
+  private static final double MOVING_DELTAV_BOUND = 2.0; // meter per sec
 
   // read-only data class from Java 14: keyword 'record'
   public record VisionObservation(EstimatedRobotPose estimate, double xyDev, double angleDev, String camname) {}
@@ -53,7 +52,7 @@ public class ApriltagCoprocessor extends SubsystemBase {
           Units.degreesToRadians(-40), Units.degreesToRadians(180)));
 
   private Transform3d kRobotToCameraForIntakeSide =
-      new Transform3d(0.42, 0.12, 0.20, new Rotation3d(Units.degreesToRadians(180),
+      new Transform3d(0.42, 0.06, 0.20, new Rotation3d(Units.degreesToRadians(180),
           Units.degreesToRadians(-45), Units.degreesToRadians(0)));
 
   // new camera and old camera are inverse (due to different manufacturer), so roll is 0 and 180
@@ -93,14 +92,14 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private ArrayList<PhotonPoseEstimator> estimators =
       new ArrayList<>(Arrays.asList(photonPoseEstimatorForShooterSide,
           photonPoseEstimatorForIntakeSide, photonPoseEstimatorForShooterLongFocal));
-  private ArrayList<StructPublisher<Pose3d>> publishers = new ArrayList<>(
-      Arrays.asList(shooterSidePublisher, intakeSidePublisher, shooterLongFocalPublisher));
+  //private ArrayList<StructPublisher<Pose3d>> publishers = new ArrayList<>(
+  //    Arrays.asList(shooterSidePublisher, intakeSidePublisher, shooterLongFocalPublisher));
   // camera-wise area filter bounds
   private static final List<Double> kAreaBounds = List.of(0.1, 0.1, 0.2);
   // camera-wise dev factors
   // applied dev = factor * (dist^2) / tagcount
   // factor=0.02 means dev=0.08 for single tag dist=2m
-  private static final double[] xyDevFactors = new double[] {0.02, 0.02, 0.05};
+  private static final double[] xyDevFactors = new double[] {0.01, 0.01, 0.02}; // 0.005, 0.005, 0.01
   private static final double[] angleDevFactors = new double[] {0.05, 0.05, 0.1};
 
 
@@ -287,8 +286,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
 
   private PoseStrategy determineStrategy(int camIdx, List<PhotonTrackedTarget> acceptableTargets) {
     double currentTime = Timer.getFPGATimestamp();
-    // boolean isMultiTag = acceptableTargets.size() > 1;
-    boolean isMultiTag = false;
+    boolean isMultiTag = acceptableTargets.size() > 1;
+    // boolean isMultiTag = false;
 
     boolean useMultiTag = lstMultiTagDelayedBoolean.get(camIdx).update(currentTime, isMultiTag);
 

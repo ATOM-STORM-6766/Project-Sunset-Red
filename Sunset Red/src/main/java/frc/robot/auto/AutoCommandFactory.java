@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.PathfindConstants;
 import frc.robot.commands.ChaseNoteCommand;
 import frc.robot.commands.FeedCommand;
 import frc.robot.commands.IntakeAndFeedCommand;
@@ -36,7 +35,7 @@ public class AutoCommandFactory {
   // upon robot pose x reach kChaseNoteDeadlineX we start chase note
   // for reference: wing line ~5.8m
   // TODO: THIS SHOULD BE 6.5-7.0
-  public static final double kChaseNoteDeadlineX = 6.3;
+  public static final double kChaseNoteDeadlineX = 5.8;
 
   // upon robot pose x reach kMidFieldFenceX the robot has crossed the midfield
   // completely
@@ -59,21 +58,27 @@ public class AutoCommandFactory {
   public static Command buildPrepCommand(
       DrivetrainSubsystem drivetrainSubsystem,
       ShootingParameters shootingParameters,
-      String startPathName,
+      PathPlannerPath startPath,
       Arm arm,
       Shooter shooter,
       Transfer transfer) {
-    Optional<Alliance> currentAlliance = DriverStation.getAlliance();
-    PathPlannerPath firstPath = PathPlannerPath.fromPathFile(startPathName);
-    if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
-      firstPath = firstPath.flipPath();
-    }
 
     return new ParallelCommandGroup(
         new SequentialCommandGroup(
-            drivetrainSubsystem.runZeroingCommand(),
-            AutoBuilder.pathfindToPose(
-                firstPath.getPreviewStartingHolonomicPose(), PathfindConstants.constraints)),
+            new InstantCommand(
+                () -> {
+                  Optional<Alliance> currentAlliance = DriverStation.getAlliance();
+                  PathPlannerPath firstPath = startPath;
+                  if (currentAlliance.isPresent() && currentAlliance.get() == Alliance.Red) {
+                    firstPath = firstPath.flipPath();
+                  }
+                  drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
+                SmartDashboard.putNumber("Auto Init Heading", firstPath.getPreviewStartingHolonomicPose().getRotation().getDegrees());
+
+                  SmartDashboard.putString("Auto Status", "Finished prepare command");
+                }),
+            drivetrainSubsystem.runZeroingCommand()
+            ),
         new SequentialCommandGroup(
             new ParallelCommandGroup(
                 new SetArmAngleCommand(arm, shootingParameters.angle_deg),
@@ -190,62 +195,7 @@ public class AutoCommandFactory {
             }));
   }
 
-  private static final Pose2d kStop55Pose = new Pose2d(7.72, 1.24, Rotation2d.fromDegrees(-45.0));
-
-  public static Command buildTake54Stop55Command(
-      DrivetrainSubsystem drivetrainSubsystem,
-      Arm arm,
-      Shooter shooter,
-      Transfer transfer,
-      Intake intake,
-      GamePieceProcessor gamePieceProcessor) {
-    return new SequentialCommandGroup(
-        new ParallelDeadlineGroup(
-                AutoBuilder.pathfindThenFollowPath(
-                    PathPlannerPath.fromPathFile("take54EndPath"), PathfindConstants.constraints),
-                new SequentialCommandGroup(
-                    // if note, it must be prepared, feed first
-                    new SequentialCommandGroup(
-                            new FeedCommand(transfer, shooter),
-                            Commands.runOnce(() -> shooter.stop(), shooter))
-                        .onlyIf(() -> transfer.isOmronDetected()),
-                    new ParallelCommandGroup(
-                        new SetArmAngleCommand(arm, ArmConstants.ARM_OBSERVE_ANGLE),
-                        new IntakeCommand(intake, transfer))))
-            .until(
-                () -> {
-                  // deadline is whether we are far enough the field to 54
-                  boolean deadline = (drivetrainSubsystem.getPose().getY() < 3.0);
-                  Optional<PhotonTrackedTarget> target =
-                      gamePieceProcessor.getClosestGamePieceInfo();
-                  boolean hasTarget = target.isPresent();
-                  SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
-                  SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return (deadline && hasTarget); // || transfer.isOmronDetected();
-                }),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Chasing note")),
-        new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-            .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))
-            .unless(() -> transfer.isOmronDetected()),
-        new InstantCommand(() -> SmartDashboard.putString("Auto Status", "Checking for note")),
-        Commands.either(
-            // stop 55 and ok
-            AutoBuilder.pathfindToPose(kStop55Pose, PathfindConstants.constraints),
-            // if no note, just take 55
-            new SequentialCommandGroup(
-                new InstantCommand(
-                    () -> SmartDashboard.putString("Auto Status", "Rotating to find note")),
-                new TurnToHeadingCommand(drivetrainSubsystem, Rotation2d.fromDegrees(-90.0)),
-                new InstantCommand(
-                    () -> SmartDashboard.putString("Auto Status", "Rotation Finished")),
-                new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
-                    .until(() -> isFieldPositionReached(drivetrainSubsystem, kMidFieldFenceX))),
-            () -> {
-              boolean hasNote = transfer.isOmronDetected();
-              SmartDashboard.putBoolean("Has Note", hasNote);
-              return hasNote;
-            }));
-  }
+  
 
   public static boolean isFieldPositionReached(
       DrivetrainSubsystem drivetrainSubsystem, double threshold) {
@@ -280,12 +230,12 @@ public class AutoCommandFactory {
       Transfer transfer,
       Intake intake,
       GamePieceProcessor gamePieceProcessor,
-      String pathName,
+      PathPlannerPath pathName,
       ShootingParameters shootParams,
       Rotation2d findNoteHeading) {
     return new SequentialCommandGroup(
         new ParallelDeadlineGroup(
-                AutoBuilder.followPath(PathPlannerPath.fromPathFile(pathName)),
+                AutoBuilder.followPath(pathName),
                 new SequentialCommandGroup(
                     new ParallelCommandGroup(
                         new SetArmAngleCommand(arm, shootParams.angle_deg),

@@ -1,6 +1,6 @@
 {
-  "robotWidth": 0.9,
-  "robotLength": 0.97,
+  "robotWidth": 0.916,
+  "robotLength": 1.09,
   "holonomicMode": true,
   "pathFolders": [
     "California",
