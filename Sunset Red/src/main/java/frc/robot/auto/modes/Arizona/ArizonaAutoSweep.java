@@ -17,6 +17,7 @@ import frc.robot.subsystems.GamePieceProcessor;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Transfer;
+import frc.robot.utils.ShootingParameters;
 
 public class ArizonaAutoSweep {
     /**
@@ -41,7 +42,7 @@ public class ArizonaAutoSweep {
             case NEAR:
                 return new SequentialCommandGroup(
                         AutoCommandFactory.buildPrepCommand(drivetrainSubsystem,
-                                AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams,
+                                ShootingParameters.BELOW_SPEAKER,
                                 AutoRoutineConfig.AutoPaths.START_ARIZONA_NEAR, arm, shooter, transfer),
                         AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter, transfer,
                                 intake, GamePieceProcessor.getInstance(),
@@ -54,7 +55,7 @@ public class ArizonaAutoSweep {
             case FAR:
                 return new SequentialCommandGroup(
                         AutoCommandFactory.buildPrepCommand(drivetrainSubsystem,
-                                AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams,
+                                ShootingParameters.BELOW_SPEAKER,
                                 AutoRoutineConfig.AutoPaths.START_ARIZONA_FAR, arm, shooter, transfer),
                         AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter, transfer,
                                 intake, GamePieceProcessor.getInstance(),
