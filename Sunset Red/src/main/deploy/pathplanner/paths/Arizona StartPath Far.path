@@ -1,0 +1,74 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 0.7053322621138004,
+        "y": 4.387795505663475
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.7148215048241697,
+        "y": 3.5935423591861677
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 5.955814955108171,
+        "y": 1.133983427387145
+      },
+      "prevControl": {
+        "x": 5.212716829110367,
+        "y": 1.2994355959273365
+      },
+      "nextControl": {
+        "x": 7.398158220229483,
+        "y": 0.8128430387295553
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 8.259974006361057,
+        "y": 0.7897218602408229
+      },
+      "prevControl": {
+        "x": 7.429689040947824,
+        "y": 0.8014160146832625
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 5.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 0.0,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "Arizona",
+  "previewStartingState": {
+    "rotation": -59.60532877311047,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

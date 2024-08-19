@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -93,8 +92,8 @@ public class ApriltagCoprocessor extends SubsystemBase {
   private ArrayList<PhotonPoseEstimator> estimators =
       new ArrayList<>(Arrays.asList(photonPoseEstimatorForShooterSide,
           photonPoseEstimatorForIntakeSide, photonPoseEstimatorForShooterLongFocal));
-  private ArrayList<StructPublisher<Pose3d>> publishers = new ArrayList<>(
-      Arrays.asList(shooterSidePublisher, intakeSidePublisher, shooterLongFocalPublisher));
+  //private ArrayList<StructPublisher<Pose3d>> publishers = new ArrayList<>(
+  //    Arrays.asList(shooterSidePublisher, intakeSidePublisher, shooterLongFocalPublisher));
   // camera-wise area filter bounds
   private static final List<Double> kAreaBounds = List.of(0.1, 0.1, 0.2);
   // camera-wise dev factors
