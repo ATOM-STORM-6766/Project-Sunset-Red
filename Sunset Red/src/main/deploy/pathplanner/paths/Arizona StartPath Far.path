@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7053322621138004,
-        "y": 4.387795505663475
+        "x": 1.348175900055504,
+        "y": 1.7046285712941802
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7148215048241697,
-        "y": 3.5935423591861677
+        "x": 4.142507808163767,
+        "y": 1.3413149465187828
       },
       "isLocked": false,
       "linkedName": null
@@ -67,7 +67,7 @@
   "reversed": false,
   "folder": "Arizona",
   "previewStartingState": {
-    "rotation": -59.60532877311047,
+    "rotation": -0.007247126132906343,
     "velocity": 0
   },
   "useDefaultConstraints": true
