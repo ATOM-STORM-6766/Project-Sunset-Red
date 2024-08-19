@@ -1,5 +1,7 @@
 package frc.robot.auto;
 
+import java.util.Optional;
+
 import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,35 +12,40 @@ public class AutoRoutineConfig {
         public static class AutoShootingConfig {
                 public final Pose2d shootPose;
                 public final ShootingParameters shootParams;
+                public final PathPlannerPath approachShootPosePath;
 
-                public AutoShootingConfig(Pose2d pose, ShootingParameters params) {
+                public AutoShootingConfig(Pose2d pose, ShootingParameters params,
+                                PathPlannerPath approachShootPosePath) {
                         this.shootPose = pose;
                         this.shootParams = params;
+                        this.approachShootPosePath = approachShootPosePath;
                 }
         }
 
         public static class AutoShootPositions {
                 public static final AutoShootingConfig UNDER_STAGE = new AutoShootingConfig(
                                 new Pose2d(4.5, 4.63, Rotation2d.fromDegrees(-14.0)),
-                                new ShootingParameters(75, 30.93));
+                                new ShootingParameters(75, 30.93), AutoPaths.APPROACH_UNDER_STAGE);
                 public static final AutoShootingConfig NEAR_SIDE = new AutoShootingConfig(
                                 new Pose2d(3.8, 6.30, Rotation2d.fromDegrees(-167.94921511659044 + 180)),
-                                new ShootingParameters(70.98022760533058, 33.07934067924468));
+                                new ShootingParameters(70.98022760533058, 33.07934067924468),
+                                AutoPaths.APPROACH_UNDER_STAGE);
                 public static final AutoShootingConfig FAR_SIDE = new AutoShootingConfig(
-                                new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(-28.0)), new ShootingParameters(75, 33.4));
+                                new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(-28.0)), new ShootingParameters(75, 33.4),
+                                null);
                 public static final AutoShootingConfig NOTE_31 = new AutoShootingConfig(
                                 new Pose2d(2.85, 6.96, Rotation2d.fromDegrees(30.0)),
-                                new ShootingParameters(75, 36.5)); // todo: tune this
+                                new ShootingParameters(75, 36.5), null); // todo: tune this
                 public static final AutoShootingConfig NOTE_32 = new AutoShootingConfig(null,
-                                new ShootingParameters(75, 34.5));
+                                new ShootingParameters(75, 34.5), null);
                 public static final AutoShootingConfig NOTE_33 = new AutoShootingConfig(
                                 new Pose2d(2.65, 4.27, Rotation2d.fromDegrees(-30.0)),
-                                new ShootingParameters(75, 36.5)); // todo: tune this
+                                new ShootingParameters(75, 36.5), null); // todo: tune this
                 public static final AutoShootingConfig DROP_53 = new AutoShootingConfig(null,
-                                new ShootingParameters(10, 36.5));
+                                new ShootingParameters(10, 36.5), null);
                 public static final AutoShootingConfig HOME = new AutoShootingConfig(
                                 new Pose2d(1.47, 5.59, Rotation2d.fromDegrees(0)),
-                                ShootingParameters.BELOW_SPEAKER);
+                                ShootingParameters.BELOW_SPEAKER, null);
         }
 
         public static class AutoPaths {
@@ -57,6 +64,8 @@ public class AutoRoutineConfig {
                                 .fromPathFile("ShootPoseUnderStage to 51");
                 public static final PathPlannerPath UNDER_STAGE_TO_52 = PathPlannerPath
                                 .fromPathFile("ShootPoseUnderStage to 52");
+                public static final PathPlannerPath UNDER_STAGE_TO_53 = PathPlannerPath
+                                .fromPathFile("ShootPoseUnderStage to 53");
                 public static final PathPlannerPath UNDER_STAGE_TO_54 = PathPlannerPath
                                 .fromPathFile("ShootPoseUnderStage to 54");
                 public static final PathPlannerPath UNDER_STAGE_TO_55 = PathPlannerPath
@@ -77,7 +86,9 @@ public class AutoRoutineConfig {
                 public static final PathPlannerPath HOME_TO_33 = PathPlannerPath.fromPathFile("Dallas Home to 33");
                 public static final PathPlannerPath FROM_52_TO_HOME = PathPlannerPath.fromPathFile("Dallas 52 to Home");
                 public static final PathPlannerPath FROM_54_TO_HOME = PathPlannerPath.fromPathFile("Dallas 54 to Home");
-                public static final PathPlannerPath OBS_TO_UNDER_STAGE = PathPlannerPath
-                                .fromPathFile("Obs Pos to ShootPoseUnderStage");
+                public static final PathPlannerPath APPROACH_UNDER_STAGE = PathPlannerPath
+                                .fromPathFile("Approach ShootPoseUnderStage");
+                public static final PathPlannerPath APPROACH_NEAD_SIDE = PathPlannerPath
+                                .fromPathFile("Approach ShootPoseNearSide");
         }
 }

@@ -115,7 +115,7 @@ public class DallasAutoDrop53Routine {
 
         // Score first note
         AutoBuilder
-            .pathfindThenFollowPath(AutoRoutineConfig.AutoPaths.OBS_TO_UNDER_STAGE, PathfindConstants.constraints)
+            .pathfindThenFollowPath(AutoRoutineConfig.AutoPaths.APPROACH_UNDER_STAGE, PathfindConstants.constraints)
             .deadlineWith(
                 new IntakeCommand(intake, transfer),
                 new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
@@ -134,7 +134,7 @@ public class DallasAutoDrop53Routine {
 
         // Score dropped 53
         AutoBuilder
-            .pathfindThenFollowPath(AutoRoutineConfig.AutoPaths.OBS_TO_UNDER_STAGE, PathfindConstants.constraints)
+            .pathfindThenFollowPath(AutoRoutineConfig.AutoPaths.APPROACH_UNDER_STAGE, PathfindConstants.constraints)
             .deadlineWith(
                 new IntakeCommand(intake, transfer),
                 new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
