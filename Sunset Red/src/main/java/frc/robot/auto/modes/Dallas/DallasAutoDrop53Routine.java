@@ -56,7 +56,7 @@ public class DallasAutoDrop53Routine {
             AutoRoutineConfig.AutoShootPositions.UNDER_STAGE,
             AutoRoutineConfig.AutoPaths.FROM_53_TO_52,
             Rotation2d.fromDegrees(90),
-            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_54,
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_53,
             AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_55);
 
       case FAR_SIDE:
@@ -64,7 +64,7 @@ public class DallasAutoDrop53Routine {
             AutoRoutineConfig.AutoShootPositions.UNDER_STAGE,
             AutoRoutineConfig.AutoPaths.FROM_53_TO_54,
             Rotation2d.fromDegrees(-90),
-            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_52,
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_53,
             AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_55);
       default:
         throw new IllegalArgumentException("Invalid strategy for DallasAutoDrop53Routine");

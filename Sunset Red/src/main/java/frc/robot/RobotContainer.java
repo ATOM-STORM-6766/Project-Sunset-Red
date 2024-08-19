@@ -507,18 +507,8 @@ public class RobotContainer {
         public void pushChooser() {
                 mChooser = new SendableChooser<>();
                 // Configure Score53Strategy chooser
-                mScore53StrategyChooser.setDefaultOption(
-                                "Near Side Mid to Outer",
-                                DallasAutoScore53Routine.Score53Strategy.NEAR_SIDE_MID_TO_OUTER);
-                mScore53StrategyChooser.addOption(
-                                "Near Side Outer to Mid",
-                                DallasAutoScore53Routine.Score53Strategy.NEAR_SIDE_OUTER_TO_MID);
-                mScore53StrategyChooser.addOption(
-                                "Far Side Mid to Outer",
-                                DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_MID_TO_OUTER);
-                mScore53StrategyChooser.addOption(
-                                "Far Side Outer to Mid",
-                                DallasAutoScore53Routine.Score53Strategy.FAR_SIDE_OUTER_TO_MID);
+                mScore53StrategyChooser.setDefaultOption("NEAR", DallasAutoScore53Routine.Score53Strategy.NEAR);
+                mScore53StrategyChooser.addOption("FAR", DallasAutoScore53Routine.Score53Strategy.FAR);
 
                 // Configure Drop53Strategy chooser
                 mDrop53StrategyChooser.setDefaultOption(

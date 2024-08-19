@@ -1,6 +1,5 @@
 package frc.robot.auto;
 
-import java.util.Optional;
 
 import com.pathplanner.lib.path.PathPlannerPath;
 
@@ -29,15 +28,15 @@ public class AutoRoutineConfig {
                 public static final AutoShootingConfig NEAR_SIDE = new AutoShootingConfig(
                                 new Pose2d(3.8, 6.30, Rotation2d.fromDegrees(-167.94921511659044 + 180)),
                                 new ShootingParameters(70.98022760533058, 33.07934067924468),
-                                AutoPaths.APPROACH_UNDER_STAGE);
+                                AutoPaths.APPROACH_NEAR_SIDE);
                 public static final AutoShootingConfig FAR_SIDE = new AutoShootingConfig(
-                                new Pose2d(4.0, 3.0, Rotation2d.fromDegrees(-28.0)), new ShootingParameters(75, 33.4),
-                                null);
+                                new Pose2d(3.45, 3.0, Rotation2d.fromDegrees(-28.0)), new ShootingParameters(75, 33.4),
+                                AutoPaths.APPROACH_FAR_SIDE);
                 public static final AutoShootingConfig NOTE_31 = new AutoShootingConfig(
                                 new Pose2d(2.85, 6.96, Rotation2d.fromDegrees(30.0)),
                                 new ShootingParameters(75, 36.5), null); // todo: tune this
                 public static final AutoShootingConfig NOTE_32 = new AutoShootingConfig(null,
-                                new ShootingParameters(75, 34.5), null);
+                                new ShootingParameters(75, 34), null);
                 public static final AutoShootingConfig NOTE_33 = new AutoShootingConfig(
                                 new Pose2d(2.65, 4.27, Rotation2d.fromDegrees(-30.0)),
                                 new ShootingParameters(75, 36.5), null); // todo: tune this
@@ -88,7 +87,9 @@ public class AutoRoutineConfig {
                 public static final PathPlannerPath FROM_54_TO_HOME = PathPlannerPath.fromPathFile("Dallas 54 to Home");
                 public static final PathPlannerPath APPROACH_UNDER_STAGE = PathPlannerPath
                                 .fromPathFile("Approach ShootPoseUnderStage");
-                public static final PathPlannerPath APPROACH_NEAD_SIDE = PathPlannerPath
+                public static final PathPlannerPath APPROACH_NEAR_SIDE = PathPlannerPath
                                 .fromPathFile("Approach ShootPoseNearSide");
+                public static final PathPlannerPath APPROACH_FAR_SIDE = PathPlannerPath
+                                .fromPathFile("Approach ShootPoseFarSide");
         }
 }
