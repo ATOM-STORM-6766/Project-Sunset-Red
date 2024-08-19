@@ -1,5 +1,6 @@
 package frc.robot.auto.modes.Dallas;
 
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -27,8 +28,8 @@ public class DallasAutoScore53Routine {
   private static class StrategyParams {
     final AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote;
     final AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote;
-    final String firstNotePath;
-    final String secondNotePath;
+    final PathPlannerPath firstNotePath;
+    final PathPlannerPath secondNotePath;
     final Rotation2d firstNoteRotation;
     final Rotation2d secondNoteRotation;
     final Pose2d endChasePose;
@@ -36,8 +37,8 @@ public class DallasAutoScore53Routine {
     StrategyParams(
         AutoRoutineConfig.AutoShootingConfig shootConfigFirstNote,
         AutoRoutineConfig.AutoShootingConfig shootConfigSecondNote,
-        String firstNotePath,
-        String secondNotePath,
+        PathPlannerPath firstNotePath,
+        PathPlannerPath secondNotePath,
         Rotation2d firstNoteRotation,
         Rotation2d secondNoteRotation,
         Pose2d endChasePose) {
@@ -140,7 +141,7 @@ public class DallasAutoScore53Routine {
             transfer,
             intake,
             GamePieceProcessor.getInstance(),
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.firstNotePath)),
+            AutoBuilder.followPath(params.firstNotePath),
             params.firstNoteRotation),
 
         // Score first note
@@ -157,7 +158,7 @@ public class DallasAutoScore53Routine {
             transfer,
             intake,
             GamePieceProcessor.getInstance(),
-            AutoBuilder.followPath(PathPlannerPath.fromPathFile(params.secondNotePath)),
+            AutoBuilder.followPath(params.secondNotePath),
             params.secondNoteRotation),
 
         // Score second note
