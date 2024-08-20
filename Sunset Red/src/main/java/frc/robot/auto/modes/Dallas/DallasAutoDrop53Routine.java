@@ -57,7 +57,7 @@ public class DallasAutoDrop53Routine {
             AutoRoutineConfig.AutoPaths.FROM_53_TO_52,
             Rotation2d.fromDegrees(90),
             AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_53,
-            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_55);
+            AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_51);
 
       case FAR_SIDE:
         return new StrategyParams(
@@ -115,7 +115,7 @@ public class DallasAutoDrop53Routine {
 
         // Score first note
         AutoBuilder
-            .pathfindThenFollowPath(AutoRoutineConfig.AutoPaths.APPROACH_UNDER_STAGE, PathfindConstants.constraints)
+            .pathfindThenFollowPath(params.shootConfigFirstNote.approachShootPosePath, PathfindConstants.constraints)
             .deadlineWith(
                 new IntakeCommand(intake, transfer),
                 new SetArmAngleCommand(arm, params.shootConfigFirstNote.shootParams.angle_deg),
@@ -226,7 +226,7 @@ public class DallasAutoDrop53Routine {
                   boolean hasTarget = target.isPresent();
                   SmartDashboard.putBoolean("Chase Deadline Reached", deadline);
                   SmartDashboard.putBoolean("Has Target", hasTarget);
-                  return (deadline && hasTarget && !transfer.isOmronDetected());
+                  return (deadline && hasTarget);
                 }),
         new ChaseNoteCommand(drivetrainSubsystem, intake, transfer, arm)
             .until(

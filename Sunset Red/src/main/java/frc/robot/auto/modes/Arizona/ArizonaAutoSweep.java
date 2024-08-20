@@ -60,7 +60,7 @@ public class ArizonaAutoSweep {
                         AutoCommandFactory.buildPathThenChaseNoteCommand(drivetrainSubsystem, arm, shooter, transfer,
                                 intake, GamePieceProcessor.getInstance(),
                                 AutoBuilder.followPath(AutoRoutineConfig.AutoPaths.START_ARIZONA_FAR),
-                                Rotation2d.fromDegrees(-90)).alongWith(new SetShooterTargetCommand(shooter, 17)), // warmup
+                                Rotation2d.fromDegrees(90)).alongWith(new SetShooterTargetCommand(shooter, 17)), // warmup
                         AutoBuilder
                                 .pathfindToPoseFlipped(FieldConstants.NOTE_51_POSITION, PathfindConstants.constraints)
                                 .alongWith(new FeedCommand(transfer, shooter))

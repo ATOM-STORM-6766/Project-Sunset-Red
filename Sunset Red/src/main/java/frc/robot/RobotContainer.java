@@ -549,6 +549,7 @@ public class RobotContainer {
                 SmartDashboard.putData("Drop 53 Strategy", mDrop53StrategyChooser);
                 SmartDashboard.putData("Fallback Rotation 53", mFallbackRotation53Chooser);
                 SmartDashboard.putData("Arizona Sweep Mode", mArizonaSweepModeChooser);
+                SmartDashboard.putData("California Strategy", mCaliforniaStrategyChooser);
         }
 
         private Command createArizonaSweepNearCommand() {

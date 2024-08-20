@@ -191,7 +191,7 @@ public class AutoCommandFactory {
               if (hasNote) {
                 SmartDashboard.putString("Auto Status", "hasnote=" + hasNote.toString());
               }
-              return hasNote;
+              return hasNote || (findNoteHeading == null);
             }));
   }
 

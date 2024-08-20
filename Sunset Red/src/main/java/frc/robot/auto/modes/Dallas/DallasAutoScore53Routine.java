@@ -61,7 +61,7 @@ public class DallasAutoScore53Routine {
             AutoRoutineConfig.AutoPaths.UNDER_STAGE_TO_51,
             Rotation2d.fromDegrees(90),
             Rotation2d.fromDegrees(-90),
-            FieldConstants.NOTE_55_POSITION);
+            FieldConstants.NOTE_51_POSITION);
       case FAR:
         return new StrategyParams(
             AutoRoutineConfig.AutoShootPositions.UNDER_STAGE,
