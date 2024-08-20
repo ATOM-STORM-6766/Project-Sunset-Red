@@ -198,11 +198,14 @@ public class PepGuardiolaCommand extends Command {
       armAngle = kLowShootParam.angle_deg;
     } else {
       shooterSpeed = kHighShootSpeedMap.get(targetDist);
-      armAngle = kHighShootAngleMap.get(targetDist) + mAngleOffsetSupplier.get() * kManualArmOffsetScalarDeg;
+      armAngle =
+          kHighShootAngleMap.get(targetDist)
+              + mAngleOffsetSupplier.get() * kManualArmOffsetScalarDeg;
     }
 
     // run subsystem
-    double headingGoal = targetRobotHeading.getRadians() + mHeadingOffsetSupplier.get() * kManualHeadingOffsetScalar;
+    double headingGoal =
+        targetRobotHeading.getRadians() + mHeadingOffsetSupplier.get() * kManualHeadingOffsetScalar;
     mProfiledPID.setGoal(headingGoal);
     // in rad/s
     double turnspeed =
@@ -345,6 +348,6 @@ public class PepGuardiolaCommand extends Command {
 
   @Override
   public InterruptionBehavior getInterruptionBehavior() {
-      return InterruptionBehavior.kCancelIncoming;
+    return InterruptionBehavior.kCancelIncoming;
   }
 }

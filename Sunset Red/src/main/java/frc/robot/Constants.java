@@ -30,7 +30,8 @@ public final class Constants {
   public static final NeutralOut NEUTRAL = new NeutralOut();
   public static final double kLongCANTimeoutSec = 0.1; // use for constructors
   public static final int kLongCANTimeoutMs = 100; // use for constructors
-  public static final int LED_PORT =0;
+  public static final int LED_PORT = 0;
+
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
@@ -227,7 +228,6 @@ public final class Constants {
       // kSpeakerAngleMap.put(5.5 + kMagicDistOffset, 32.0);
       // kSpeakerAngleMap.put(5.9 + kMagicDistOffset, 31.5);
 
-
       kSpeakerAngleMap.put(1.06, 60.0);
       kSpeakerAngleMap.put(1.36, 54.0);
       kSpeakerAngleMap.put(1.80, 48.0);
@@ -239,8 +239,6 @@ public final class Constants {
       kSpeakerAngleMap.put(3.50, 33.5);
       kSpeakerAngleMap.put(4.00, 32.0);
       kSpeakerAngleMap.put(4.50, 30.5);
-
-
 
       // kSpeakerAngleMap.put(4.00, 38.0);
     }

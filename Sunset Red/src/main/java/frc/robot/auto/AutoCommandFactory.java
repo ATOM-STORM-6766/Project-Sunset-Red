@@ -73,12 +73,13 @@ public class AutoCommandFactory {
                     firstPath = firstPath.flipPath();
                   }
                   drivetrainSubsystem.setPose(firstPath.getPreviewStartingHolonomicPose());
-                SmartDashboard.putNumber("Auto Init Heading", firstPath.getPreviewStartingHolonomicPose().getRotation().getDegrees());
+                  SmartDashboard.putNumber(
+                      "Auto Init Heading",
+                      firstPath.getPreviewStartingHolonomicPose().getRotation().getDegrees());
 
                   SmartDashboard.putString("Auto Status", "Finished prepare command");
                 }),
-            drivetrainSubsystem.runZeroingCommand()
-            ),
+            drivetrainSubsystem.runZeroingCommand()),
         new SequentialCommandGroup(
             new ParallelCommandGroup(
                 new SetArmAngleCommand(arm, shootingParameters.angle_deg),
@@ -194,8 +195,6 @@ public class AutoCommandFactory {
               return hasNote || (findNoteHeading == null);
             }));
   }
-
-  
 
   public static boolean isFieldPositionReached(
       DrivetrainSubsystem drivetrainSubsystem, double threshold) {

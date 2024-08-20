@@ -29,9 +29,9 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -435,14 +435,12 @@ public class DrivetrainSubsystem extends SubsystemBase {
     synchronized (mEstimator) {
       // we should calculate a FIELD-SPACE velocity reference
       // for vision coprocessor filtering
-      Translation2d driveSpeedFieldRel = new Translation2d(
-        mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond)
-          .rotateBy(getHeading());
+      Translation2d driveSpeedFieldRel =
+          new Translation2d(mFilteredSpeed.vxMetersPerSecond, mFilteredSpeed.vyMetersPerSecond)
+              .rotateBy(getHeading());
       var visionObservations =
           ApriltagCoprocessor.getInstance()
-              .updateEstimatedGlobalPose(
-                  mEstimator.getEstimatedPosition(),
-                  driveSpeedFieldRel);
+              .updateEstimatedGlobalPose(mEstimator.getEstimatedPosition(), driveSpeedFieldRel);
       // report how many updates we are doing
       SmartDashboard.putNumber("Vision Observation Count", visionObservations.size());
 
@@ -454,12 +452,17 @@ public class DrivetrainSubsystem extends SubsystemBase {
         photonLatency = currentTimestamp - photonTimestamp;
         if (Double.isInfinite(obs.angleDev())) {
           // by inf we mean no angle update
-          estimatedPose2d = new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
+          estimatedPose2d =
+              new Pose2d(estimatedPose2d.getTranslation(), mHeading.get(photonTimestamp));
           mEstimator.addVisionMeasurement(
-              estimatedPose2d, photonTimestamp, VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.xyDev()));
+              estimatedPose2d,
+              photonTimestamp,
+              VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.xyDev()));
         } else {
           mEstimator.addVisionMeasurement(
-              estimatedPose2d, photonTimestamp, VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.angleDev()));
+              estimatedPose2d,
+              photonTimestamp,
+              VecBuilder.fill(obs.xyDev(), obs.xyDev(), obs.angleDev()));
         }
       }
 

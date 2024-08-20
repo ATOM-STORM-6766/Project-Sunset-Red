@@ -6,8 +6,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.VisionShootConstants;
 import frc.robot.lib6907.DualEdgeDelayedBoolean;
@@ -19,7 +19,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class VisionShootWhileMovingCommand extends Command {
 
   public enum AimingMode {
-    PNP3D, PITCH2D
+    PNP3D,
+    PITCH2D
   }
 
   private static final double kHeadingOffsetScalarDeg = 8.0;
@@ -37,8 +38,11 @@ public class VisionShootWhileMovingCommand extends Command {
   private final PIDController mHeadingPID = new PIDController(5.0, 0, 0.2);
 
   private enum State {
-    AIMING, FEEDING, END
+    AIMING,
+    FEEDING,
+    END
   }
+
   private State mState = State.AIMING;
 
   double shooterSpeed, armAngle;
@@ -84,8 +88,8 @@ public class VisionShootWhileMovingCommand extends Command {
     mHeadingPID.setSetpoint(sDrivetrainSubsystem.getHeading().getRadians());
     mHeadingPID.setTolerance(Math.toRadians(3.0));
 
-    mReadyToFeed = new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), 
-      READY_TO_FEED_DELAY, EdgeType.RISING);
+    mReadyToFeed =
+        new DualEdgeDelayedBoolean(Timer.getFPGATimestamp(), READY_TO_FEED_DELAY, EdgeType.RISING);
     stateTimer.reset();
 
     sTransfer.stop();
@@ -135,24 +139,29 @@ public class VisionShootWhileMovingCommand extends Command {
     }
     Rotation2d farShootOffset = targetRobotHeading.minus(entryAngleRev).times(kFarCornerScalar);
     targetRobotHeading = targetRobotHeading.plus(farShootOffset);
-    targetRobotHeading = targetRobotHeading.plus(Rotation2d.fromDegrees(kHeadingOffsetScalarDeg * mHeadingOffsetSupplier.get()));
+    targetRobotHeading =
+        targetRobotHeading.plus(
+            Rotation2d.fromDegrees(kHeadingOffsetScalarDeg * mHeadingOffsetSupplier.get()));
     double targetDist = targetVector.getNorm();
 
     // find shoot parameter
     shooterSpeed = VisionShootConstants.kSpeakerRPSMap.get(targetDist);
-    armAngle = VisionShootConstants.kSpeakerAngleMap.get(targetDist) + kAngleOffsetScalarDeg * mAngleOffsetSupplier.get();
+    armAngle =
+        VisionShootConstants.kSpeakerAngleMap.get(targetDist)
+            + kAngleOffsetScalarDeg * mAngleOffsetSupplier.get();
 
     // run subsystem
     // in rad/s
     double turnspeed =
-        mHeadingPID.calculate(sDrivetrainSubsystem.getHeading().getRadians(), targetRobotHeading.getRadians());
+        mHeadingPID.calculate(
+            sDrivetrainSubsystem.getHeading().getRadians(), targetRobotHeading.getRadians());
     if (mHeadingPID.atSetpoint()) {
       turnspeed = 0.0;
     }
     sDrivetrainSubsystem.drive(driveVector, turnspeed, true);
     sArm.setAngle(armAngle);
     sShooter.setTargetVelocity(shooterSpeed);
-    
+
     // detect time to feed
     if (decideToFeed()) {
       mState = State.FEEDING;
@@ -179,17 +188,23 @@ public class VisionShootWhileMovingCommand extends Command {
       SmartDashboard.putString("Vision Shoot 2D", "NO_SPEAKER_TAG");
       return null;
     }
-    
+
     final Transform3d camExtrinsic = ApriltagCoprocessor.getInstance().kRobotToCameraForShooterSide;
 
     // LETS JUST DO SOME WILD CALCULATION
     // TODO : CHECK DIRECTION
     final double kTagHeight = 57.13 * 0.0254;
-    Rotation2d targetHeading = sDrivetrainSubsystem.getHeading(tagresult.getTimestampSeconds())
-      .plus(Rotation2d.fromDegrees(targetOfInterest.getYaw()))
-      .plus(Rotation2d.fromDegrees(180.0));
-    double targetDist = (kTagHeight - camExtrinsic.getZ()) / Math.tan(
-      Math.abs(camExtrinsic.getRotation().getY()) + Math.toRadians(targetOfInterest.getPitch())) + Math.abs(camExtrinsic.getX());
+    Rotation2d targetHeading =
+        sDrivetrainSubsystem
+            .getHeading(tagresult.getTimestampSeconds())
+            .plus(Rotation2d.fromDegrees(targetOfInterest.getYaw()))
+            .plus(Rotation2d.fromDegrees(180.0));
+    double targetDist =
+        (kTagHeight - camExtrinsic.getZ())
+                / Math.tan(
+                    Math.abs(camExtrinsic.getRotation().getY())
+                        + Math.toRadians(targetOfInterest.getPitch()))
+            + Math.abs(camExtrinsic.getX());
     SmartDashboard.putString("Vision Shoot 2D", "OK");
     Translation2d ret = new Translation2d(targetDist, targetHeading);
     SmartDashboard.putString("Vision Shoot 2D Vector", ret.toString());
@@ -198,9 +213,11 @@ public class VisionShootWhileMovingCommand extends Command {
 
   private boolean decideToFeed() {
     // find if superstruct ok
-    boolean shootOk = Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 2.0
-      && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
-      && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians()) < Math.toRadians(3.0);
+    boolean shootOk =
+        Math.abs(sShooter.getAverageVelocity() - shooterSpeed) < 2.0
+            && Math.abs(sArm.getAngleDeg() - armAngle) < 2.0
+            && Math.abs(mHeadingPID.getSetpoint() - sDrivetrainSubsystem.getHeading().getRadians())
+                < Math.toRadians(3.0);
     SmartDashboard.putBoolean("decide to feed", shootOk);
     return mReadyToFeed.update(Timer.getFPGATimestamp(), shootOk);
   }
@@ -217,11 +234,18 @@ public class VisionShootWhileMovingCommand extends Command {
 
     // find robotToGoal
     Translation2d robotToGoal = goal.minus(sDrivetrainSubsystem.getPose().getTranslation());
-    
+
     double shooter_rps = VisionShootConstants.kSpeakerRPSMap.get(robotToGoal.getNorm());
     double shooter_pitch_degree = VisionShootConstants.kSpeakerAngleMap.get(robotToGoal.getNorm());
     final double kMagicScalar = 0.9;
-    double noteFlySpeed = shooter_rps * 5.0 / 3.0 * kMagicScalar * Math.PI * 0.021 * Math.cos(Math.toRadians(shooter_pitch_degree));
+    double noteFlySpeed =
+        shooter_rps
+            * 5.0
+            / 3.0
+            * kMagicScalar
+            * Math.PI
+            * 0.021
+            * Math.cos(Math.toRadians(shooter_pitch_degree));
     double timeOfFly = robotToGoal.getNorm() / noteFlySpeed;
     Translation2d offsetDueToMove = driveVector.times(timeOfFly); // delta x = v * t
     Translation2d aimTargetToRobot = robotToGoal.minus(offsetDueToMove);

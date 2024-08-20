@@ -1,7 +1,5 @@
 package frc.robot.auto.modes.Dallas;
 
-
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -109,10 +107,15 @@ public class DallasAutoScore53Routine {
             fallbackRotation53),
 
         // Shoot 53
-        AutoBuilder.pathfindThenFollowPath(AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.approachShootPosePath, PathfindConstants.constraints)
+        AutoBuilder.pathfindThenFollowPath(
+                AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.approachShootPosePath,
+                PathfindConstants.constraints)
             .deadlineWith(
-                new SetArmAngleCommand(arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
-                new SetShooterTargetCommand(shooter, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
+                new SetArmAngleCommand(
+                    arm, AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.angle_deg),
+                new SetShooterTargetCommand(
+                    shooter,
+                    AutoRoutineConfig.AutoShootPositions.UNDER_STAGE.shootParams.speed_rps)),
 
         // Get first note
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -126,10 +129,12 @@ public class DallasAutoScore53Routine {
             params.firstNoteRotation),
 
         // Score first note
-        AutoBuilder.pathfindThenFollowPath(params.shootConfigFirstMidNote.approachShootPosePath, PathfindConstants.constraints)
+        AutoBuilder.pathfindThenFollowPath(
+                params.shootConfigFirstMidNote.approachShootPosePath, PathfindConstants.constraints)
             .deadlineWith(
                 new SetArmAngleCommand(arm, params.shootConfigFirstMidNote.shootParams.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootConfigFirstMidNote.shootParams.speed_rps)),
+                new SetShooterTargetCommand(
+                    shooter, params.shootConfigFirstMidNote.shootParams.speed_rps)),
 
         // Get second note
         AutoCommandFactory.buildPathThenChaseNoteCommand(
@@ -143,10 +148,13 @@ public class DallasAutoScore53Routine {
             params.secondNoteRotation),
 
         // Score second note
-        AutoBuilder.pathfindThenFollowPath(params.shootConfigSecondMidNote.approachShootPosePath, PathfindConstants.constraints)
+        AutoBuilder.pathfindThenFollowPath(
+                params.shootConfigSecondMidNote.approachShootPosePath,
+                PathfindConstants.constraints)
             .deadlineWith(
                 new SetArmAngleCommand(arm, params.shootConfigSecondMidNote.shootParams.angle_deg),
-                new SetShooterTargetCommand(shooter, params.shootConfigSecondMidNote.shootParams.speed_rps)),
+                new SetShooterTargetCommand(
+                    shooter, params.shootConfigSecondMidNote.shootParams.speed_rps)),
 
         // End chase
         AutoCommandFactory.buildPathThenChaseNoteCommand(
