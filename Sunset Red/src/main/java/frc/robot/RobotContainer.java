@@ -70,7 +70,6 @@ public class RobotContainer {
         private final Shooter mShooter = new Shooter();
         private final Arm mArm = new Arm();
         private final TrapFan mTrapFan = new TrapFan();
-        private final ApriltagCoprocessor mApriltagCoprocessor = ApriltagCoprocessor.getInstance();
         private final LED mLed = new LED();
 
         /* pre-constructed commands */
@@ -417,78 +416,6 @@ public class RobotContainer {
                                 .onFalse(stopShootingCommand);
         }
 
-        private void buildPepGBinding(Trigger[] triggers) {
-                Function<GoalZone, PepGuardiolaCommand> buildGuardiola = (goalzone) -> new PepGuardiolaCommand(
-                                sDrivetrainSubsystem,
-                                mArm,
-                                mTransfer,
-                                mShooter,
-                                mIntake,
-                                () -> driverController
-                                                .getDriveTranslation(driverController.isRobotRelative())
-                                                .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
-                                goalzone,
-                                // TODO : CHECK DIRECTION!
-                                () -> operatorController.getHID().getLeftY(),
-                                () -> operatorController.getHID().getLeftX());
-
-                PepGuardiolaCommand pepGuardiolaCommandUP = buildGuardiola.apply(GoalZone.UP);
-                PepGuardiolaCommand pepGuardiolaCommandDOWN = buildGuardiola.apply(GoalZone.DOWN);
-                PepGuardiolaCommand pepGuardiolaCommandHOME = buildGuardiola.apply(GoalZone.HOME);
-                PepGuardiolaCommand pepGuardiolaCommandLEFT = buildGuardiola.apply(GoalZone.LEFT);
-                PepGuardiolaCommand pepGuardiolaCommandRIGHT = buildGuardiola.apply(GoalZone.RIGHT);
-
-                triggers[0]
-                                .whileTrue(
-                                                pepGuardiolaCommandUP)
-                                .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 0)));
-                triggers[1]
-                                .whileTrue(
-                                                pepGuardiolaCommandDOWN)
-                                .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
-                triggers[2]
-                                .whileTrue(
-                                                pepGuardiolaCommandLEFT)
-                                .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 90)));
-                triggers[3]
-                                .whileTrue(
-                                                pepGuardiolaCommandRIGHT)
-                                .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 270)));
-                triggers[4]
-                                .whileTrue(
-                                                pepGuardiolaCommandHOME)
-                                .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
-
-                // led blink when guardiola-DOWN and out of wing
-                new Trigger(() -> pepGuardiolaCommandDOWN.isScheduled()
-                                && pepGuardiolaCommandDOWN.isOutsideOppositeWing())
-                                .onTrue(new LedBlinkCommand(mLed, Color.kGreen, 1.0));
-        }
-
-        /** @deprecated use new NavAmpCommand() instead */
-        private void buildNavAmpBinding(Trigger trigger, boolean isRedAlliance) {
-                Pose2d targetPose = isRedAlliance
-                                ? FieldConstants.IN_FRONT_AMP_POSITION_RED
-                                : FieldConstants.IN_FRONT_AMP_POSITION_BLUE;
-                Command pathfindToAmp = AutoBuilder.pathfindToPose(targetPose, PathfindConstants.constraints, 0, 0.5);
-
-                Command swingUpCommand = new SetShooterTargetCommand(mShooter,
-                                ShootingParameters.AMP_LOWSPEED.speed_rps)
-                                .alongWith(
-                                                new SetArmAngleCommand(mArm,
-                                                                ShootingParameters.AMP_INTERMEDIATE_POS.angle_deg));
-
-                Command swingBackAndReleaseCommand = new SetArmAngleCommand(mArm,
-                                ShootingParameters.AMP_LOWSPEED.angle_deg)
-                                .alongWith(new FeedCommand(mTransfer, mShooter));
-                Command stopShootingCommand = new InstantCommand(() -> mShooter.stop())
-                                .andThen(new SetArmAngleCommand(mArm, ArmConstants.ARM_OBSERVE_ANGLE));
-
-                trigger
-                                .whileTrue(pathfindToAmp.alongWith(swingUpCommand).andThen(swingBackAndReleaseCommand))
-                                .onFalse(stopShootingCommand);
-        }
-
         /**
          * Use this to pass the autonomous command to the main {@link Robot} class.
          *
@@ -552,56 +479,106 @@ public class RobotContainer {
                 SmartDashboard.putData("California Strategy", mCaliforniaStrategyChooser);
         }
 
-        private Command createArizonaSweepNearCommand() {
-                return ArizonaAutoSweep.buildArizonaSweepCommand(
-                                sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake,
-                                mArizonaSweepModeChooser.getSelected());
-        }
+  private void buildPepGBinding(Trigger[] triggers) {
+    Function<GoalZone, PepGuardiolaCommand> buildGuardiola = (goalzone) -> 
+        new PepGuardiolaCommand(
+            sDrivetrainSubsystem,
+            mArm,
+            mTransfer,
+            mShooter,
+            mIntake,
+            () ->
+                driverController
+                    .getDriveTranslation(driverController.isRobotRelative())
+                    .times(DriveConstants.kTeleDriveMaxSpeedMetersPerSecond),
+            goalzone,
+            // TODO : CHECK DIRECTION! 
+            () -> -operatorController.getHID().getLeftY(),
+            () -> operatorController.getHID().getLeftX()
+    );
 
-        private Command createCaliforniaAutoCommand() {
-                return CaliforniaAuto.buildCaliforniaAuto(
-                                sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake,
-                                mCaliforniaStrategyChooser.getSelected());
-        }
+    PepGuardiolaCommand pepGuardiolaCommandUP = buildGuardiola.apply(GoalZone.UP);
+    PepGuardiolaCommand pepGuardiolaCommandDOWN = buildGuardiola.apply(GoalZone.DOWN);
+    PepGuardiolaCommand pepGuardiolaCommandHOME = buildGuardiola.apply(GoalZone.HOME);
+    PepGuardiolaCommand pepGuardiolaCommandLEFT = buildGuardiola.apply(GoalZone.LEFT);
+    PepGuardiolaCommand pepGuardiolaCommandRIGHT = buildGuardiola.apply(GoalZone.RIGHT);
 
-        private Command createDallasScore53Command() {
-                return DallasAutoScore53Routine.buildScore53Command(
-                                sDrivetrainSubsystem,
-                                mArm,
-                                mShooter,
-                                mTransfer,
-                                mIntake,
-                                mScore53StrategyChooser.getSelected(),
-                                mFallbackRotation53Chooser.getSelected());
-        }
+    triggers[0]
+        .whileTrue(
+            pepGuardiolaCommandUP)
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 0)));
+    triggers[1]
+        .whileTrue(
+            pepGuardiolaCommandDOWN)
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
+    triggers[2]
+        .whileTrue(
+            pepGuardiolaCommandLEFT)
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 90)));
+    triggers[3]
+        .whileTrue(
+            pepGuardiolaCommandRIGHT)
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 270)));
+    triggers[4]
+        .whileTrue(
+            pepGuardiolaCommandHOME)
+        .onFalse(new InstantCommand(() -> SmartDashboard.putNumber("Last RightStick", 180)));
 
-        private Command createDallasTrap53Command() {
-                return DallasAutoTrap53Routine.buildTrap53Command(
-                                sDrivetrainSubsystem,
-                                mArm,
-                                mShooter,
-                                mTransfer,
-                                mIntake,
-                                mTrapFan,
-                                mFallbackRotation53Chooser.getSelected());
-        }
+    // led blink when guardiola-DOWN and out of wing
+    new Trigger(() -> pepGuardiolaCommandDOWN.isScheduled() && pepGuardiolaCommandDOWN.isOutsideOppositeWing())
+        .onTrue(new LedBlinkCommand(mLed, Color.kGreen, 1.0));
+  }
 
-        private Command createDallasDrop53Command() {
-                return DallasAutoDrop53Routine.buildDrop53Command(
-                                sDrivetrainSubsystem,
-                                mArm,
-                                mShooter,
-                                mTransfer,
-                                mIntake,
-                                mDrop53StrategyChooser.getSelected(),
-                                mFallbackRotation53Chooser.getSelected());
-        }
+  private Command createArizonaSweepNearCommand() {
+          return ArizonaAutoSweep.buildArizonaSweepCommand(
+                          sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake,
+                          mArizonaSweepModeChooser.getSelected());
+  }
 
-        public void moduleTestRoutine() {
-                // FL, FR, BR, BL
-                var module = sDrivetrainSubsystem.getModuleArray()[2];
+  private Command createDallasScore53Command() {
+    return DallasAutoScore53Routine.buildScore53Command(
+        sDrivetrainSubsystem,
+        mArm,
+        mShooter,
+        mTransfer,
+        mIntake,
+        mScore53StrategyChooser.getSelected(),
+        mFallbackRotation53Chooser.getSelected());
+  }
 
-                var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
-                module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));
-        }
+  private Command createCaliforniaAutoCommand() {
+          return CaliforniaAuto.buildCaliforniaAuto(
+                          sDrivetrainSubsystem, mArm, mShooter, mTransfer, mIntake,
+                          mCaliforniaStrategyChooser.getSelected());
+  }
+
+  private Command createDallasTrap53Command() {
+    return DallasAutoTrap53Routine.buildTrap53Command(
+        sDrivetrainSubsystem,
+        mArm,
+        mShooter,
+        mTransfer,
+        mIntake,
+        mTrapFan,
+        mFallbackRotation53Chooser.getSelected());
+  }
+
+  private Command createDallasDrop53Command() {
+    return DallasAutoDrop53Routine.buildDrop53Command(
+        sDrivetrainSubsystem,
+        mArm,
+        mShooter,
+        mTransfer,
+        mIntake,
+        mDrop53StrategyChooser.getSelected(),
+        mFallbackRotation53Chooser.getSelected());
+  }
+
+  public void moduleTestRoutine() {
+    // FL, FR, BR, BL
+    var module = sDrivetrainSubsystem.getModuleArray()[2];
+
+    var dv = driverController.getDriveTranslation(DriveMode.ROBOT_ORIENTED);
+    module.setDesiredState(new SwerveModuleState(dv.getNorm(), dv.getAngle()));
+  }
 }
